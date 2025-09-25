@@ -104,11 +104,10 @@ l-24 -24 -22 24 c-40 43 -129 21 -129 -32 0 -45 49 -71 78 -42 9 9 12 6 12
 22 -8z m-706 -152 c10 -13 10 -17 -2 -25 -8 -5 -16 -9 -19 -9 -3 0 -11 4 -19
 9 -12 8 -12 12 -2 25 8 9 17 16 21 16 4 0 13 -7 21 -16z"/>
 </g>
-  
+   
 <g id="pins" style="display:none">
   <circle id="pinL" cx="11%" cy="57%" r="3" fill="red" stroke="black"/>
   <circle id="pinR" cx="86%" cy="57%" r="3" fill="red" stroke="black"/>
   <!-- etc. -->
 </g>
-
 </svg>
