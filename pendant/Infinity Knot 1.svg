@@ -1,13 +1,7 @@
 
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
- "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
 <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
  width="300.000000pt" height="122.000000pt" viewBox="0 0 300.000000 122.000000"
  preserveAspectRatio="xMidYMid meet">
-<metadata>
-Created by potrace 1.10, written by Peter Selinger 2001-2011
-</metadata>
 <g transform="translate(0.000000,122.000000) scale(0.100000,-0.100000)"
 fill="#000000" stroke="none">
 <path d="M1386 977 c-20 -21 -46 -37 -68 -41 -23 -4 -46 -18 -62 -37 l-25 -29
@@ -104,10 +98,11 @@ l-24 -24 -22 24 c-40 43 -129 21 -129 -32 0 -45 49 -71 78 -42 9 9 12 6 12
 22 -8z m-706 -152 c10 -13 10 -17 -2 -25 -8 -5 -16 -9 -19 -9 -3 0 -11 4 -19
 9 -12 8 -12 12 -2 25 8 9 17 16 21 16 4 0 13 -7 21 -16z"/>
 </g>
-   
+  
 <g id="pins" style="display:none">
   <circle id="pinL" cx="11%" cy="57%" r="3" fill="red" stroke="black"/>
   <circle id="pinR" cx="86%" cy="57%" r="3" fill="red" stroke="black"/>
   <!-- etc. -->
 </g>
+
 </svg>
