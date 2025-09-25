@@ -101,15 +101,19 @@ const PENDANTS = [
 ];
 
 const LINKS = [
-  "Arrow Link.svg","Barrel Link.svg","Dual Orb Link.svg","Eclipse Link.svg","Floral Link.svg","Halo Link.svg"
+  "oval 1.1.svg",                // NEW
+  "Arrow Link.svg","Barrel Link.svg","Dual Orb Link.svg",
+  "Eclipse Link.svg","Floral Link.svg","Halo Link.svg"
 ];
 
 /* 2) Weights (g) & per-link layout metadata
-   - targetH: height in px before rotation (source SVGs are vertical)
-   - rotate: degrees (all -90 to turn horizontal)
+   - targetH: height in px before rotation (source SVGs are vertical/horizontal)
+   - rotate: degrees (rotate to align for horizontal chain)
    - overlap: fraction of link width that overlaps the next link (0.0..0.9)
 */
 const LINK_META = {
+  "oval 1.1.svg":   { targetH: 48, rotate: 90,  overlap: 0.52 }, // rotate to stand “vertical” for chaining
+
   "Arrow Link.svg":   {targetH: 50, rotate: -90, overlap: 0.42},
   "Barrel Link.svg":  {targetH: 36, rotate: -90, overlap: 0.15},
   "Dual Orb Link.svg":{targetH: 48, rotate: -90, overlap: 0.40},
@@ -126,6 +130,7 @@ const WEIGHTS = {
   "flower 1.svg":0.30, "flower 2.svg":0.30, "flower 3.svg":0.31, "flower 4.svg":0.31,
   "turtle 1.svg":0.33,
   // per link piece
+  "oval 1.1.svg":0.10,         // NEW: adjust when you have a better estimate
   "Arrow Link.svg":0.08, "Barrel Link.svg":0.10, "Dual Orb Link.svg":0.12,
   "Eclipse Link.svg":0.09, "Floral Link.svg":0.11, "Halo Link.svg":0.10,
   "__default_pendant":0.30, "__default_link":0.10
@@ -200,7 +205,7 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   PENDANTS.forEach(n=> selPendant.appendChild(makeOption(n,n)));
   selPendant.value = PENDANTS[0];
 
-  addRow({type:LINKS[0], qty:6});
+  addRow({type:LINKS[0], qty:6}); // defaults to "oval 1.1.svg"
   addRow({type:LINKS[1], qty:6});
 
   btnAddRow.addEventListener("click", ()=>addRow());
@@ -209,8 +214,12 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   btnSVG.addEventListener("click", downloadSVG);
   btnPNG.addEventListener("click", downloadPNG);
   btnReset.addEventListener("click", ()=>{
-    rowsBox.innerHTML=""; addRow({type:LINKS[0], qty:6}); addRow({type:LINKS[1], qty:6});
-    selPendant.value=PENDANTS[0]; inpPendantScale.value=80; render();
+    rowsBox.innerHTML="";
+    addRow({type:LINKS[0], qty:6});
+    addRow({type:LINKS[1], qty:6});
+    selPendant.value=PENDANTS[0];
+    inpPendantScale.value=80;
+    render();
   });
 
   render();
