@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Gold Design — Bracelet Builder (pin-accurate, horizontal assets)</title>
+<title>Gold Design — Bracelet Builder (Pin snapping · horizontal SVGs)</title>
 <style>
   :root{--bg:#0f1220;--panel:#151931;--ink:#e9ecf1;--muted:#9aa3b2;--radius:14px;--shadow:0 12px 28px rgba(0,0,0,.35)}
   *{box-sizing:border-box}html,body{height:100%}
@@ -102,25 +102,38 @@ const PENDANTS = [
 ];
 
 const LINKS = [
-  "oval 1.1.svg",  // your horizontal oval with pins
-  // (you can add more links here when you convert them to horizontal + pins)
+  "oval 1.1.svg",                // your horizontal oval
+  "Arrow Link.svg","Barrel Link.svg","Dual Orb Link.svg",
+  "Eclipse Link.svg","Floral Link.svg","Halo Link.svg"
 ];
 
-/* 2) Weights & layout meta (horizontal files; NO rotation here) */
+/* 2) Weights (g) & per-link layout metadata
+   - targetH: height in px before rotation (we’ll keep horizontal files at rotate:0)
+   - rotate: degrees
+*/
 const LINK_META = {
-  // Smaller than before so it matches pendant scale better
-  "oval 1.1.svg": { targetH: 36, rotate: 0 }   // only scale; we’ll snap by pins
+  "oval 1.1.svg":   { targetH: 32, rotate: 0 },   // downsized a bit for proportion
+
+  // (legacy vertical links still rotate)
+  "Arrow Link.svg":   {targetH: 50, rotate: -90},
+  "Barrel Link.svg":  {targetH: 36, rotate: -90},
+  "Dual Orb Link.svg":{targetH: 48, rotate: -90},
+  "Eclipse Link.svg": {targetH: 48, rotate: -90},
+  "Floral Link.svg":  {targetH: 48, rotate: -90},
+  "Halo Link.svg":    {targetH: 48, rotate: -90}
 };
 
 const WEIGHTS = {
-  // pendants
+  // pendants (placeholder)
   "Infinity Knot 1.svg":0.32, "Infinity Knot 2.svg":0.33, "Infinity Knot 3.svg":0.34, "Infinity Knot 4.svg":0.35,
   "bee 1.svg":0.28, "bee 2.svg":0.29, "butterfly 1.svg":0.32, "butterfly 2.svg":0.33,
   "cube 1.svg":0.25, "dolphin 1.svg":0.29,
   "flower 1.svg":0.30, "flower 2.svg":0.30, "flower 3.svg":0.31, "flower 4.svg":0.31,
   "turtle 1.svg":0.33,
-  // per link piece
-  "oval 1.1.svg":0.08,
+  // links (placeholder)
+  "oval 1.1.svg":0.10,
+  "Arrow Link.svg":0.08, "Barrel Link.svg":0.10, "Dual Orb Link.svg":0.12,
+  "Eclipse Link.svg":0.09, "Floral Link.svg":0.11, "Halo Link.svg":0.10,
   "__default_pendant":0.30, "__default_link":0.10
 };
 
@@ -144,66 +157,89 @@ function parseSVG(text){ return new DOMParser().parseFromString(text,"image/svg+
 function clear(n){ while(n.firstChild) n.removeChild(n.firstChild); }
 function makeOption(t,v){ const o=document.createElement("option"); o.textContent=t; o.value=v; return o; }
 function weightFor(name,type){ return WEIGHTS[name] ?? (type==="pendant" ? WEIGHTS.__default_pendant : WEIGHTS.__default_link); }
-
-function numFromAttr(val, total){
-  if(val==null) return null;
-  const s = String(val).trim();
-  if(s.endsWith("%")) return parseFloat(s)/100 * total;
+const toNum = v => (v==null||v==="") ? null : (typeof v==="number" ? v : parseFloat(String(v)));
+function parseCoord(v, dim){
+  if(v==null) return null;
+  const s = String(v).trim();
+  if(s.endsWith("%")) return parseFloat(s)/100 * dim;
   return parseFloat(s);
 }
 
-/* Load, scale, extract pins; no rotation needed for horizontal assets. */
-async function loadWithPins(dir, filename, targetH){
+/* Load, scale by height, optional rotate, extract invisible pins.
+   Returns {node,width,height,pins:{L:{x,y},R:{x,y}}} in *post-transform* local coords. */
+async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   const url = `./${dir}/${enc(filename)}`;
   const svg = parseSVG(await fetchSVGText(url));
 
-  // viewBox
+  // viewBox can be space or comma separated
   let vb = svg.getAttribute("viewBox");
   let w,h;
-  if(vb){ const p = vb.trim().split(/\s+/).map(Number); w=p[2]; h=p[3]; }
-  else{ w=parseFloat(svg.getAttribute("width"))||100; h=parseFloat(svg.getAttribute("height"))||100; }
+  if(vb){
+    const parts = vb.replace(/,/g," ").trim().split(/\s+/).map(Number);
+    w = parts[2]; h = parts[3];
+  }else{
+    w = toNum(svg.getAttribute("width")) || 100;
+    h = toNum(svg.getAttribute("height"))|| 100;
+  }
 
   const scale = targetH / h;
 
-  // extract pins BEFORE importing
-  let pinLx=w*0.3, pinLy=h*0.5, pinRx=w*0.7, pinRy=h*0.5; // fallbacks
-  const pinsG = svg.querySelector("#pins");
-  if(pinsG){
-    const pl = pinsG.querySelector("#pinL");
-    const pr = pinsG.querySelector("#pinR");
-    if(pl){ pinLx = numFromAttr(pl.getAttribute("cx"), w) ?? pinLx;
-           pinLy = numFromAttr(pl.getAttribute("cy"), h) ?? pinLy; }
-    if(pr){ pinRx = numFromAttr(pr.getAttribute("cx"), w) ?? pinRx;
-           pinRy = numFromAttr(pr.getAttribute("cy"), h) ?? pinRy; }
-  }
-
-  // build a <g> that contains all visible geometry EXCEPT pins/defs
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+  // import children (preserve defs)
   [...svg.childNodes].forEach(n=>{
-    if(n.nodeType!==1) return;
-    const tag = n.tagName.toLowerCase();
-    if(tag==="defs"){ // import defs safely with unique IDs
-      [...n.children].forEach(el=>{
-        const id = el.id ? `${filename.replace(/\W+/g,'_')}_${el.id}` : "";
-        if(id) el.setAttribute("id", id);
-        defs.appendChild(stage.ownerDocument.importNode(el,true));
-      });
-      return;
+    if(n.nodeType===1){
+      if(n.tagName.toLowerCase()==="defs"){
+        [...n.children].forEach(el=>{
+          const id = el.id ? `${filename.replace(/\W+/g,'_')}_${el.id}` : "";
+          if(id) el.setAttribute("id", id);
+          defs.appendChild(stage.ownerDocument.importNode(el,true));
+        });
+      }else{
+        g.appendChild(stage.ownerDocument.importNode(n,true));
+      }
     }
-    if(n.id==="pins") return; // skip pins group (hidden)
-    g.appendChild(stage.ownerDocument.importNode(n,true));
   });
 
-  // scale about (0,0) since files are horizontal already
-  g.setAttribute("transform", `scale(${scale})`);
+  // Apply scale (keep top-left at 0,0 for horizontal SVGs)
+  // Then rotate around the scaled center if needed (legacy verticals)
+  const cxS = (w*scale)/2, cyS = (h*scale)/2;
+  let tf = `scale(${scale})`;
+  if(rotateDeg && Math.abs(rotateDeg)%360!==0){
+    tf += ` rotate(${rotateDeg}, ${w/2}, ${h/2})`;
+  }
+  g.setAttribute("transform", tf);
 
-  return {
-    node: g,
-    width: w*scale,
-    height: h*scale,
-    pinL: { x: pinLx*scale, y: pinLy*scale },
-    pinR: { x: pinRx*scale, y: pinRy*scale }
-  };
+  // final footprint
+  let outW = (Math.abs((rotateDeg||0)%180)===90) ? h*scale : w*scale;
+  let outH = (Math.abs((rotateDeg||0)%180)===90) ? w*scale : h*scale;
+
+  // ---- pins ----
+  let pinL=null, pinR=null;
+  const pinsGroup = svg.querySelector("#pins");
+  if(pinsGroup){
+    const cL = pinsGroup.querySelector("#pinL");
+    const cR = pinsGroup.querySelector("#pinR");
+    if(cL && cR){
+      const pxL = parseCoord(cL.getAttribute("cx"), w) * scale;
+      const pyL = parseCoord(cL.getAttribute("cy"), h) * scale;
+      const pxR = parseCoord(cR.getAttribute("cx"), w) * scale;
+      const pyR = parseCoord(cR.getAttribute("cy"), h) * scale;
+
+      // rotate pins around center if we rotated the art
+      const rot = (rotateDeg||0) * Math.PI/180;
+      if(rot!==0){
+        function rotP(x,y){ const dx=x-cxS, dy=y-cyS; return {x: cxS + (dx*Math.cos(rot)-dy*Math.sin(rot)),
+                                                           y: cyS + (dx*Math.sin(rot)+dy*Math.cos(rot))}; }
+        const a = rotP(pxL,pyL), b = rotP(pxR,pyR);
+        pinL = a; pinR = b;
+      }else{
+        pinL = {x:pxL, y:pyL};
+        pinR = {x:pxR, y:pyR};
+      }
+    }
+  }
+
+  return { node:g, width:outW, height:outH, pins:{L:pinL, R:pinR} };
 }
 
 /* ------------------------------- 5) UI init ------------------------------- */
@@ -211,7 +247,8 @@ async function loadWithPins(dir, filename, targetH){
   PENDANTS.forEach(n=> selPendant.appendChild(makeOption(n,n)));
   selPendant.value = PENDANTS[0];
 
-  addRow({type:LINKS[0], qty:6});  // oval links by default on each side
+  addRow({type:LINKS[0], qty:6}); // default includes your oval
+  addRow({type:LINKS[1], qty:6});
 
   btnAddRow.addEventListener("click", ()=>addRow());
   selPendant.addEventListener("change", render);
@@ -221,6 +258,7 @@ async function loadWithPins(dir, filename, targetH){
   btnReset.addEventListener("click", ()=>{
     rowsBox.innerHTML="";
     addRow({type:LINKS[0], qty:6});
+    addRow({type:LINKS[1], qty:6});
     selPendant.value=PENDANTS[0];
     inpPendantScale.value=80;
     render();
@@ -252,7 +290,7 @@ function readRows(){
   }).filter(r=>r.qty>0);
 }
 
-/* ------------------------------- 6) Render (pin snapping) ----------------- */
+/* ------------------------------- 6) Render (pin snap) --------------------- */
 let lastToken=0;
 async function render(){
   const token=++lastToken;
@@ -262,85 +300,100 @@ async function render(){
   const pendantName = selPendant.value;
   const pendantH = Math.max(20, Math.min(160, inpPendantScale.valueAsNumber||80));
 
-  // Load pendant (horizontal, with pins)
-  let pendant;
+  // Pendant
+  let pendantPack;
   try{
-    pendant = await loadWithPins("pendant", pendantName, pendantH);
-  }catch(e){ console.error(e); pendant = null; }
+    pendantPack = await loadScaleRotate("pendant", pendantName, pendantH, 0);
+  }catch(e){ console.error(e); pendantPack = {node:svgText("text",{x:0,y:0,fill:"#fff"}, "Missing") , width:120, height:60, pins:{L:null,R:null}}; }
   if(token!==lastToken) return;
 
   // Unique link types
   const uniq = [...new Set(rows.map(r=>r.type))];
   const linkDefs = {};
   for(const t of uniq){
-    const meta = LINK_META[t] || {targetH:36, rotate:0};
+    const meta = LINK_META[t] || {targetH:48, rotate:0};
     try{
-      linkDefs[t] = await loadWithPins("link", t, meta.targetH);
+      linkDefs[t] = await loadScaleRotate("link", t, meta.targetH, meta.rotate);
     }catch(e){ console.error(e); }
     if(token!==lastToken) return;
   }
 
-  /* --- Measure total footprint by simulating placement --- */
+  // Layout constants
   const PAD=40, W=1080, H=400, midY=200;
+
+  // Compute total span using pins if we have them, else fallback to width
+  function spanOf(def){ 
+    if(def?.pins?.L && def?.pins?.R) return def.pins.R.x - def.pins.L.x;
+    return def?.width ?? 0;
+  }
+
   const leftSeq=[]; rows.forEach(r=>{ for(let i=0;i<r.qty;i++) leftSeq.push(r.type); });
   const rightSeq=[...leftSeq].reverse();
 
-  let minX=Infinity, maxX=-Infinity;
+  const leftSpan = leftSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
+  const rightSpan= rightSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
+  const pendSpan = spanOf(pendantPack);
 
-  // Pendant at x=0 initially
-  const pendantBox = { x:0, w:pendant.width };
-  minX = Math.min(minX, 0);
-  maxX = Math.max(maxX, pendant.width);
+  const totalSpan = leftSpan + pendSpan + rightSpan;
+  let startX = Math.max(PAD, (W - totalSpan)/2);
 
-  // Right side (grow to the right from pendant.pinR.x)
-  let xJoinR = pendant.pinR.x; // global join coordinate
-  for(const t of rightSeq){
-    const d = linkDefs[t]; if(!d) continue;
-    const tx = xJoinR - d.pinL.x; // place so pinL sits at join
-    minX = Math.min(minX, tx);
-    maxX = Math.max(maxX, tx + d.width);
-    xJoinR += (d.pinR.x - d.pinL.x); // advance join to this piece’s pinR
-  }
+  // Place pendant (align its pin midline to midY)
+  const pendPinMidY = (pendantPack.pins?.L?.y != null && pendantPack.pins?.R?.y != null)
+                      ? (pendantPack.pins.L.y + pendantPack.pins.R.y)/2
+                      : pendantPack.height/2;
+  const pendantLeftPinWorldX = startX + leftSpan;
+  const gpX = pendantLeftPinWorldX - (pendantPack.pins?.L?.x ?? 0);
+  const gpY = midY - pendPinMidY;
 
-  // Left side (grow to the left from pendant.pinL.x)
-  let xJoinL = pendant.pinL.x;
-  for(const t of leftSeq){
-    const d = linkDefs[t]; if(!d) continue;
-    const tx = xJoinL - d.pinR.x; // align its pinR to current join
-    minX = Math.min(minX, tx);
-    maxX = Math.max(maxX, tx + d.width);
-    xJoinL -= (d.pinR.x - d.pinL.x); // move join left by piece length (pin distance)
-  }
-
-  const totalW = maxX - minX;
-  const offsetX = Math.max(PAD, (W - totalW)/2) - minX; // shift so whole thing is centered with padding
-
-  /* --- Draw left side --- */
-  let curJoinL = offsetX + pendant.pinL.x;
-  for(const t of leftSeq){
-    const d = linkDefs[t]; if(!d) continue;
-    const tx = curJoinL - d.pinR.x;
-    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
-    g.setAttribute("transform", `translate(${tx}, ${midY - d.height/2})`);
-    tintGold(d.node); g.appendChild(d.node.cloneNode(true)); bracelet.appendChild(g);
-    curJoinL -= (d.pinR.x - d.pinL.x);
-  }
-
-  /* --- Draw pendant --- */
-  const pendantTx = offsetX;
   const gp = document.createElementNS("http://www.w3.org/2000/svg","g");
-  gp.setAttribute("transform", `translate(${pendantTx}, ${midY - pendant.height/2})`);
-  tintGold(pendant.node); gp.appendChild(pendant.node); bracelet.appendChild(gp);
+  gp.setAttribute("transform", `translate(${gpX}, ${gpY})`);
+  tintGold(pendantPack.node); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
 
-  /* --- Draw right side --- */
-  let curJoinR2 = offsetX + pendant.pinR.x;
-  for(const t of rightSeq){
+  // ---- Left side (place from pendant outward, snapping by pins) ----
+  let anchorL = {x: pendantLeftPinWorldX, y: midY};
+  for(let i=leftSeq.length-1;i>=0;i--){
+    const t = leftSeq[i];
     const d = linkDefs[t]; if(!d) continue;
-    const tx = curJoinR2 - d.pinL.x;
+    const L = d.pins?.L, R = d.pins?.R;
+
+    let tx, ty;
+    if(L && R){
+      // snap right pin to anchor
+      tx = anchorL.x - R.x;
+      ty = anchorL.y - R.y;
+    }else{
+      // fallback: simple box placement
+      tx = anchorL.x - d.width; ty = midY - d.height/2;
+    }
     const g = document.createElementNS("http://www.w3.org/2000/svg","g");
-    g.setAttribute("transform", `translate(${tx}, ${midY - d.height/2})`);
+    g.setAttribute("transform", `translate(${tx}, ${ty})`);
     tintGold(d.node); g.appendChild(d.node.cloneNode(true)); bracelet.appendChild(g);
-    curJoinR2 += (d.pinR.x - d.pinL.x);
+
+    if(L && R) anchorL = {x: tx + L.x, y: ty + L.y};
+    else       anchorL = {x: tx, y: ty};
+  }
+
+  // ---- Right side ----
+  let anchorR = {x: pendantLeftPinWorldX + pendSpan, y: midY};
+  for(let i=0;i<rightSeq.length;i++){
+    const t = rightSeq[i];
+    const d = linkDefs[t]; if(!d) continue;
+    const L = d.pins?.L, R = d.pins?.R;
+
+    let tx, ty;
+    if(L && R){
+      // snap left pin to anchor
+      tx = anchorR.x - L.x;
+      ty = anchorR.y - L.y;
+    }else{
+      tx = anchorR.x; ty = midY - d.height/2;
+    }
+    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.setAttribute("transform", `translate(${tx}, ${ty})`);
+    tintGold(d.node); g.appendChild(d.node.cloneNode(true)); bracelet.appendChild(g);
+
+    if(L && R) anchorR = {x: tx + R.x, y: ty + R.y};
+    else       anchorR = {x: tx + d.width, y: ty};
   }
 
   // Weight
@@ -349,7 +402,7 @@ async function render(){
   lblWeight.textContent = (pendantW + linksW).toFixed(2) + " g";
 }
 
-/* gold tint (preserves real holes; does NOT touch pins since we skip them) */
+/* gold tint (keeps hollow centers via evenodd) */
 function tintGold(node){
   const w = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
   while(w.nextNode()){
