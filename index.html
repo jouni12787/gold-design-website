@@ -253,6 +253,79 @@
 <script>
 "use strict";
 
+const PRICE_ERROR_TEXT_PRIMARY = "تعذّر تحميل سجل الأسعار";
+const PRICE_ERROR_TEXT_SECONDARY = "سيتم تحديثه عند وصول قراءات جديدة";
+const PRICE_ERROR_EN_PRIMARY = [
+  "failed to load the latest price log",
+  "failed to load last price log",
+  "failed to load the price log"
+];
+const PRICE_ERROR_EN_SECONDARY = [
+  "it will refresh when new readings arrive",
+  "it will update when new readings arrive",
+  "we'll update it when new readings arrive"
+];
+
+function normalizeText(text){
+  return (text || "").replace(/\s+/g, " ").trim();
+}
+
+function shouldHidePriceError(text){
+  if(!text) return false;
+  const normalized = normalizeText(text);
+  if(normalized.includes(PRICE_ERROR_TEXT_PRIMARY) && normalized.includes(PRICE_ERROR_TEXT_SECONDARY)){
+    return true;
+  }
+  const lower = normalized.toLowerCase();
+  const englishPrimary = PRICE_ERROR_EN_PRIMARY.some(snippet => lower.includes(snippet));
+  const englishSecondary = PRICE_ERROR_EN_SECONDARY.some(snippet => lower.includes(snippet));
+  return englishPrimary && englishSecondary;
+}
+
+function hidePriceLogError(root){
+  if(!root) return;
+
+  const queue = [];
+  if(root.nodeType === Node.ELEMENT_NODE){
+    queue.push(root);
+  }else if(root.nodeType === Node.DOCUMENT_NODE){
+    if(root.body) queue.push(root.body);
+  }else if(root.nodeType === Node.DOCUMENT_FRAGMENT_NODE){
+    queue.push(...Array.from(root.childNodes).filter(node => node.nodeType === Node.ELEMENT_NODE));
+  }
+
+  queue.forEach(node => {
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT, null);
+    let current = walker.currentNode;
+    while(current){
+      if(shouldHidePriceError(current.textContent)){
+        current.style.setProperty("display", "none", "important");
+      }
+      current = walker.nextNode();
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  hidePriceLogError(document.body);
+  const observer = new MutationObserver(records => {
+    for(const record of records){
+      if(record.type === "childList"){
+        record.addedNodes.forEach(node => {
+          if(node.nodeType === Node.ELEMENT_NODE){
+            hidePriceLogError(node);
+          }else if(node.parentElement){
+            hidePriceLogError(node.parentElement);
+          }
+        });
+      }else if(record.type === "characterData" && record.target?.parentElement){
+        hidePriceLogError(record.target.parentElement);
+      }
+    }
+  });
+  observer.observe(document.body, {childList:true, subtree:true, characterData:true});
+});
+
 const THEMES = ["light", "dark", "plum"];
 const THEME_KEY = "bracelet-builder-theme";
 const DEFAULT_THEME = "light";
