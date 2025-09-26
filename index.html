@@ -26,13 +26,27 @@
   button{appearance:none;background:#10142a;color:var(--ink);border:1px solid rgba(255,255,255,.14);padding:10px 14px;border-radius:12px;cursor:pointer}
   button:hover{border-color:rgba(255,255,255,.28)}
   .summary{margin-top:12px;padding:12px 14px;border-radius:12px;background:#0e1223;border:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .summary .w{color:#ffd37d}.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-  .preview{display:flex;align-items:center;justify-content:center;background:#0b0f1c;min-height:420px}
+  .summary .w{color:#ffd37d}
+  .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .preview{display:flex;align-items:center;justify-content:center;background:#0b0f1c;min-height:420px;position:relative}
   svg#stage{width:100%;height:100%;max-height:560px}
+
+  /* Tabs on right panel */
+  .tabs{display:flex;gap:6px}
+  .tab{background:#10142a;border:1px solid rgba(255,255,255,.14);color:var(--ink);padding:6px 10px;border-radius:10px;cursor:pointer;font-size:12px}
+  .tab.active{border-color:#ffd37d;color:#ffd37d}
+
+  /* 3D canvas + overlay controls */
+  #preview3d{display:none}
+  #stlCanvas{width:100%;height:100%;max-height:560px;display:block}
+  .stlHud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;align-items:center;background:rgba(15,18,32,.6);border:1px solid rgba(255,255,255,.12);padding:8px 10px;border-radius:10px}
+  .stlHud select,.stlHud label{margin:0}
+  .pin-dot{pointer-events:none}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <!-- LEFT: existing builder -->
   <section class="card">
     <div class="head">
       <h1>Bracelet Builder</h1>
@@ -63,14 +77,25 @@
         <button id="downloadPNG">Download PNG</button>
         <button id="reset">Reset</button>
       </div>
+
+      <label style="display:inline-flex;gap:.5rem;align-items:center;margin-top:10px">
+        <input type="checkbox" id="showPins"> Show pin overlay
+      </label>
     </div>
   </section>
 
+  <!-- RIGHT: preview with 2D/3D tabs -->
   <section class="card">
     <div class="head">
-      <h1>Preview</h1><span class="badge">Export 1080×400</span>
+      <h1>Preview</h1>
+      <div class="tabs">
+        <button class="tab active" id="tab2d">2D</button>
+        <button class="tab" id="tab3d">3D (STL)</button>
+      </div>
     </div>
-    <div class="preview">
+
+    <!-- 2D -->
+    <div class="preview" id="preview2d">
       <svg id="stage" viewBox="0 0 1080 400" role="img" aria-label="Bracelet preview">
         <defs id="defs">
           <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
@@ -86,9 +111,24 @@
         <g id="bracelet"></g>
       </svg>
     </div>
+
+    <!-- 3D -->
+    <div class="preview" id="preview3d">
+      <canvas id="stlCanvas"></canvas>
+      <div class="stlHud">
+        <select id="stlSelect" title="Choose model">
+          <option value="link/halo link 1mm.stl">halo link 1mm.stl</option>
+          <!-- add more .stl paths here when you upload them -->
+        </select>
+        <label style="display:inline-flex;gap:.35rem;align-items:center;">
+          <input type="checkbox" id="stlAutoRotate"> Auto rotate
+        </label>
+      </div>
+    </div>
   </section>
 </div>
 
+<!-- ==================== 2D BUILDER JS (unchanged core, with pin snap) ==================== -->
 <script>
 "use strict";
 
@@ -107,12 +147,11 @@ const LINKS = [
   "Eclipse Link.svg","Floral Link.svg","Halo Link.svg"
 ];
 
-/* 2) Weights (g) & per-link layout metadata */
+/* 2) Weights (g) & per-link layout metadata  */
 const LINK_META = {
-  // horizontal file — no rotation, smaller height so it matches pendants better
-  "oval 1.1.svg":   { targetH: 32, rotate: 0 },
+  "oval 1.1.svg":   { targetH: 32, rotate: 0 },   // proportion tune
 
-  // legacy verticals (keep if you still use them)
+  // legacy vertical links
   "Arrow Link.svg":   {targetH: 50, rotate: -90},
   "Barrel Link.svg":  {targetH: 36, rotate: -90},
   "Dual Orb Link.svg":{targetH: 48, rotate: -90},
@@ -122,13 +161,11 @@ const LINK_META = {
 };
 
 const WEIGHTS = {
-  // pendants (placeholder)
   "Infinity Knot 1.svg":0.32, "Infinity Knot 2.svg":0.33, "Infinity Knot 3.svg":0.34, "Infinity Knot 4.svg":0.35,
   "bee 1.svg":0.28, "bee 2.svg":0.29, "butterfly 1.svg":0.32, "butterfly 2.svg":0.33,
   "cube 1.svg":0.25, "dolphin 1.svg":0.29,
   "flower 1.svg":0.30, "flower 2.svg":0.30, "flower 3.svg":0.31, "flower 4.svg":0.31,
   "turtle 1.svg":0.33,
-  // links (placeholder)
   "oval 1.1.svg":0.10,
   "Arrow Link.svg":0.08, "Barrel Link.svg":0.10, "Dual Orb Link.svg":0.12,
   "Eclipse Link.svg":0.09, "Floral Link.svg":0.11, "Halo Link.svg":0.10,
@@ -147,6 +184,7 @@ const lblWeight = document.getElementById("weight");
 const btnSVG = document.getElementById("downloadSVG");
 const btnPNG = document.getElementById("downloadPNG");
 const btnReset = document.getElementById("reset");
+const chkPins = document.getElementById("showPins");
 
 /* ------------------------------- 4) Utils --------------------------------- */
 const enc = s => encodeURIComponent(s).replace(/%20/g," ");
@@ -156,34 +194,22 @@ function clear(n){ while(n.firstChild) n.removeChild(n.firstChild); }
 function makeOption(t,v){ const o=document.createElement("option"); o.textContent=t; o.value=v; return o; }
 function weightFor(name,type){ return WEIGHTS[name] ?? (type==="pendant" ? WEIGHTS.__default_pendant : WEIGHTS.__default_link); }
 const toNum = v => (v==null||v==="") ? null : (typeof v==="number" ? v : parseFloat(String(v)));
-function parseCoord(v, dim){
-  if(v==null) return null;
-  const s = String(v).trim();
-  if(s.endsWith("%")) return parseFloat(s)/100 * dim;
-  return parseFloat(s);
-}
+function parseCoord(v, dim){ if(v==null) return null; const s=String(v).trim(); return s.endsWith("%") ? parseFloat(s)/100*dim : parseFloat(s); }
+function drawDot(parent,x,y,r=3){ const c=document.createElementNS("http://www.w3.org/2000/svg","circle"); c.setAttribute("cx",x); c.setAttribute("cy",y); c.setAttribute("r",r); c.setAttribute("fill","#ff47ff"); c.setAttribute("stroke","#fff"); c.setAttribute("stroke-width","1"); c.setAttribute("class","pin-dot"); parent.appendChild(c); }
 
-/* Load + scale + optional rotate around scaled center; read hidden #pins.
-   Returns {node,width,height,pins:{L:{x,y},R:{x,y}}} in post-transform local coords. */
+/* Load, scale, rotate, extract invisible pins */
 async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   const url = `./${dir}/${enc(filename)}`;
   const svg = parseSVG(await fetchSVGText(url));
 
-  // viewBox can be space or comma separated
   let vb = svg.getAttribute("viewBox");
   let w,h;
-  if(vb){
-    const parts = vb.replace(/,/g," ").trim().split(/\s+/).map(Number);
-    w = parts[2]; h = parts[3];
-  }else{
-    w = toNum(svg.getAttribute("width")) || 100;
-    h = toNum(svg.getAttribute("height"))|| 100;
-  }
+  if(vb){ const parts = vb.replace(/,/g," ").trim().split(/\s+/).map(Number); w=parts[2]; h=parts[3]; }
+  else{ w = toNum(svg.getAttribute("width")) || 100; h = toNum(svg.getAttribute("height")) || 100; }
 
   const scale = targetH / h;
-
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
-  // import children (preserve defs)
+
   [...svg.childNodes].forEach(n=>{
     if(n.nodeType===1){
       if(n.tagName.toLowerCase()==="defs"){
@@ -198,46 +224,35 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     }
   });
 
-  // Transform: rotate about the SCALED center, then scale
-  const cxS = (w*scale)/2, cyS = (h*scale)/2;
-  const ang = (rotateDeg||0);
-  let tf = `translate(${cxS} ${cyS}) rotate(${ang}) translate(${-cxS} ${-cyS}) scale(${scale})`;
+  const cxS=(w*scale)/2, cyS=(h*scale)/2;
+  let tf = `scale(${scale})`;
+  if(rotateDeg && Math.abs(rotateDeg)%360!==0){ tf += ` rotate(${rotateDeg}, ${w/2}, ${h/2})`; }
   g.setAttribute("transform", tf);
 
-  // final footprint
-  const rotAbs = Math.abs(ang % 180);
-  const outW = (rotAbs===90) ? h*scale : w*scale;
-  const outH = (rotAbs===90) ? w*scale : h*scale;
+  let outW = (Math.abs((rotateDeg||0)%180)===90) ? h*scale : w*scale;
+  let outH = (Math.abs((rotateDeg||0)%180)===90) ? w*scale : h*scale;
 
-  // ---- pins ----
   let pinL=null, pinR=null;
   const pinsGroup = svg.querySelector("#pins");
   if(pinsGroup){
     const cL = pinsGroup.querySelector("#pinL");
     const cR = pinsGroup.querySelector("#pinR");
     if(cL && cR){
-      // pins in original viewBox coords → scale
       let pxL = parseCoord(cL.getAttribute("cx"), w) * scale;
       let pyL = parseCoord(cL.getAttribute("cy"), h) * scale;
       let pxR = parseCoord(cR.getAttribute("cx"), w) * scale;
       let pyR = parseCoord(cR.getAttribute("cy"), h) * scale;
 
-      if(ang){
-        const rad = ang*Math.PI/180;
-        function rotP(x,y){
-          const dx=x-cxS, dy=y-cyS;
-          return {x: cxS + (dx*Math.cos(rad)-dy*Math.sin(rad)),
-                  y: cyS + (dx*Math.sin(rad)+dy*Math.cos(rad))};
-        }
-        const a=rotP(pxL,pyL), b=rotP(pxR,pyR);
+      const rot = (rotateDeg||0) * Math.PI/180;
+      if(rot!==0){
+        function rotP(x,y){ const dx=x-cxS, dy=y-cyS; return {x: cxS + (dx*Math.cos(rot)-dy*Math.sin(rot)), y: cyS + (dx*Math.sin(rot)+dy*Math.cos(rot))}; }
+        const a = rotP(pxL,pyL), b = rotP(pxR,pyR);
         pinL=a; pinR=b;
-      }else{
-        pinL={x:pxL,y:pyL}; pinR={x:pxR,y:pyR};
-      }
+      }else{ pinL={x:pxL,y:pyL}; pinR={x:pxR,y:pyR}; }
     }
   }
 
-  return { node:g, width:outW, height:outH, pins:{L:pinL, R:pinR} };
+  return { node:g, width:outW, height:outH, pins:{L:pinL,R:pinR} };
 }
 
 /* ------------------------------- 5) UI init ------------------------------- */
@@ -245,7 +260,7 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   PENDANTS.forEach(n=> selPendant.appendChild(makeOption(n,n)));
   selPendant.value = PENDANTS[0];
 
-  addRow({type:LINKS[0], qty:6}); // default includes your oval
+  addRow({type:LINKS[0], qty:6});
   addRow({type:LINKS[1], qty:6});
 
   btnAddRow.addEventListener("click", ()=>addRow());
@@ -261,7 +276,8 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     inpPendantScale.value=80;
     render();
   });
-
+  document.getElementById('tab2d').addEventListener('click', ()=>switchMode('2d'));
+  document.getElementById('tab3d').addEventListener('click', ()=>switchMode('3d'));
   render();
 })();
 
@@ -298,6 +314,11 @@ async function render(){
   const pendantName = selPendant.value;
   const pendantH = Math.max(20, Math.min(160, inpPendantScale.valueAsNumber||80));
 
+  // debug overlay group
+  const dbg = document.createElementNS("http://www.w3.org/2000/svg","g");
+  dbg.setAttribute("id","pinOverlay");
+  bracelet.appendChild(dbg);
+
   // Pendant
   let pendantPack;
   try{
@@ -319,11 +340,7 @@ async function render(){
   // Layout constants
   const PAD=40, W=1080, H=400, midY=200;
 
-  // Compute total span using pins if we have them, else fallback to width
-  function spanOf(def){ 
-    if(def?.pins?.L && def?.pins?.R) return def.pins.R.x - def.pins.L.x;
-    return def?.width ?? 0;
-  }
+  function spanOf(def){ if(def?.pins?.L && def?.pins?.R) return def.pins.R.x - def.pins.L.x; return def?.width ?? 0; }
 
   const leftSeq=[]; rows.forEach(r=>{ for(let i=0;i<r.qty;i++) leftSeq.push(r.type); });
   const rightSeq=[...leftSeq].reverse();
@@ -335,7 +352,7 @@ async function render(){
   const totalSpan = leftSpan + pendSpan + rightSpan;
   let startX = Math.max(PAD, (W - totalSpan)/2);
 
-  // Place pendant (align its pin midline to midY)
+  // Pendant placement
   const pendPinMidY = (pendantPack.pins?.L?.y != null && pendantPack.pins?.R?.y != null)
                       ? (pendantPack.pins.L.y + pendantPack.pins.R.y)/2
                       : pendantPack.height/2;
@@ -347,51 +364,47 @@ async function render(){
   gp.setAttribute("transform", `translate(${gpX}, ${gpY})`);
   tintGold(pendantPack.node); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
 
-  // ---- Left side (place from pendant outward, snapping by pins) ----
+  if (chkPins?.checked && pendantPack.pins?.L && pendantPack.pins?.R) {
+    drawDot(dbg, gpX + pendantPack.pins.L.x, gpY + pendantPack.pins.L.y);
+    drawDot(dbg, gpX + pendantPack.pins.R.x, gpY + pendantPack.pins.R.y);
+  }
+
+  // Left side
   let anchorL = {x: pendantLeftPinWorldX, y: midY};
   for(let i=leftSeq.length-1;i>=0;i--){
     const t = leftSeq[i];
     const d = linkDefs[t]; if(!d) continue;
     const L = d.pins?.L, R = d.pins?.R;
-
     let tx, ty;
-    if(L && R){
-      // snap right pin to anchor
-      tx = anchorL.x - R.x;
-      ty = anchorL.y - R.y;
-    }else{
-      // fallback: simple box placement
-      tx = anchorL.x - d.width; ty = midY - d.height/2;
-    }
+
+    if(L && R){ tx = anchorL.x - R.x; ty = anchorL.y - R.y; }
+    else      { tx = anchorL.x - d.width; ty = midY - d.height/2; }
+
     const g = document.createElementNS("http://www.w3.org/2000/svg","g");
     g.setAttribute("transform", `translate(${tx}, ${ty})`);
     tintGold(d.node); g.appendChild(d.node.cloneNode(true)); bracelet.appendChild(g);
 
-    if(L && R) anchorL = {x: tx + L.x, y: ty + L.y};
-    else       anchorL = {x: tx, y: ty};
+    if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y); drawDot(dbg, tx+R.x, ty+R.y); }
+    anchorL = L && R ? {x: tx + L.x, y: ty + L.y} : {x: tx, y: ty};
   }
 
-  // ---- Right side ----
+  // Right side
   let anchorR = {x: pendantLeftPinWorldX + pendSpan, y: midY};
   for(let i=0;i<rightSeq.length;i++){
     const t = rightSeq[i];
     const d = linkDefs[t]; if(!d) continue;
     const L = d.pins?.L, R = d.pins?.R;
-
     let tx, ty;
-    if(L && R){
-      // snap left pin to anchor
-      tx = anchorR.x - L.x;
-      ty = anchorR.y - L.y;
-    }else{
-      tx = anchorR.x; ty = midY - d.height/2;
-    }
+
+    if(L && R){ tx = anchorR.x - L.x; ty = anchorR.y - L.y; }
+    else      { tx = anchorR.x;       ty = midY - d.height/2; }
+
     const g = document.createElementNS("http://www.w3.org/2000/svg","g");
     g.setAttribute("transform", `translate(${tx}, ${ty})`);
     tintGold(d.node); g.appendChild(d.node.cloneNode(true)); bracelet.appendChild(g);
 
-    if(L && R) anchorR = {x: tx + R.x, y: ty + R.y};
-    else       anchorR = {x: tx + d.width, y: ty};
+    if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y); drawDot(dbg, tx+R.x, ty+R.y); }
+    anchorR = L && R ? {x: tx + R.x, y: ty + R.y} : {x: tx + d.width, y: ty};
   }
 
   // Weight
@@ -400,7 +413,7 @@ async function render(){
   lblWeight.textContent = (pendantW + linksW).toFixed(2) + " g";
 }
 
-/* gold tint (keeps hollow centers via evenodd) */
+/* gold tint */
 function tintGold(node){
   const w = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
   while(w.nextNode()){
@@ -415,7 +428,7 @@ function tintGold(node){
   }
 }
 
-/* ------------------------------ 7) Export --------------------------------- */
+/* Export */
 function downloadSVG(){
   const clone = stage.cloneNode(true);
   const xml = new XMLSerializer().serializeToString(clone);
@@ -435,9 +448,118 @@ function downloadPNG(){
   img.src = data;
 }
 function trigger(url,name){ const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
-
-/* helper */
 function svgText(tag, attrs, text){ const el=document.createElementNS("http://www.w3.org/2000/svg",tag); for(const [k,v] of Object.entries(attrs)) el.setAttribute(k,String(v)); if(text) el.textContent=text; return el; }
+
+/* Tab switch */
+function switchMode(which){
+  const b2d=document.getElementById('tab2d'), b3d=document.getElementById('tab3d');
+  const p2d=document.getElementById('preview2d'), p3d=document.getElementById('preview3d');
+  if(which==='3d'){ b3d.classList.add('active'); b2d.classList.remove('active'); p3d.style.display='flex'; p2d.style.display='none'; window.dispatchEvent(new Event('resize')); }
+  else{ b2d.classList.add('active'); b3d.classList.remove('active'); p2d.style.display='flex'; p3d.style.display='none'; }
+}
+</script>
+
+<!-- ==================== 3D VIEWER (Three.js, STL) ==================== -->
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.157.0/build/three.module.js';
+import { STLLoader } from 'https://unpkg.com/three@0.157.0/examples/jsm/loaders/STLLoader.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.157.0/examples/jsm/controls/OrbitControls.js';
+
+const canvas = document.getElementById('stlCanvas');
+const container = document.getElementById('preview3d');
+const sel = document.getElementById('stlSelect');
+const auto = document.getElementById('stlAutoRotate');
+
+let renderer, scene, camera, controls, mesh;
+
+init();
+loadCurrent();
+
+sel.addEventListener('change', loadCurrent);
+auto.addEventListener('change', ()=> controls.autoRotate = auto.checked);
+window.addEventListener('resize', onResize);
+
+function init(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0b0f1c);
+
+  camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1000);
+  camera.position.set(0, 0, 10);
+
+  renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1;
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.autoRotate = false;
+  controls.autoRotateSpeed = 1.2;
+
+  const amb = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(amb);
+  const dir1 = new THREE.DirectionalLight(0xffffff, 0.8);
+  dir1.position.set(4,5,6);
+  scene.add(dir1);
+  const dir2 = new THREE.DirectionalLight(0xffffff, 0.6);
+  dir2.position.set(-5,-3,4);
+  scene.add(dir2);
+
+  onResize();
+  animate();
+}
+
+function onResize(){
+  const r = container.getBoundingClientRect();
+  const w = Math.max(100, r.width);
+  const h = Math.max(200, r.height);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+}
+
+async function loadCurrent(){
+  const path = sel.value; // e.g. "link/halo link 1mm.stl"
+  const loader = new STLLoader();
+  // clear old mesh
+  if(mesh){ scene.remove(mesh); mesh.geometry.dispose(); if(mesh.material) mesh.material.dispose(); mesh=null; }
+
+  const geom = await loader.loadAsync(encodeURI(path));
+  geom.computeVertexNormals();
+
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0xd4af37, metalness: 1, roughness: 0.25,
+    reflectivity: 1, clearcoat: 0.5, clearcoatRoughness: 0.3
+  });
+  mesh = new THREE.Mesh(geom, mat);
+  scene.add(mesh);
+
+  fitToView(mesh);
+}
+
+function fitToView(obj){
+  const box = new THREE.Box3().setFromObject(obj);
+  const size = new THREE.Vector3(); box.getSize(size);
+  const center = new THREE.Vector3(); box.getCenter(center);
+
+  obj.position.sub(center); // recenter to origin
+  controls.target.set(0,0,0);
+
+  // set camera distance to fit
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fov = camera.fov * (Math.PI/180);
+  let dist = maxDim / (2 * Math.tan(fov/2));
+  dist *= 1.6; // padding
+  camera.position.set(dist, dist*0.2, dist); // nice angle
+  camera.lookAt(0,0,0);
+  controls.update();
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
 </script>
 </body>
 </html>
