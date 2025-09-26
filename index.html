@@ -236,12 +236,14 @@
       <canvas id="stlCanvas"></canvas>
       <div class="stlHud">
         <select id="stlSelect" title="Choose model">
+          <option value="__assembly__">Bracelet assembly</option>
           <option value="pendant/Infinity Knot 1 1mm.stl">Infinity Knot 1 — 1mm</option>
           <option value="link/halo link 1mm.stl">halo link — 1mm</option>
         </select>
         <label style="display:inline-flex;gap:.35rem;align-items:center;">
           <input type="checkbox" id="stlAutoRotate"> Auto rotate
         </label>
+        <button id="stlDownload" type="button">Download STL</button>
       </div>
     </div>
   </section>
@@ -282,6 +284,15 @@ const LINKS    = ["halo link.svg"];
 /* Link layout meta (tweak targetH if your halo looks too big/small) */
 const LINK_META = { "halo link.svg": { targetH: 34, rotate: 0 } };
 
+const STL_FILES = {
+  pendant: {
+    "Infinity Knot 1.svg": "pendant/Infinity Knot 1 1mm.stl"
+  },
+  link: {
+    "halo link.svg": "link/halo link 1mm.stl"
+  }
+};
+
 /* Placeholder weights */
 const WEIGHTS = {
   "Infinity Knot 1.svg": 0.32,
@@ -304,6 +315,8 @@ const btnSVG = document.getElementById("downloadSVG");
 const btnPNG = document.getElementById("downloadPNG");
 const btnReset = document.getElementById("reset");
 const chkPins = document.getElementById("showPins");
+
+let lastToken = 0;
 
 /* Utils */
 const enc = s => encodeURIComponent(s); // keep %20 for spaces (GitHub Pages)
@@ -381,7 +394,22 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     }
   }
 
-  return { node:g, width:outW, height:outH, pins:{L:pinL,R:pinR} };
+  const pinRatios = {
+    L: pinL && outW && outH ? { x: pinL.x/outW, y: pinL.y/outH } : null,
+    R: pinR && outW && outH ? { x: pinR.x/outW, y: pinR.y/outH } : null
+  };
+
+  return {
+    node:g,
+    width:outW,
+    height:outH,
+    rawWidth:w,
+    rawHeight:h,
+    scale:scale,
+    rotation: rotateDeg || 0,
+    pins:{L:pinL,R:pinR},
+    pinRatios
+  };
 }
 
 /* Init UI */
@@ -456,8 +484,34 @@ function tintGold(node){
   }
 }
 
+function clonePoint(pt){ return pt ? {x: pt.x, y: pt.y} : null; }
+
+function sanitizePackFor3D(pack, type, name){
+  if(!pack) return null;
+  const stl = (type === 'pendant' ? STL_FILES.pendant[name] : STL_FILES.link[name]) || null;
+  const pinRatios = pack.pinRatios || {};
+  return {
+    type,
+    name,
+    stl,
+    width: pack.width,
+    height: pack.height,
+    rawWidth: pack.rawWidth,
+    rawHeight: pack.rawHeight,
+    scale: pack.scale,
+    rotation: pack.rotation || 0,
+    pins: {
+      L: clonePoint(pack.pins?.L),
+      R: clonePoint(pack.pins?.R)
+    },
+    pinRatios: {
+      L: pinRatios.L ? {x: pinRatios.L.x, y: pinRatios.L.y} : null,
+      R: pinRatios.R ? {x: pinRatios.R.x, y: pinRatios.R.y} : null
+    }
+  };
+}
+
 /* Render everything */
-let lastToken=0;
 async function render(){
   const token=++lastToken;
   clear(bracelet);
@@ -479,12 +533,17 @@ async function render(){
   dbg.setAttribute("id","pinOverlay");
   bracelet.appendChild(dbg);
 
+  const layoutLeft=[];
+  const layoutRight=[];
+  let layoutPendant=null;
+
   // Pendant
   let pendantPack;
   try{
     pendantPack = await loadScaleRotate("pendant", pendantName, pendantH, 0);
   }catch(e){ console.error(e); pendantPack = {node:document.createElementNS("http://www.w3.org/2000/svg","g"), width:120, height:60, pins:{L:null,R:null}}; }
   if(token!==lastToken) return;
+  const pendant3D = sanitizePackFor3D(pendantPack, 'pendant', pendantName);
 
   // Link defs
   const uniq = [...new Set(rows.map(r=>r.type))];
@@ -523,6 +582,17 @@ async function render(){
   gp.setAttribute("transform", `translate(${gpX}, ${gpY})`);
   tintGold(pendantPack.node); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
 
+  layoutPendant = {
+    type:'pendant',
+    pack: pendant3D,
+    tx: gpX,
+    ty: gpY,
+    pins: {
+      L: pendantPack.pins?.L ? {x: gpX + pendantPack.pins.L.x, y: gpY + pendantPack.pins.L.y} : null,
+      R: pendantPack.pins?.R ? {x: gpX + pendantPack.pins.R.x, y: gpY + pendantPack.pins.R.y} : null
+    }
+  };
+
   if (chkPins?.checked && pendantPack.pins?.L && pendantPack.pins?.R) {
     drawDot(dbg, gpX + pendantPack.pins.L.x, gpY + pendantPack.pins.L.y, 3, pinColors);
     drawDot(dbg, gpX + pendantPack.pins.R.x, gpY + pendantPack.pins.R.y, 3, pinColors);
@@ -543,6 +613,18 @@ async function render(){
     const node = d.node.cloneNode(true); tintGold(node);
     g.appendChild(node); bracelet.appendChild(g);
 
+    layoutLeft.unshift({
+      type:'link',
+      name:t,
+      pack: sanitizePackFor3D(d, 'link', t),
+      tx,
+      ty,
+      pins: {
+        L: L ? {x: tx + L.x, y: ty + L.y} : null,
+        R: R ? {x: tx + R.x, y: ty + R.y} : null
+      }
+    });
+
     if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y, 3, pinColors); drawDot(dbg, tx+R.x, ty+R.y, 3, pinColors); }
     anchorL = L && R ? {x: tx + L.x, y: ty + L.y} : {x: tx, y: midY};
   }
@@ -562,6 +644,18 @@ async function render(){
     const node = d.node.cloneNode(true); tintGold(node);
     g.appendChild(node); bracelet.appendChild(g);
 
+    layoutRight.push({
+      type:'link',
+      name:t,
+      pack: sanitizePackFor3D(d, 'link', t),
+      tx,
+      ty,
+      pins: {
+        L: L ? {x: tx + L.x, y: ty + L.y} : null,
+        R: R ? {x: tx + R.x, y: ty + R.y} : null
+      }
+    });
+
     if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y, 3, pinColors); drawDot(dbg, tx+R.x, ty+R.y, 3, pinColors); }
     anchorR = L && R ? {x: tx + R.x, y: ty + R.y} : {x: tx + d.width, y: midY};
   }
@@ -570,6 +664,17 @@ async function render(){
   const pendantW = weightFor(pendantName,"pendant");
   const linksW = rows.reduce((s,r)=> s + weightFor(r.type,"link") * r.qty*2, 0);
   lblWeight.textContent = (pendantW + linksW).toFixed(2) + " g";
+
+  const layoutPayload = {
+    items: [...layoutLeft, ...(layoutPendant ? [layoutPendant] : []), ...layoutRight],
+    stage: { width: W, height: 400 },
+    timestamp: Date.now()
+  };
+  window.__bracelet3DLayout = layoutPayload;
+  if(typeof window.__update3DAssembly === 'function'){
+    try{ window.__update3DAssembly(layoutPayload); }
+    catch(err){ console.error('3D update failed', err); }
+  }
 }
 
 /* Export */
@@ -621,24 +726,43 @@ function switchMode(which){
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 
 const container = document.getElementById('preview3d');
 const canvas    = document.getElementById('stlCanvas');
 const sel       = document.getElementById('stlSelect');
 const auto      = document.getElementById('stlAutoRotate');
+const btnDownload = document.getElementById('stlDownload');
 
 // Debug HUD (load status + size)
 const msg = document.createElement('div');
 msg.className = 'stlStatus';
 container.appendChild(msg);
 
-let renderer, scene, camera, controls, mesh, meshMaterial, wire=false;
+const loader = new STLLoader();
+const exporter = new STLExporter();
+const geometryCache = new Map();
+const metricsCache = new WeakMap();
+
+let renderer, scene, camera, controls;
+let currentObject = null;
+let activeMaterials = [];
+let wire = false;
+let loadToken = 0;
+let lastLayout = null;
+let stageHeight = 400;
+
+window.__update3DAssembly = handleLayoutUpdate;
+if(window.__bracelet3DLayout){
+  handleLayoutUpdate(window.__bracelet3DLayout);
+}
 
 init();
 loadCurrent();
 
 sel.addEventListener('change', loadCurrent);
 auto.addEventListener('change', ()=> controls.autoRotate = auto.checked);
+btnDownload.addEventListener('click', downloadCurrent);
 window.addEventListener('resize', resize3D);
 // let non-module switcher force-resize when tab opens
 window.__resize3D = resize3D;
@@ -654,7 +778,7 @@ function updateViewerTheme(){
   if(renderer){ renderer.setClearColor(bgColor, 1); }
 
   const accent = (styles.getPropertyValue('--gold') || '').trim() || '#d4af37';
-  if(meshMaterial){ meshMaterial.color.set(accent); }
+  activeMaterials.forEach(mat=> mat.color.set(accent));
 
   if(msg){
     const hudBg = (styles.getPropertyValue('--hud-bg') || '').trim() || 'rgba(21,15,8,.72)';
@@ -683,7 +807,7 @@ function init(){
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
-  controls.autoRotate = false;
+  controls.autoRotate = auto.checked;
   controls.autoRotateSpeed = 1.2;
 
   // lights
@@ -698,7 +822,12 @@ function init(){
   scene.add(frontFill);
 
   // press "W" to toggle wireframe (debug)
-  window.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='w'){ wire=!wire; if(mesh) mesh.material.wireframe = wire; } });
+  window.addEventListener('keydown', e=>{
+    if(e.key.toLowerCase()==='w'){
+      wire = !wire;
+      activeMaterials.forEach(mat=> mat.wireframe = wire);
+    }
+  });
 
   resize3D();
   updateViewerTheme();
@@ -715,26 +844,25 @@ function resize3D(){
 }
 
 async function loadCurrent(){
+  const token = ++loadToken;
+  controls.autoRotate = auto.checked;
+  if(sel.value === '__assembly__'){
+    await loadAssembly(token);
+  }else{
+    await loadSingle(sel.value, token);
+  }
+}
+
+async function loadSingle(raw, token){
   try{
-    const raw = sel.value;                      // e.g. "pendant/Infinity Knot 1 1mm.stl"
-    const url = raw.replace(/ /g, '%20');       // safe path (spaces → %20)
     msg.textContent = 'Loading… ' + raw;
+    const geom = await loadGeometry(raw);
+    if(token !== loadToken) return;
 
-    if(mesh){ scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); mesh=null; meshMaterial=null; }
-
-    const loader = new STLLoader();
-    const geom = await loader.loadAsync(url);
-    geom.computeVertexNormals();
-
-    const mat = new THREE.MeshPhysicalMaterial({
-      color: 0xd4af37, metalness: 1, roughness: 0.25,
-      reflectivity: 1, clearcoat: 0.5, clearcoatRoughness: 0.3,
-      side: THREE.DoubleSide
-    });
-    mat.wireframe = wire;
-
-    mesh = new THREE.Mesh(geom, mat);
-    meshMaterial = mat;
+    clearCurrentObject();
+    const mat = createMaterial();
+    const mesh = new THREE.Mesh(geom, mat);
+    currentObject = mesh;
     scene.add(mesh);
     fitToView(mesh);
 
@@ -744,9 +872,194 @@ async function loadCurrent(){
     const sz  = new THREE.Vector3(); box.getSize(sz);
     msg.textContent = `Loaded ✓  size: ${sz.x.toFixed(2)} × ${sz.y.toFixed(2)} × ${sz.z.toFixed(2)}`;
   }catch(err){
+    if(token !== loadToken) return;
     console.error('STL load failed:', err);
     msg.textContent = 'Load failed — see console';
   }
+}
+
+async function loadAssembly(token){
+  const layout = lastLayout || window.__bracelet3DLayout;
+  if(!layout || !Array.isArray(layout.items) || layout.items.length===0){
+    clearCurrentObject();
+    msg.textContent = 'Assembly not ready — adjust bracelet in 2D.';
+    return;
+  }
+
+  stageHeight = layout.stage?.height ?? stageHeight;
+  const items = layout.items.filter(item=> item?.pack?.stl);
+  if(items.length===0){
+    clearCurrentObject();
+    msg.textContent = 'Assembly has no STL-backed components yet.';
+    return;
+  }
+
+  msg.textContent = 'Building assembly…';
+
+  try{
+    const paths = [...new Set(items.map(item=> item.pack.stl))];
+    await Promise.all(paths.map(path=> loadGeometry(path)));
+  }catch(err){
+    if(token !== loadToken) return;
+    console.error('Assembly STL load failed:', err);
+    msg.textContent = 'Assembly load failed — see console';
+    return;
+  }
+  if(token !== loadToken) return;
+
+  clearCurrentObject();
+  const group = new THREE.Group();
+  activeMaterials = [];
+
+  for(const item of items){
+    const geom = await loadGeometry(item.pack.stl);
+    if(token !== loadToken) return;
+    const metrics = getMetrics(geom);
+    const scale = computeScale(item.pack, metrics);
+    const mat = createMaterial();
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.scale.set(scale, scale, scale);
+    const pos = computePlacement(item, metrics, scale);
+    mesh.position.copy(pos);
+    group.add(mesh);
+  }
+
+  if(!group.children.length){
+    msg.textContent = 'Assembly has no renderable meshes.';
+    return;
+  }
+
+  const bbox = new THREE.Box3().setFromObject(group);
+  const center = new THREE.Vector3(); bbox.getCenter(center);
+  group.position.set(-center.x, -center.y, -center.z);
+
+  scene.add(group);
+  currentObject = group;
+  fitToView(group);
+  updateViewerTheme();
+
+  const sz = new THREE.Vector3(); bbox.getSize(sz);
+  msg.textContent = `Assembly ✓  size: ${sz.x.toFixed(2)} × ${sz.y.toFixed(2)} × ${sz.z.toFixed(2)}`;
+}
+
+function computeScale(pack, metrics){
+  const size = metrics.size;
+  if(pack?.height && size.y > 1e-6){
+    return pack.height / size.y;
+  }
+  if(pack?.width && size.x > 1e-6){
+    return pack.width / size.x;
+  }
+  return 1;
+}
+
+function computePlacement(item, metrics, scale){
+  const pack = item.pack || {};
+  const pins = item.pins || {};
+  const ratioL = pack.pinRatios?.L;
+  const ratioR = pack.pinRatios?.R;
+
+  const localL = ratioToLocal(ratioL, metrics).multiplyScalar(scale);
+  const localR = ratioToLocal(ratioR, metrics).multiplyScalar(scale);
+
+  const fallback = fallbackPoint(item, pack);
+  const targetL = pins.L ? to3DPoint(pins.L) : to3DPoint(fallback);
+  const targetR = pins.R ? to3DPoint(pins.R) : (pins.L ? to3DPoint(pins.L) : to3DPoint(fallback));
+
+  let posX = targetL.x - localL.x;
+  let posY = targetL.y - localL.y;
+
+  if(pins.R || ratioR){
+    const altX = targetR.x - localR.x;
+    const altY = targetR.y - localR.y;
+    if(Number.isFinite(altX)) posX = (posX + altX)/2;
+    if(Number.isFinite(altY)) posY = (posY + altY)/2;
+  }
+
+  return new THREE.Vector3(posX, posY, 0);
+}
+
+function ratioToLocal(ratio, metrics){
+  const { box, size } = metrics;
+  const clamp = (v)=> Math.min(Math.max(v ?? 0.5, 0), 1);
+  const rx = clamp(ratio?.x);
+  const ry = clamp(ratio?.y);
+  const rz = clamp(ratio?.z);
+  return new THREE.Vector3(
+    box.min.x + size.x * rx,
+    box.min.y + size.y * ry,
+    box.min.z + size.z * rz
+  );
+}
+
+function fallbackPoint(item, pack){
+  const w = pack?.width ?? 0;
+  const h = pack?.height ?? 0;
+  const tx = item?.tx ?? 0;
+  const ty = item?.ty ?? 0;
+  return { x: tx + w/2, y: ty + h/2 };
+}
+
+function to3DPoint(pt){
+  const x = typeof pt?.x === 'number' ? pt.x : 0;
+  const y = typeof pt?.y === 'number' ? pt.y : 0;
+  return new THREE.Vector3(x, (stageHeight/2) - y, 0);
+}
+
+async function loadGeometry(rawPath){
+  if(!rawPath) return null;
+  if(geometryCache.has(rawPath)) return geometryCache.get(rawPath);
+  const url = rawPath.replace(/ /g, '%20');
+  const promise = loader.loadAsync(url).then(geom=>{
+    geom.computeVertexNormals();
+    return geom;
+  }).catch(err=>{
+    geometryCache.delete(rawPath);
+    throw err;
+  });
+  geometryCache.set(rawPath, promise);
+  return promise;
+}
+
+function getMetrics(geom){
+  if(metricsCache.has(geom)) return metricsCache.get(geom);
+  if(!geom.boundingBox) geom.computeBoundingBox();
+  const box = geom.boundingBox.clone();
+  const size = new THREE.Vector3(); box.getSize(size);
+  const metrics = { box, size };
+  metricsCache.set(geom, metrics);
+  return metrics;
+}
+
+function createMaterial(){
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: 0xd4af37,
+    metalness: 1,
+    roughness: 0.25,
+    reflectivity: 1,
+    clearcoat: 0.5,
+    clearcoatRoughness: 0.3,
+    side: THREE.DoubleSide,
+    wireframe: wire
+  });
+  activeMaterials.push(mat);
+  return mat;
+}
+
+function clearCurrentObject(){
+  if(!currentObject) return;
+  if(currentObject.traverse){
+    currentObject.traverse(node=>{
+      if(node.isMesh && node.material?.dispose){
+        node.material.dispose();
+      }
+    });
+  }else if(currentObject.isMesh && currentObject.material?.dispose){
+    currentObject.material.dispose();
+  }
+  scene.remove(currentObject);
+  currentObject = null;
+  activeMaterials = [];
 }
 
 function fitToView(obj){
@@ -771,6 +1084,49 @@ function animate(){
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
+}
+
+function downloadCurrent(){
+  if(!currentObject){
+    msg.textContent = 'Nothing to export yet.';
+    return;
+  }
+  try{
+    const data = exporter.parse(currentObject, {binary:true});
+    const blob = new Blob([data], {type:'model/stl'});
+    const name = makeFileName(sel.value);
+    triggerDownload(blob, name);
+    msg.textContent = 'STL download started.';
+  }catch(err){
+    console.error('STL export failed:', err);
+    msg.textContent = 'Export failed — see console';
+  }
+}
+
+function triggerDownload(blob, name){
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 4000);
+}
+
+function makeFileName(raw){
+  if(raw === '__assembly__') return 'bracelet-assembly.stl';
+  const base = (raw.split('/').pop() || 'model.stl').trim();
+  const safe = base.replace(/\s+/g,'-').toLowerCase();
+  return safe.endsWith('.stl') ? safe : `${safe}.stl`;
+}
+
+function handleLayoutUpdate(layout){
+  lastLayout = layout;
+  if(layout?.stage?.height) stageHeight = layout.stage.height;
+  if(sel.value === '__assembly__' && controls){
+    loadCurrent();
+  }
 }
 </script>
 </body>
