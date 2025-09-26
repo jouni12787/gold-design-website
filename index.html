@@ -107,14 +107,12 @@ const LINKS = [
   "Eclipse Link.svg","Floral Link.svg","Halo Link.svg"
 ];
 
-/* 2) Weights (g) & per-link layout metadata
-   - targetH: height in px before rotation (we’ll keep horizontal files at rotate:0)
-   - rotate: degrees
-*/
+/* 2) Weights (g) & per-link layout metadata */
 const LINK_META = {
-  "oval 1.1.svg":   { targetH: 32, rotate: 0 },   // downsized a bit for proportion
+  // horizontal file — no rotation, smaller height so it matches pendants better
+  "oval 1.1.svg":   { targetH: 32, rotate: 0 },
 
-  // (legacy vertical links still rotate)
+  // legacy verticals (keep if you still use them)
   "Arrow Link.svg":   {targetH: 50, rotate: -90},
   "Barrel Link.svg":  {targetH: 36, rotate: -90},
   "Dual Orb Link.svg":{targetH: 48, rotate: -90},
@@ -165,8 +163,8 @@ function parseCoord(v, dim){
   return parseFloat(s);
 }
 
-/* Load, scale by height, optional rotate, extract invisible pins.
-   Returns {node,width,height,pins:{L:{x,y},R:{x,y}}} in *post-transform* local coords. */
+/* Load + scale + optional rotate around scaled center; read hidden #pins.
+   Returns {node,width,height,pins:{L:{x,y},R:{x,y}}} in post-transform local coords. */
 async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   const url = `./${dir}/${enc(filename)}`;
   const svg = parseSVG(await fetchSVGText(url));
@@ -200,18 +198,16 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     }
   });
 
-  // Apply scale (keep top-left at 0,0 for horizontal SVGs)
-  // Then rotate around the scaled center if needed (legacy verticals)
+  // Transform: rotate about the SCALED center, then scale
   const cxS = (w*scale)/2, cyS = (h*scale)/2;
-  let tf = `scale(${scale})`;
-  if(rotateDeg && Math.abs(rotateDeg)%360!==0){
-    tf += ` rotate(${rotateDeg}, ${w/2}, ${h/2})`;
-  }
+  const ang = (rotateDeg||0);
+  let tf = `translate(${cxS} ${cyS}) rotate(${ang}) translate(${-cxS} ${-cyS}) scale(${scale})`;
   g.setAttribute("transform", tf);
 
   // final footprint
-  let outW = (Math.abs((rotateDeg||0)%180)===90) ? h*scale : w*scale;
-  let outH = (Math.abs((rotateDeg||0)%180)===90) ? w*scale : h*scale;
+  const rotAbs = Math.abs(ang % 180);
+  const outW = (rotAbs===90) ? h*scale : w*scale;
+  const outH = (rotAbs===90) ? w*scale : h*scale;
 
   // ---- pins ----
   let pinL=null, pinR=null;
@@ -220,21 +216,23 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     const cL = pinsGroup.querySelector("#pinL");
     const cR = pinsGroup.querySelector("#pinR");
     if(cL && cR){
-      const pxL = parseCoord(cL.getAttribute("cx"), w) * scale;
-      const pyL = parseCoord(cL.getAttribute("cy"), h) * scale;
-      const pxR = parseCoord(cR.getAttribute("cx"), w) * scale;
-      const pyR = parseCoord(cR.getAttribute("cy"), h) * scale;
+      // pins in original viewBox coords → scale
+      let pxL = parseCoord(cL.getAttribute("cx"), w) * scale;
+      let pyL = parseCoord(cL.getAttribute("cy"), h) * scale;
+      let pxR = parseCoord(cR.getAttribute("cx"), w) * scale;
+      let pyR = parseCoord(cR.getAttribute("cy"), h) * scale;
 
-      // rotate pins around center if we rotated the art
-      const rot = (rotateDeg||0) * Math.PI/180;
-      if(rot!==0){
-        function rotP(x,y){ const dx=x-cxS, dy=y-cyS; return {x: cxS + (dx*Math.cos(rot)-dy*Math.sin(rot)),
-                                                           y: cyS + (dx*Math.sin(rot)+dy*Math.cos(rot))}; }
-        const a = rotP(pxL,pyL), b = rotP(pxR,pyR);
-        pinL = a; pinR = b;
+      if(ang){
+        const rad = ang*Math.PI/180;
+        function rotP(x,y){
+          const dx=x-cxS, dy=y-cyS;
+          return {x: cxS + (dx*Math.cos(rad)-dy*Math.sin(rad)),
+                  y: cyS + (dx*Math.sin(rad)+dy*Math.cos(rad))};
+        }
+        const a=rotP(pxL,pyL), b=rotP(pxR,pyR);
+        pinL=a; pinR=b;
       }else{
-        pinL = {x:pxL, y:pyL};
-        pinR = {x:pxR, y:pyR};
+        pinL={x:pxL,y:pyL}; pinR={x:pxR,y:pyR};
       }
     }
   }
