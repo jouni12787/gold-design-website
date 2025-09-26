@@ -482,7 +482,7 @@ function init(){
   renderer.setPixelRatio(window.devicePixelRatio || 1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.3;
+  renderer.toneMappingExposure = 1.75;
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -491,10 +491,11 @@ function init(){
   controls.autoRotateSpeed = 1.2;
 
   // lights
-  scene.add(new THREE.AmbientLight(0xffffff, 1.05));
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x202030, 0.55));
-  const d1 = new THREE.DirectionalLight(0xffffff, 1.2); d1.position.set(6,7,10); scene.add(d1);
-  const d2 = new THREE.DirectionalLight(0xffffff, 0.8); d2.position.set(-6,-4,5); scene.add(d2);
+  const ambient = new THREE.AmbientLight(0xffffff, 1.35); scene.add(ambient);
+  const hemi = new THREE.HemisphereLight(0xfff4d2, 0x201810, 0.75); scene.add(hemi);
+  const d1 = new THREE.DirectionalLight(0xffffff, 1.6); d1.position.set(6,7,10); scene.add(d1);
+  const d2 = new THREE.DirectionalLight(0xfff4d2, 1.1); d2.position.set(-6,-4,5); scene.add(d2);
+  const rim = new THREE.DirectionalLight(0xfff6e0, 0.9); rim.position.set(-3, 5, -4); scene.add(rim);
 
   // press "W" to toggle wireframe (debug)
   window.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='w'){ wire=!wire; if(mesh) mesh.material.wireframe = wire; } });
