@@ -432,10 +432,18 @@ function switchMode(which){
 </script>
 
 <!-- ==================== 3D VIEWER (fixed) ==================== -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+  }
+}
+</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
-import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/loaders/STLLoader.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 
 const container = document.getElementById('preview3d');
 const canvas    = document.getElementById('stlCanvas');
@@ -460,7 +468,8 @@ window.__resize3D = resize3D;
 
 function init(){
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0b0f1c);
+  const backdrop = new THREE.Color(0x0b1428);
+  scene.background = backdrop;
 
   camera = new THREE.PerspectiveCamera(40, 1, 0.01, 5000);
   camera.position.set(0, 0, 10);
@@ -469,7 +478,8 @@ function init(){
   renderer.setPixelRatio(window.devicePixelRatio || 1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1;
+  renderer.toneMappingExposure = 1.85;
+  renderer.setClearColor(backdrop, 1);
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -478,9 +488,22 @@ function init(){
   controls.autoRotateSpeed = 1.2;
 
   // lights
-  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-  const d1 = new THREE.DirectionalLight(0xffffff, 0.9); d1.position.set(4,5,6); scene.add(d1);
-  const d2 = new THREE.DirectionalLight(0xffffff, 0.6); d2.position.set(-5,-3,4); scene.add(d2);
+  scene.add(new THREE.AmbientLight(0xfdf6e3, 1.35));
+  const hemi = new THREE.HemisphereLight(0xfef3cf, 0x0a1d36, 0.9);
+  hemi.groundColor.set(0x071021);
+  scene.add(hemi);
+
+  const key = new THREE.DirectionalLight(0xfff5cf, 2.2);
+  key.position.set(7, 8, 11);
+  scene.add(key);
+
+  const fill = new THREE.DirectionalLight(0xcfd8ff, 1.15);
+  fill.position.set(-6, 4, 6);
+  scene.add(fill);
+
+  const rim = new THREE.PointLight(0xffe4b0, 1.4, 0, 2);
+  rim.position.set(0, -5, -6);
+  scene.add(rim);
 
   // press "W" to toggle wireframe (debug)
   window.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='w'){ wire=!wire; if(mesh) mesh.material.wireframe = wire; } });
@@ -511,8 +534,8 @@ async function loadCurrent(){
     geom.computeVertexNormals();
 
     const mat = new THREE.MeshPhysicalMaterial({
-      color: 0xd4af37, metalness: 1, roughness: 0.25,
-      reflectivity: 1, clearcoat: 0.5, clearcoatRoughness: 0.3,
+      color: 0xdabb4a, metalness: 1, roughness: 0.18,
+      reflectivity: 1, clearcoat: 0.65, clearcoatRoughness: 0.22,
       side: THREE.DoubleSide
     });
     mat.wireframe = wire;
