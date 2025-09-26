@@ -497,6 +497,9 @@ function init(){
   const d2 = new THREE.DirectionalLight(0xfff4d2, 1.1); d2.position.set(-6,-4,5); scene.add(d2);
   const rim = new THREE.DirectionalLight(0xfff6e0, 0.9); rim.position.set(-3, 5, -4); scene.add(rim);
   const fill = new THREE.DirectionalLight(0xfff0d8, 0.75); fill.position.set(0, 2, -8); scene.add(fill);
+  const frontFill = new THREE.PointLight(0xfff4d2, 0.65, 22);
+  frontFill.position.set(0, -1, 6);
+  scene.add(frontFill);
 
   // press "W" to toggle wireframe (debug)
   window.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='w'){ wire=!wire; if(mesh) mesh.material.wireframe = wire; } });
