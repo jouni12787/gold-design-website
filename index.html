@@ -432,10 +432,18 @@ function switchMode(which){
 </script>
 
 <!-- ==================== 3D VIEWER (fixed) ==================== -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+  }
+}
+</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
-import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/loaders/STLLoader.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 
 const container = document.getElementById('preview3d');
 const canvas    = document.getElementById('stlCanvas');
@@ -469,7 +477,7 @@ function init(){
   renderer.setPixelRatio(window.devicePixelRatio || 1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1;
+  renderer.toneMappingExposure = 1.3;
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -478,9 +486,10 @@ function init(){
   controls.autoRotateSpeed = 1.2;
 
   // lights
-  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-  const d1 = new THREE.DirectionalLight(0xffffff, 0.9); d1.position.set(4,5,6); scene.add(d1);
-  const d2 = new THREE.DirectionalLight(0xffffff, 0.6); d2.position.set(-5,-3,4); scene.add(d2);
+  scene.add(new THREE.AmbientLight(0xffffff, 1.05));
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x202030, 0.55));
+  const d1 = new THREE.DirectionalLight(0xffffff, 1.2); d1.position.set(6,7,10); scene.add(d1);
+  const d2 = new THREE.DirectionalLight(0xffffff, 0.8); d2.position.set(-6,-4,5); scene.add(d2);
 
   // press "W" to toggle wireframe (debug)
   window.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='w'){ wire=!wire; if(mesh) mesh.material.wireframe = wire; } });
