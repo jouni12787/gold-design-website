@@ -30,12 +30,9 @@
   .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
   .preview{display:flex;align-items:center;justify-content:center;background:#0b0f1c;min-height:420px;position:relative}
   svg#stage{width:100%;height:100%;max-height:560px}
-
   .tabs{display:flex;gap:6px}
   .tab{background:#10142a;border:1px solid rgba(255,255,255,.14);color:var(--ink);padding:6px 10px;border-radius:10px;cursor:pointer;font-size:12px}
   .tab.active{border-color:#ffd37d;color:#ffd37d}
-
-  /* 3D area */
   #preview3d{display:none}
   #stlCanvas{width:100%;height:100%;max-height:560px;display:block}
   .stlHud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;align-items:center;background:rgba(15,18,32,.6);border:1px solid rgba(255,255,255,.12);padding:8px 10px;border-radius:10px}
@@ -45,7 +42,7 @@
 </head>
 <body>
 <div class="wrap">
-  <!-- LEFT: Builder -->
+  <!-- LEFT -->
   <section class="card">
     <div class="head">
       <h1>Bracelet Builder</h1>
@@ -59,7 +56,7 @@
         </div>
         <div>
           <label for="pendantScale">Pendant size (px height)</label>
-          <input id="pendantScale" type="number" min="20" max="160" step="2" value="80"/>
+          <input id="pendantScale" type="number" min="20" max="200" step="2" value="160"/>
         </div>
       </div>
 
@@ -83,7 +80,7 @@
     </div>
   </section>
 
-  <!-- RIGHT: 2D / 3D preview -->
+  <!-- RIGHT -->
   <section class="card">
     <div class="head">
       <h1>Preview</h1>
@@ -131,16 +128,14 @@
 <script>
 "use strict";
 
-/* ---- Your assets (exact names) ---- */
+/* Exact asset names */
 const PENDANTS = ["Infinity Knot 1.svg"];
 const LINKS    = ["halo link.svg"];
 
-/* Per-link layout meta (adjust targetH if needed) */
-const LINK_META = {
-  "halo link.svg": { targetH: 34, rotate: 0 }
-};
+/* Link layout meta (tweak targetH if your halo looks too big/small) */
+const LINK_META = { "halo link.svg": { targetH: 34, rotate: 0 } };
 
-/* Placeholder weights just so the badge shows a value */
+/* Placeholder weights */
 const WEIGHTS = {
   "Infinity Knot 1.svg": 0.32,
   "halo link.svg": 0.10,
@@ -148,7 +143,7 @@ const WEIGHTS = {
   "__default_link": 0.10
 };
 
-/* ---------------- DOM ---------------- */
+/* DOM refs */
 const stage = document.getElementById("stage");
 const defs = document.getElementById("defs");
 const bracelet = document.getElementById("bracelet");
@@ -162,8 +157,8 @@ const btnPNG = document.getElementById("downloadPNG");
 const btnReset = document.getElementById("reset");
 const chkPins = document.getElementById("showPins");
 
-/* --------------- Utils --------------- */
-const enc = s => encodeURIComponent(s); // keep %20 for GitHub Pages
+/* Utils */
+const enc = s => encodeURIComponent(s); // keep %20 for spaces (GitHub Pages)
 async function fetchSVGText(path){ const r=await fetch(path); if(!r.ok) throw new Error("load "+path); return r.text(); }
 function parseSVG(text){ return new DOMParser().parseFromString(text,"image/svg+xml").documentElement; }
 function clear(n){ while(n.firstChild) n.removeChild(n.firstChild); }
@@ -173,7 +168,7 @@ const toNum = v => (v==null||v==="") ? null : (typeof v==="number" ? v : parseFl
 function parseCoord(v, dim){ if(v==null) return null; const s=String(v).trim(); return s.endsWith("%") ? parseFloat(s)/100*dim : parseFloat(s); }
 function drawDot(parent,x,y,r=3){ const c=document.createElementNS("http://www.w3.org/2000/svg","circle"); c.setAttribute("cx",x); c.setAttribute("cy",y); c.setAttribute("r",r); c.setAttribute("fill","#ff47ff"); c.setAttribute("stroke","#fff"); c.setAttribute("stroke-width","1"); c.setAttribute("class","pin-dot"); parent.appendChild(c); }
 
-/* Load, scale, rotate, extract invisible pins */
+/* Load SVG, scale, rotate, extract invisible pins */
 async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   const url = `./${dir}/${enc(filename)}`;
   const svg = parseSVG(await fetchSVGText(url));
@@ -231,12 +226,12 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   return { node:g, width:outW, height:outH, pins:{L:pinL,R:pinR} };
 }
 
-/* ---------------- UI init ---------------- */
+/* Init UI */
 (function init(){
   PENDANTS.forEach(n=> selPendant.appendChild(makeOption(n,n)));
   selPendant.value = PENDANTS[0];
 
-  addRow({type:LINKS[0], qty:8}); // one link type by default
+  addRow({type:LINKS[0], qty:6}); // one link row by default
 
   btnAddRow.addEventListener("click", ()=>addRow());
   selPendant.addEventListener("change", render);
@@ -245,9 +240,9 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   btnPNG.addEventListener("click", downloadPNG);
   btnReset.addEventListener("click", ()=>{
     rowsBox.innerHTML="";
-    addRow({type:LINKS[0], qty:8});
+    addRow({type:LINKS[0], qty:6});
     selPendant.value=PENDANTS[0];
-    inpPendantScale.value=80;
+    inpPendantScale.value=160;
     render();
   });
   document.getElementById('tab2d').addEventListener('click', ()=>switchMode('2d'));
@@ -278,7 +273,22 @@ function readRows(){
   }).filter(r=>r.qty>0);
 }
 
-/* --------------- Render --------------- */
+/* Gold tint */
+function tintGold(node){
+  const w = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
+  while(w.nextNode()){
+    const el=w.currentNode, tag=el.tagName?.toLowerCase?.()||"";
+    if(["path","circle","ellipse","rect","polygon","polyline","line"].includes(tag)){
+      const fill = el.getAttribute("fill");
+      const stroke = el.getAttribute("stroke");
+      if(!fill || fill!=="none") el.setAttribute("fill","url(#gold)");
+      if(stroke && stroke!=="none") el.setAttribute("stroke","#8a6a22");
+      el.setAttribute("filter","url(#softShadow)");
+    }
+  }
+}
+
+/* Render everything (fixed and complete) */
 let lastToken=0;
 async function render(){
   const token=++lastToken;
@@ -286,7 +296,7 @@ async function render(){
 
   const rows = readRows();
   const pendantName = selPendant.value;
-  const pendantH = Math.max(20, Math.min(160, inpPendantScale.valueAsNumber||80));
+  const pendantH = Math.max(20, Math.min(200, inpPendantScale.valueAsNumber||160));
 
   const dbg = document.createElementNS("http://www.w3.org/2000/svg","g");
   dbg.setAttribute("id","pinOverlay");
@@ -296,10 +306,10 @@ async function render(){
   let pendantPack;
   try{
     pendantPack = await loadScaleRotate("pendant", pendantName, pendantH, 0);
-  }catch(e){ console.error(e); pendantPack = {node:svgText("text",{x:0,y:0,fill:"#fff"},"Missing"), width:120, height:60, pins:{L:null,R:null}}; }
+  }catch(e){ console.error(e); pendantPack = {node:document.createElementNS("http://www.w3.org/2000/svg","g"), width:120, height:60, pins:{L:null,R:null}}; }
   if(token!==lastToken) return;
 
-  // Link def(s)
+  // Link defs
   const uniq = [...new Set(rows.map(r=>r.type))];
   const linkDefs = {};
   for(const t of uniq){
@@ -311,7 +321,7 @@ async function render(){
   }
 
   // Layout
-  const PAD=40, W=1080, H=400, midY=200;
+  const PAD=40, W=1080, midY=200;
   function spanOf(def){ if(def?.pins?.L && def?.pins?.R) return def.pins.R.x - def.pins.L.x; return def?.width ?? 0; }
 
   const leftSeq=[]; rows.forEach(r=>{ for(let i=0;i<r.qty;i++) leftSeq.push(r.type); });
@@ -324,7 +334,7 @@ async function render(){
   const totalSpan = leftSpan + pendSpan + rightSpan;
   let startX = Math.max(PAD, (W - totalSpan)/2);
 
-  // Pendant placement
+  // Pendant position
   const pendPinMidY = (pendantPack.pins?.L?.y != null && pendantPack.pins?.R?.y != null)
                       ? (pendantPack.pins.L.y + pendantPack.pins.R.y)/2
                       : pendantPack.height/2;
@@ -341,53 +351,79 @@ async function render(){
     drawDot(dbg, gpX + pendantPack.pins.R.x, gpY + pendantPack.pins.R.y);
   }
 
-  // Left side
+  // Left side (towards start)
   let anchorL = {x: pendantLeftPinWorldX, y: midY};
   for(let i=leftSeq.length-1;i>=0;i--){
     const t = leftSeq[i];
     const d = linkDefs[t]; if(!d) continue;
     const L = d.pins?.L, R = d.pins?.R;
-    let tx, ty;
 
-    if(L && R){ tx = anchorL.x - R.x; ty = anchorL.y - R.y; }
-    else      { tx = anchorL.x - d.width; ty = midY - d.height/2; }
+    const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.width);
+    const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.height/2);
 
-    const g = document.createElementNS("http://www.w3.org/200/svg","g");
+    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.setAttribute("transform", `translate(${tx}, ${ty})`);
+    const node = d.node.cloneNode(true); tintGold(node);
+    g.appendChild(node); bracelet.appendChild(g);
+
+    if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y); drawDot(dbg, tx+R.x, ty+R.y); }
+    anchorL = L && R ? {x: tx + L.x, y: ty + L.y} : {x: tx, y: midY};
   }
-}
-</script>
-<script>
-/* continue left/right render (split just to keep block sizes small for ChatGPT) */
-"use strict";
-const bracelet2 = document.getElementById("bracelet");
-function svgText(tag, attrs, text){ const el=document.createElementNS("http://www.w3.org/2000/svg",tag); for(const [k,v] of Object.entries(attrs)) el.setAttribute(k,String(v)); if(text) el.textContent=text; return el; }
-function tintGold(node){
-  const w = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
-  while(w.nextNode()){
-    const el=w.currentNode, tag=el.tagName?.toLowerCase?.()||"";
-    if(["path","circle","ellipse","rect","polygon","polyline","line"].includes(tag)){
-      const fill = el.getAttribute("fill");
-      const stroke = el.getAttribute("stroke");
-      if(!fill || fill!=="none") el.setAttribute("fill","url(#gold)");
-      if(stroke && stroke!=="none") el.setAttribute("stroke","#8a6a22");
-      el.setAttribute("filter","url(#softShadow)");
-    }
+
+  // Right side
+  let anchorR = {x: pendantLeftPinWorldX + pendSpan, y: midY};
+  for(let i=0;i<rightSeq.length;i++){
+    const t = rightSeq[i];
+    const d = linkDefs[t]; if(!d) continue;
+    const L = d.pins?.L, R = d.pins?.R;
+
+    const tx = (L && R) ? (anchorR.x - L.x) : (anchorR.x);
+    const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.height/2);
+
+    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.setAttribute("transform", `translate(${tx}, ${ty})`);
+    const node = d.node.cloneNode(true); tintGold(node);
+    g.appendChild(node); bracelet.appendChild(g);
+
+    if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y); drawDot(dbg, tx+R.x, ty+R.y); }
+    anchorR = L && R ? {x: tx + R.x, y: ty + R.y} : {x: tx + d.width, y: midY};
   }
+
+  // Weight
+  const pendantW = weightFor(pendantName,"pendant");
+  const linksW = rows.reduce((s,r)=> s + weightFor(r.type,"link") * r.qty*2, 0);
+  lblWeight.textContent = (pendantW + linksW).toFixed(2) + " g";
 }
-</script>
-<script>
-"use strict";
-/* finish render */
-async function render(){
-  // this function body is already above – to keep it intact, we redefine only the remaining part there.
+
+/* Export */
+function downloadSVG(){
+  const clone = stage.cloneNode(true);
+  const xml = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([xml],{type:"image/svg+xml;charset=utf-8"});
+  const url = URL.createObjectURL(blob); trigger(url,"bracelet.svg");
+}
+function downloadPNG(){
+  const clone = stage.cloneNode(true); clone.setAttribute("width","1080"); clone.setAttribute("height","400");
+  const xml = new XMLSerializer().serializeToString(clone);
+  const data = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(xml)));
+  const img = new Image();
+  img.onload = function(){
+    const canvas=document.createElement("canvas"); canvas.width=1080; canvas.height=400;
+    const ctx=canvas.getContext("2d"); ctx.drawImage(img,0,0,1080,400);
+    canvas.toBlob(b=> trigger(URL.createObjectURL(b),"bracelet.png"),"image/png",0.98);
+  };
+  img.src = data;
+}
+function trigger(url,name){ const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }
+function switchMode(which){
+  const b2d=document.getElementById('tab2d'), b3d=document.getElementById('tab3d');
+  const p2d=document.getElementById('preview2d'), p3d=document.getElementById('preview3d');
+  if(which==='3d'){ b3d.classList.add('active'); b2d.classList.remove('active'); p3d.style.display='flex'; p2d.style.display='none'; window.dispatchEvent(new Event('resize')); }
+  else{ b2d.classList.add('active'); b3d.classList.remove('active'); p2d.style.display='flex'; p3d.style.display='none'; }
 }
 </script>
 
-<!-- For brevity, the full left/right loops were included in the previous version you sent.
-     If you prefer, you can keep your original 'render()' from your last working file —
-     only arrays/paths and 'enc' needed changes. -->
-
-<!-- ==================== 3D VIEWER (Three.js, STL) ==================== -->
+<!-- ==================== 3D VIEWER ==================== -->
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.157.0/build/three.module.js';
 import { STLLoader } from 'https://unpkg.com/three@0.157.0/examples/jsm/loaders/STLLoader.js';
@@ -428,11 +464,9 @@ function init(){
   const amb = new THREE.AmbientLight(0xffffff, 0.6);
   scene.add(amb);
   const dir1 = new THREE.DirectionalLight(0xffffff, 0.8);
-  dir1.position.set(4,5,6);
-  scene.add(dir1);
+  dir1.position.set(4,5,6); scene.add(dir1);
   const dir2 = new THREE.DirectionalLight(0xffffff, 0.6);
-  dir2.position.set(-5,-3,4);
-  scene.add(dir2);
+  dir2.position.set(-5,-3,4); scene.add(dir2);
 
   onResize();
   animate();
@@ -447,21 +481,24 @@ function onResize(){
 }
 
 async function loadCurrent(){
-  const path = sel.value; // e.g. "pendant/Infinity Knot 1 1mm.stl"
-  const loader = new STLLoader();
-  if(mesh){ scene.remove(mesh); mesh.geometry.dispose(); if(mesh.material) mesh.material.dispose(); mesh=null; }
+  try{
+    const path = sel.value; // e.g. "pendant/Infinity Knot 1 1mm.stl"
+    if(mesh){ scene.remove(mesh); mesh.geometry.dispose(); if(mesh.material) mesh.material.dispose(); mesh=null; }
 
-  const geom = await loader.loadAsync(encodeURI(path));
-  geom.computeVertexNormals();
+    const loader = new STLLoader();
+    const geom = await loader.loadAsync(encodeURI(path)); // encode spaces
+    geom.computeVertexNormals();
 
-  const mat = new THREE.MeshPhysicalMaterial({
-    color: 0xd4af37, metalness: 1, roughness: 0.25,
-    reflectivity: 1, clearcoat: 0.5, clearcoatRoughness: 0.3
-  });
-  mesh = new THREE.Mesh(geom, mat);
-  scene.add(mesh);
-
-  fitToView(mesh);
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: 0xd4af37, metalness: 1, roughness: 0.25,
+      reflectivity: 1, clearcoat: 0.5, clearcoatRoughness: 0.3
+    });
+    mesh = new THREE.Mesh(geom, mat);
+    scene.add(mesh);
+    fitToView(mesh);
+  }catch(err){
+    console.error('STL load failed:', err);
+  }
 }
 
 function fitToView(obj){
@@ -485,15 +522,6 @@ function animate(){
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
-}
-</script>
-<script>
-/* tab switcher */
-function switchMode(which){
-  const b2d=document.getElementById('tab2d'), b3d=document.getElementById('tab3d');
-  const p2d=document.getElementById('preview2d'), p3d=document.getElementById('preview3d');
-  if(which==='3d'){ b3d.classList.add('active'); b2d.classList.remove('active'); p3d.style.display='flex'; p2d.style.display='none'; window.dispatchEvent(new Event('resize')); }
-  else{ b2d.classList.add('active'); b3d.classList.remove('active'); p2d.style.display='flex'; p3d.style.display='none'; }
 }
 </script>
 </body>
