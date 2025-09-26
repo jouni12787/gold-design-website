@@ -4,14 +4,31 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Gold Design — Bracelet Builder (Pins + 3D)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Montserrat:wght@400;500&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#17120a;--bg2:#0f0b06;--card:#211a0e;--ink:#fff7e6;--muted:#e8d9b3;--gold:#d4af37;--gold2:#b88a1a;--radius:14px;--shadow:0 18px 36px rgba(0,0,0,.45)}
+  :root{
+    --bg:#17120a;
+    --bg2:#0f0b06;
+    --card:#211a0e;
+    --ink:#fff7e6;
+    --muted:#e8d9b3;
+    --gold:#d4af37;
+    --gold2:#b88a1a;
+    --radius:14px;
+    --shadow:0 18px 36px rgba(0,0,0,.45);
+    --font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,Arial,sans-serif;
+  }
+  html[data-font="playfair"]{--font-family:"Playfair Display", "Times New Roman", serif}
+  html[data-font="montserrat"]{--font-family:"Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif}
+  html[data-font="crimson"]{--font-family:"Crimson Pro", "Georgia", serif}
   *{box-sizing:border-box}html,body{height:100%}
   body{margin:0;background:
     radial-gradient(1100px 500px at 15% -15%, rgba(212,175,55,.16) 0%, transparent 60%),
     radial-gradient(900px 600px at 120% 0%, rgba(184,138,26,.22) 0%, transparent 70%),
     linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
-    color:var(--ink);font:15.5px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+    color:var(--ink);font-size:15.5px;line-height:1.5;font-family:var(--font-family)}
   .wrap{max-width:1200px;margin:28px auto;padding:0 16px;display:grid;gap:18px;grid-template-columns:1fr 1.35fr}
   @media (max-width:980px){.wrap{grid-template-columns:1fr}}
   .card{background:linear-gradient(160deg,rgba(48,37,19,.86),var(--card));
@@ -20,12 +37,12 @@
   .head h1{margin:0;font-size:18px}.badge{font-size:12px;color:var(--muted)}
   .panel{padding:16px 18px}
   label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-  select,input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(212,175,55,.22);background:rgba(23,18,10,.75);color:var(--ink);outline:none;transition:border .2s,box-shadow .2s,background .2s}
+  select,input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(212,175,55,.22);background:rgba(23,18,10,.75);color:var(--ink);outline:none;transition:border .2s,box-shadow .2s,background .2s;font:inherit}
   select:focus,input:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,175,55,.18);background:rgba(33,26,14,.85)}
   .grid2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
   .rows{display:flex;flex-direction:column;gap:10px;margin-top:10px}
   .row{display:grid;grid-template-columns:1.2fr .7fr auto auto;gap:10px;align-items:end}
-  button{appearance:none;background:linear-gradient(180deg,rgba(212,175,55,.16),rgba(184,138,26,.16));color:var(--ink);border:1px solid rgba(212,175,55,.35);padding:10px 14px;border-radius:12px;cursor:pointer;transition:border .2s,background .2s,color .2s}
+  button{appearance:none;background:linear-gradient(180deg,rgba(212,175,55,.16),rgba(184,138,26,.16));color:var(--ink);border:1px solid rgba(212,175,55,.35);padding:10px 14px;border-radius:12px;cursor:pointer;transition:border .2s,background .2s,color .2s;font:inherit}
   button:hover{border-color:var(--gold);background:linear-gradient(180deg,rgba(212,175,55,.28),rgba(184,138,26,.2));color:var(--ink)}
   .summary{margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(23,18,10,.85);border:1px solid rgba(212,175,55,.18);display:flex;justify-content:space-between;align-items:center;gap:10px}
   .summary .w{color:var(--gold)}
@@ -63,6 +80,16 @@
           <label for="pendantScale">Pendant size (px height)</label>
           <input id="pendantScale" type="number" min="20" max="200" step="2" value="160"/>
         </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="fontSelect">Interface font</label>
+        <select id="fontSelect">
+          <option value="">Classic (System)</option>
+          <option value="playfair">Opulent Serif — Playfair Display</option>
+          <option value="montserrat">Modern Sans — Montserrat</option>
+          <option value="crimson">Artisan Serif — Crimson Pro</option>
+        </select>
       </div>
 
       <div class="rows" id="rows"></div>
@@ -161,6 +188,10 @@ const btnSVG = document.getElementById("downloadSVG");
 const btnPNG = document.getElementById("downloadPNG");
 const btnReset = document.getElementById("reset");
 const chkPins = document.getElementById("showPins");
+const selFont = document.getElementById("fontSelect");
+const htmlEl = document.documentElement;
+
+const STORAGE_FONT_KEY = "bracelet-font-choice";
 
 /* Utils */
 const enc = s => encodeURIComponent(s); // keep %20 for spaces (GitHub Pages)
@@ -172,6 +203,13 @@ function weightFor(name,type){ return WEIGHTS[name] ?? (type==="pendant" ? WEIGH
 const toNum = v => (v==null||v==="") ? null : (typeof v==="number" ? v : parseFloat(String(v)));
 function parseCoord(v, dim){ if(v==null) return null; const s=String(v).trim(); return s.endsWith("%") ? parseFloat(s)/100*dim : parseFloat(s); }
 function drawDot(parent,x,y,r=3){ const c=document.createElementNS("http://www.w3.org/2000/svg","circle"); c.setAttribute("cx",x); c.setAttribute("cy",y); c.setAttribute("r",r); c.setAttribute("fill","#d4af37"); c.setAttribute("stroke","#fff7e6"); c.setAttribute("stroke-width","1"); c.setAttribute("class","pin-dot"); parent.appendChild(c); }
+
+function applyFontPreference(value){
+  const val = value || "";
+  if(!val) htmlEl.removeAttribute("data-font");
+  else htmlEl.setAttribute("data-font", val);
+  if(selFont) selFont.value = val;
+}
 
 /* Load SVG, scale, rotate, extract invisible pins */
 async function loadScaleRotate(dir, filename, targetH, rotateDeg){
@@ -241,6 +279,18 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   btnAddRow.addEventListener("click", ()=>addRow());
   selPendant.addEventListener("change", render);
   inpPendantScale.addEventListener("input", render);
+  let savedFont = "";
+  try{ savedFont = localStorage.getItem(STORAGE_FONT_KEY) || ""; }
+  catch(err){ console.warn("font preference unavailable", err); }
+  applyFontPreference(savedFont);
+  selFont.addEventListener("change", ()=>{
+    const val = selFont.value || "";
+    applyFontPreference(val);
+    try{
+      if(val) localStorage.setItem(STORAGE_FONT_KEY, val);
+      else localStorage.removeItem(STORAGE_FONT_KEY);
+    }catch(err){ console.warn("font preference persist failed", err); }
+  });
   btnSVG.addEventListener("click", downloadSVG);
   btnPNG.addEventListener("click", downloadPNG);
   btnReset.addEventListener("click", ()=>{
