@@ -3,8 +3,8 @@
 
 
 <g id="pins" style="display:none">
-  <circle id="pinL" cx="11%" cy="57%" r="3" fill="red" stroke="black"/>
-  <circle id="pinR" cx="86%" cy="57%" r="3" fill="red" stroke="black"/>
+  <circle id="pinL" cx="11%" cy="7%" r="3" fill="red" stroke="black"/>
+  <circle id="pinR" cx="86%" cy="90%" r="3" fill="red" stroke="black"/>
   <!-- etc. -->
 </g>
 
