@@ -919,8 +919,9 @@ async function loadAssembly(token){
     const mat = createMaterial();
     const mesh = new THREE.Mesh(geom, mat);
     mesh.scale.set(scale, scale, scale);
-    const pos = computePlacement(item, metrics, scale);
-    mesh.position.copy(pos);
+    const transform = computeTransform(item, metrics, scale);
+    mesh.position.copy(transform.position);
+    mesh.rotation.set(0, 0, transform.rotation);
     group.add(mesh);
   }
 
@@ -953,30 +954,62 @@ function computeScale(pack, metrics){
   return 1;
 }
 
-function computePlacement(item, metrics, scale){
+function rotateAroundZ(vec, angle){
+  if(!vec) return null;
+  const c = Math.cos(angle), s = Math.sin(angle);
+  return new THREE.Vector3(
+    vec.x * c - vec.y * s,
+    vec.x * s + vec.y * c,
+    vec.z
+  );
+}
+
+function computeTransform(item, metrics, scale){
   const pack = item.pack || {};
   const pins = item.pins || {};
   const ratioL = pack.pinRatios?.L;
   const ratioR = pack.pinRatios?.R;
 
-  const localL = ratioToLocal(ratioL, metrics).multiplyScalar(scale);
-  const localR = ratioToLocal(ratioR, metrics).multiplyScalar(scale);
+  const localL = ratioL ? ratioToLocal(ratioL, metrics).multiplyScalar(scale) : null;
+  const localR = ratioR ? ratioToLocal(ratioR, metrics).multiplyScalar(scale) : null;
 
   const fallback = fallbackPoint(item, pack);
   const targetL = pins.L ? to3DPoint(pins.L) : to3DPoint(fallback);
   const targetR = pins.R ? to3DPoint(pins.R) : (pins.L ? to3DPoint(pins.L) : to3DPoint(fallback));
 
-  let posX = targetL.x - localL.x;
-  let posY = targetL.y - localL.y;
+  const baseRotation = (Number.isFinite(pack.rotation) ? pack.rotation : 0) * Math.PI/180;
+  let rotation = baseRotation;
 
-  if(pins.R || ratioR){
-    const altX = targetR.x - localR.x;
-    const altY = targetR.y - localR.y;
-    if(Number.isFinite(altX)) posX = (posX + altX)/2;
-    if(Number.isFinite(altY)) posY = (posY + altY)/2;
+  if(localL && localR && pins.L && pins.R){
+    const localVec = localR.clone().sub(localL);
+    const orientedLocalVec = rotateAroundZ(localVec, baseRotation) || localVec;
+    const worldVec = targetR.clone().sub(targetL);
+    if(orientedLocalVec.lengthSq() > 1e-6 && worldVec.lengthSq() > 1e-6){
+      const a = Math.atan2(worldVec.y, worldVec.x);
+      const b = Math.atan2(orientedLocalVec.y, orientedLocalVec.x);
+      rotation = baseRotation + (a - b);
+    }
   }
 
-  return new THREE.Vector3(posX, posY, 0);
+  const candidates = [];
+  if(localL){
+    const rotated = rotateAroundZ(localL, rotation);
+    candidates.push(targetL.clone().sub(rotated));
+  }
+  if(localR){
+    const rotated = rotateAroundZ(localR, rotation);
+    candidates.push(targetR.clone().sub(rotated));
+  }
+
+  if(!candidates.length){
+    const fallbackTarget = to3DPoint(fallback);
+    const center = metrics.box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
+    const rotatedCenter = rotateAroundZ(center, rotation) || center;
+    candidates.push(fallbackTarget.sub(rotatedCenter));
+  }
+
+  const position = candidates.reduce((acc, vec)=> acc.add(vec), new THREE.Vector3()).multiplyScalar(1 / candidates.length);
+  return { position, rotation };
 }
 
 function ratioToLocal(ratio, metrics){
