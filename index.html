@@ -293,6 +293,8 @@ const STL_FILES = {
   }
 };
 
+const PENDANT_MASK_ID = "pendantCutMask";
+
 /* Placeholder weights */
 const WEIGHTS = {
   "Infinity Knot 1.svg": 0.32,
@@ -484,6 +486,36 @@ function tintGold(node){
   }
 }
 
+function clonePendantForMask(node){
+  if(!node) return null;
+  const clone = node.cloneNode(true);
+  const elements=[clone];
+  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_ELEMENT);
+  while(walker.nextNode()) elements.push(walker.currentNode);
+  for(const el of elements){
+    if(!(el?.tagName)) continue;
+    const tag = el.tagName.toLowerCase();
+    if(tag === "defs"){ el.remove(); continue; }
+    if(el.hasAttribute("id")) el.removeAttribute("id");
+    if(el.hasAttribute("filter")) el.removeAttribute("filter");
+    if(tag !== "g" && tag !== "mask"){
+      el.setAttribute("fill", "#000");
+      el.setAttribute("stroke", "#000");
+      if(el.hasAttribute("stroke-width")) el.removeAttribute("stroke-width");
+    }
+  }
+  return clone;
+}
+
+function buildLinkGroup(def, tx, ty){
+  const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+  g.setAttribute("transform", `translate(${tx}, ${ty})`);
+  const node = def.node.cloneNode(true);
+  tintGold(node);
+  g.appendChild(node);
+  return g;
+}
+
 function clonePoint(pt){ return pt ? {x: pt.x, y: pt.y} : null; }
 
 function sanitizePackFor3D(pack, type, name){
@@ -515,6 +547,9 @@ function sanitizePackFor3D(pack, type, name){
 async function render(){
   const token=++lastToken;
   clear(bracelet);
+  if(defs){
+    defs.querySelectorAll(`[data-role="pendant-mask"]`).forEach(n=>n.remove());
+  }
 
   const themeStyles = getComputedStyle(document.documentElement);
   const bg2 = (themeStyles.getPropertyValue("--bg2") || "").trim() || "#0f0b06";
@@ -543,6 +578,7 @@ async function render(){
     pendantPack = await loadScaleRotate("pendant", pendantName, pendantH, 0);
   }catch(e){ console.error(e); pendantPack = {node:document.createElementNS("http://www.w3.org/2000/svg","g"), width:120, height:60, pins:{L:null,R:null}}; }
   if(token!==lastToken) return;
+  const pendantMaskClone = clonePendantForMask(pendantPack.node);
   const pendant3D = sanitizePackFor3D(pendantPack, 'pendant', pendantName);
 
   // Link defs
@@ -580,6 +616,27 @@ async function render(){
 
   const gp = document.createElementNS("http://www.w3.org/2000/svg","g");
   gp.setAttribute("transform", `translate(${gpX}, ${gpY})`);
+  let pendantMaskUrl = null;
+  if(pendantMaskClone && defs){
+    const mask = document.createElementNS("http://www.w3.org/2000/svg","mask");
+    mask.setAttribute("id", PENDANT_MASK_ID);
+    mask.setAttribute("maskUnits", "userSpaceOnUse");
+    mask.setAttribute("maskContentUnits", "userSpaceOnUse");
+    mask.setAttribute("data-role", "pendant-mask");
+    const rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    rect.setAttribute("x", "0");
+    rect.setAttribute("y", "0");
+    rect.setAttribute("width", "1080");
+    rect.setAttribute("height", "400");
+    rect.setAttribute("fill", "#fff");
+    const maskGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
+    maskGroup.setAttribute("transform", `translate(${gpX}, ${gpY})`);
+    maskGroup.appendChild(pendantMaskClone);
+    mask.appendChild(rect);
+    mask.appendChild(maskGroup);
+    defs.appendChild(mask);
+    pendantMaskUrl = `url(#${PENDANT_MASK_ID})`;
+  }
   tintGold(pendantPack.node); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
 
   layoutPendant = {
@@ -608,10 +665,17 @@ async function render(){
     const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.width);
     const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.height/2);
 
-    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
-    g.setAttribute("transform", `translate(${tx}, ${ty})`);
-    const node = d.node.cloneNode(true); tintGold(node);
-    g.appendChild(node); bracelet.appendChild(g);
+    const isFirstLeft = (i === leftSeq.length-1);
+    if(isFirstLeft && pendantMaskUrl){
+      const back = buildLinkGroup(d, tx, ty);
+      bracelet.insertBefore(back, gp);
+      const front = buildLinkGroup(d, tx, ty);
+      front.setAttribute("mask", pendantMaskUrl);
+      bracelet.insertBefore(front, gp.nextSibling);
+    }else{
+      const g = buildLinkGroup(d, tx, ty);
+      bracelet.appendChild(g);
+    }
 
     layoutLeft.unshift({
       type:'link',
@@ -639,10 +703,17 @@ async function render(){
     const tx = (L && R) ? (anchorR.x - L.x) : (anchorR.x);
     const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.height/2);
 
-    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
-    g.setAttribute("transform", `translate(${tx}, ${ty})`);
-    const node = d.node.cloneNode(true); tintGold(node);
-    g.appendChild(node); bracelet.appendChild(g);
+    const isFirstRight = (i === 0);
+    if(isFirstRight && pendantMaskUrl){
+      const back = buildLinkGroup(d, tx, ty);
+      bracelet.insertBefore(back, gp);
+      const front = buildLinkGroup(d, tx, ty);
+      front.setAttribute("mask", pendantMaskUrl);
+      bracelet.insertBefore(front, gp.nextSibling);
+    }else{
+      const g = buildLinkGroup(d, tx, ty);
+      bracelet.appendChild(g);
+    }
 
     layoutRight.push({
       type:'link',
