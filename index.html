@@ -587,6 +587,9 @@ async function render(){
     pack: pendant3D,
     tx: gpX,
     ty: gpY,
+    strand:'center',
+    strandIndex:0,
+    strandLength:1,
     pins: {
       L: pendantPack.pins?.L ? {x: gpX + pendantPack.pins.L.x, y: gpY + pendantPack.pins.L.y} : null,
       R: pendantPack.pins?.R ? {x: gpX + pendantPack.pins.R.x, y: gpY + pendantPack.pins.R.y} : null
@@ -619,6 +622,9 @@ async function render(){
       pack: sanitizePackFor3D(d, 'link', t),
       tx,
       ty,
+      strand:'left',
+      strandIndex: leftSeq.length - 1 - i,
+      strandLength: leftSeq.length,
       pins: {
         L: L ? {x: tx + L.x, y: ty + L.y} : null,
         R: R ? {x: tx + R.x, y: ty + R.y} : null
@@ -650,6 +656,9 @@ async function render(){
       pack: sanitizePackFor3D(d, 'link', t),
       tx,
       ty,
+      strand:'right',
+      strandIndex: i,
+      strandLength: rightSeq.length,
       pins: {
         L: L ? {x: tx + L.x, y: ty + L.y} : null,
         R: R ? {x: tx + R.x, y: ty + R.y} : null
@@ -911,6 +920,23 @@ async function loadAssembly(token){
   const group = new THREE.Group();
   activeMaterials = [];
 
+  const strandLengths = new Map();
+  for(const item of items){
+    const strand = item?.strand || 'default';
+    const length = Number.isFinite(item?.strandLength) ? item.strandLength : null;
+    if(length != null){
+      const prev = strandLengths.get(strand) || 0;
+      if(length > prev) strandLengths.set(strand, length);
+    }
+  }
+
+  const linkTilt = THREE.MathUtils.degToRad(-15);
+  const elevationForStep = (idx, amplitude)=>{
+    if(!Number.isFinite(idx) || idx <= 0) return 0;
+    if(!Number.isFinite(amplitude) || Math.abs(amplitude) <= 1e-6) return 0;
+    return (idx % 2 === 1 ? 1 : -1) * amplitude;
+  };
+
   for(const item of items){
     const geom = await loadGeometry(item.pack.stl);
     if(token !== loadToken) return;
@@ -919,9 +945,49 @@ async function loadAssembly(token){
     const mat = createMaterial();
     const mesh = new THREE.Mesh(geom, mat);
     mesh.scale.set(scale, scale, scale);
-    const transform = computeTransform(item, metrics, scale);
+    const strand = item?.strand || 'default';
+    const strandLength = strandLengths.get(strand) ?? (Number.isFinite(item?.strandLength) ? item.strandLength : 0);
+    const strandIndex = Number.isFinite(item?.strandIndex) ? item.strandIndex : 0;
+
+    let options = undefined;
+    if((item.pack?.type || item.type) === 'link'){
+      const size = metrics.size.clone().multiplyScalar(scale);
+      const thickness = size.z;
+      let amplitude = thickness * 0.6;
+      if(!Number.isFinite(amplitude) || Math.abs(amplitude) <= 1e-6){
+        amplitude = size.y * 0.05;
+      }
+      if(!Number.isFinite(amplitude)) amplitude = 0;
+
+      const innerStep = elevationForStep(strandIndex, amplitude);
+      const outerStep = (strandIndex < (strandLength - 1)) ? elevationForStep(strandIndex + 1, amplitude) : 0;
+
+      let pinElevations;
+      if(strand === 'left'){
+        pinElevations = { L: outerStep, R: innerStep };
+      }else if(strand === 'right'){
+        pinElevations = { L: innerStep, R: outerStep };
+      }else{
+        pinElevations = { L: innerStep, R: outerStep };
+      }
+
+      const avgElevation = ((pinElevations.L ?? 0) + (pinElevations.R ?? 0)) / 2;
+
+      options = {
+        tilt: linkTilt,
+        rotationOrder: 'XYZ',
+        pinElevations,
+        localOffset: Math.abs(avgElevation) > 1e-6 ? new THREE.Vector3(0, 0, -avgElevation * 0.15) : undefined
+      };
+    }
+
+    const transform = computeTransform(item, metrics, scale, options);
     mesh.position.copy(transform.position);
-    mesh.rotation.set(0, 0, transform.rotation);
+    if(transform.euler){
+      mesh.rotation.copy(transform.euler);
+    }else{
+      mesh.rotation.set(0, 0, transform.rotation);
+    }
     group.add(mesh);
   }
 
@@ -964,7 +1030,7 @@ function rotateAroundZ(vec, angle){
   );
 }
 
-function computeTransform(item, metrics, scale){
+function computeTransform(item, metrics, scale, options={}){
   const pack = item.pack || {};
   const pins = item.pins || {};
   const ratioL = pack.pinRatios?.L;
@@ -974,8 +1040,12 @@ function computeTransform(item, metrics, scale){
   const localR = ratioR ? ratioToLocal(ratioR, metrics).multiplyScalar(scale) : null;
 
   const fallback = fallbackPoint(item, pack);
-  const targetL = pins.L ? to3DPoint(pins.L) : to3DPoint(fallback);
-  const targetR = pins.R ? to3DPoint(pins.R) : (pins.L ? to3DPoint(pins.L) : to3DPoint(fallback));
+  const pinElevations = options.pinElevations || {};
+  const fallbackZ = Number.isFinite(pinElevations?.L) ? pinElevations.L : (Number.isFinite(pinElevations?.R) ? pinElevations.R : 0);
+  const leftTarget = pins.L ? { ...pins.L, z: pinElevations?.L ?? fallbackZ } : { ...fallback, z: fallbackZ };
+  const rightTarget = pins.R ? { ...pins.R, z: pinElevations?.R ?? (pinElevations?.L ?? fallbackZ) } : (pins.L ? { ...pins.L, z: pinElevations?.L ?? fallbackZ } : { ...fallback, z: fallbackZ });
+  const targetL = to3DPoint(leftTarget);
+  const targetR = to3DPoint(rightTarget);
 
   const baseRotation = (Number.isFinite(pack.rotation) ? pack.rotation : 0) * Math.PI/180;
   let rotation = baseRotation;
@@ -991,25 +1061,45 @@ function computeTransform(item, metrics, scale){
     }
   }
 
+  const euler = new THREE.Euler(
+    options.tilt || 0,
+    options.roll || 0,
+    rotation,
+    options.rotationOrder || 'XYZ'
+  );
+
   const candidates = [];
   if(localL){
-    const rotated = rotateAroundZ(localL, rotation);
+    const rotated = applyEuler(localL, euler);
     candidates.push(targetL.clone().sub(rotated));
   }
   if(localR){
-    const rotated = rotateAroundZ(localR, rotation);
+    const rotated = applyEuler(localR, euler);
     candidates.push(targetR.clone().sub(rotated));
   }
 
   if(!candidates.length){
-    const fallbackTarget = to3DPoint(fallback);
+    const fallbackTarget = to3DPoint({ ...fallback, z: fallbackZ });
     const center = metrics.box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
-    const rotatedCenter = rotateAroundZ(center, rotation) || center;
+    const rotatedCenter = applyEuler(center, euler) || center;
     candidates.push(fallbackTarget.sub(rotatedCenter));
   }
 
   const position = candidates.reduce((acc, vec)=> acc.add(vec), new THREE.Vector3()).multiplyScalar(1 / candidates.length);
-  return { position, rotation };
+
+  if(options.localOffset){
+    const off = options.localOffset.clone ? options.localOffset.clone() : new THREE.Vector3(options.localOffset.x || 0, options.localOffset.y || 0, options.localOffset.z || 0);
+    if(off.lengthSq() > 1e-12){
+      off.applyEuler(euler);
+      position.add(off);
+    }
+  }
+
+  if(options.worldOffset){
+    position.add(options.worldOffset);
+  }
+
+  return { position, rotation, euler };
 }
 
 function ratioToLocal(ratio, metrics){
@@ -1033,10 +1123,17 @@ function fallbackPoint(item, pack){
   return { x: tx + w/2, y: ty + h/2 };
 }
 
+function applyEuler(vec, euler){
+  if(!vec) return null;
+  const v = vec.clone ? vec.clone() : new THREE.Vector3(vec.x || 0, vec.y || 0, vec.z || 0);
+  return v.applyEuler(euler);
+}
+
 function to3DPoint(pt){
   const x = typeof pt?.x === 'number' ? pt.x : 0;
   const y = typeof pt?.y === 'number' ? pt.y : 0;
-  return new THREE.Vector3(x, (stageHeight/2) - y, 0);
+  const z = typeof pt?.z === 'number' ? pt.z : 0;
+  return new THREE.Vector3(x, (stageHeight/2) - y, z);
 }
 
 async function loadGeometry(rawPath){
