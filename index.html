@@ -752,8 +752,6 @@ let loadToken = 0;
 let lastLayout = null;
 let stageHeight = 400;
 
-const UP_VECTOR = new THREE.Vector3(0, 0, 1);
-
 window.__update3DAssembly = handleLayoutUpdate;
 if(window.__bracelet3DLayout){
   handleLayoutUpdate(window.__bracelet3DLayout);
@@ -913,7 +911,6 @@ async function loadAssembly(token){
   const group = new THREE.Group();
   activeMaterials = [];
 
-  let linkIndex = 0;
   for(const item of items){
     const geom = await loadGeometry(item.pack.stl);
     if(token !== loadToken) return;
@@ -924,34 +921,7 @@ async function loadAssembly(token){
     mesh.scale.set(scale, scale, scale);
     const transform = computeTransform(item, metrics, scale);
     mesh.position.copy(transform.position);
-
-    const baseQuat = new THREE.Quaternion().setFromAxisAngle(UP_VECTOR, transform.rotation || 0);
-    mesh.setRotationFromQuaternion(baseQuat);
-
-    if(item.type === 'link'){
-      const localIndex = linkIndex++;
-      const sign = (localIndex % 2 === 0) ? 1 : -1;
-      const direction = (transform.direction && transform.direction.lengthSq() > 1e-6)
-        ? transform.direction.clone().normalize()
-        : new THREE.Vector3(1, 0, 0);
-
-      let tiltAxis = transform.tiltAxis ? transform.tiltAxis.clone() : new THREE.Vector3().crossVectors(direction, UP_VECTOR);
-      if(tiltAxis.lengthSq() < 1e-6){ tiltAxis.set(0, 1, 0); }
-      tiltAxis.normalize();
-
-      const tiltAngle = THREE.MathUtils.degToRad(15) * sign;
-      const tiltQuat = new THREE.Quaternion().setFromAxisAngle(tiltAxis, tiltAngle);
-      mesh.quaternion.premultiply(tiltQuat);
-
-      const thickness = (metrics.size.z || 1) * scale;
-      const separation = thickness * 0.75;
-
-      const verticalOffset = UP_VECTOR.clone().multiplyScalar(sign * separation * 0.6);
-      const lateralOffset = tiltAxis.clone().multiplyScalar(sign * separation * 0.5);
-      const alongDirection = direction.clone().multiplyScalar(sign * separation * 0.25);
-
-      mesh.position.add(verticalOffset).add(lateralOffset).add(alongDirection);
-    }
+    mesh.rotation.set(0, 0, transform.rotation);
     group.add(mesh);
   }
 
@@ -1009,7 +979,6 @@ function computeTransform(item, metrics, scale){
 
   const baseRotation = (Number.isFinite(pack.rotation) ? pack.rotation : 0) * Math.PI/180;
   let rotation = baseRotation;
-  let direction = null;
 
   if(localL && localR && pins.L && pins.R){
     const localVec = localR.clone().sub(localL);
@@ -1019,7 +988,6 @@ function computeTransform(item, metrics, scale){
       const a = Math.atan2(worldVec.y, worldVec.x);
       const b = Math.atan2(orientedLocalVec.y, orientedLocalVec.x);
       rotation = baseRotation + (a - b);
-      direction = worldVec.clone().normalize();
     }
   }
 
@@ -1038,24 +1006,10 @@ function computeTransform(item, metrics, scale){
     const center = metrics.box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
     const rotatedCenter = rotateAroundZ(center, rotation) || center;
     candidates.push(fallbackTarget.sub(rotatedCenter));
-    if(!direction && localL && localR){
-      direction = localR.clone().sub(localL);
-      if(direction.lengthSq() > 1e-6){ direction.normalize(); }
-    }
   }
 
   const position = candidates.reduce((acc, vec)=> acc.add(vec), new THREE.Vector3()).multiplyScalar(1 / candidates.length);
-  let tiltAxis = null;
-  if(direction && direction.lengthSq() > 1e-6){
-    tiltAxis = new THREE.Vector3().crossVectors(direction, UP_VECTOR);
-    if(tiltAxis.lengthSq() > 1e-6){
-      tiltAxis.normalize();
-    }else{
-      tiltAxis = null;
-    }
-  }
-
-  return { position, rotation, direction, tiltAxis };
+  return { position, rotation };
 }
 
 function ratioToLocal(ratio, metrics){
