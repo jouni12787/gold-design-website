@@ -1089,9 +1089,10 @@ function ratioToLocal(ratio, metrics){
   const rx = clamp(ratio?.x);
   const ry = clamp(ratio?.y);
   const rz = clamp(ratio?.z);
+  const invertedY = 1 - ry;
   return new THREE.Vector3(
     box.min.x + size.x * rx,
-    box.min.y + size.y * ry,
+    box.min.y + size.y * invertedY,
     box.min.z + size.z * rz
   );
 }
