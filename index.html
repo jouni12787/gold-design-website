@@ -353,6 +353,33 @@ function drawDot(parent,x,y,r=3,colors){
   c.setAttribute("class","pin-dot");
   parent.appendChild(c);
 }
+function rewriteURLRefs(root, idMap){
+  if(!root || !idMap) return;
+  const ATTRS = ['clip-path','mask','filter','fill','stroke',
+                 'marker-start','marker-mid','marker-end'];
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+  while(w.nextNode()){
+    const el = w.currentNode;
+
+    // url(#id) attributes
+    for(const a of ATTRS){
+      const v = el.getAttribute(a);
+      if(!v) continue;
+      const m = v.match(/^url\(#([^)]+)\)$/);
+      if(m && idMap[m[1]]) el.setAttribute(a, `url(#${idMap[m[1]]})`);
+    }
+
+    // <use href="#id"> and old xlink:href
+    const href = el.getAttribute('href') || el.getAttribute('xlink:href');
+    if(href && href.startsWith('#')){
+      const key = href.slice(1);
+      if(idMap[key]){
+        el.setAttribute('href', `#${idMap[key]}`);
+        el.setAttribute('xlink:href', `#${idMap[key]}`);
+      }
+    }
+  }
+}
 
 /* Load SVG, scale, rotate, extract invisible pins */
 async function loadScaleRotate(dir, filename, targetH, rotateDeg){
@@ -366,20 +393,27 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
 
   const scale = targetH / h;
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
-
-  [...svg.childNodes].forEach(n=>{
+   // NEW: track old id -> new id
+  const idMap = {};
+   [...svg.childNodes].forEach(n=>{
     if(n.nodeType===1){
       if(n.tagName.toLowerCase()==="defs"){
         [...n.children].forEach(el=>{
-          const id = el.id ? `${filename.replace(/\W+/g,'_')}_${el.id}` : "";
-          if(id) el.setAttribute("id", id);
-          defs.appendChild(stage.ownerDocument.importNode(el,true));
+          if(!el.id) return;
+          const newId = `${filename.replace(/\W+/g,'_')}_${el.id}`;
+          idMap[el.id] = newId;
+          const clone = stage.ownerDocument.importNode(el,true);
+          clone.setAttribute("id", newId);
+          defs.appendChild(clone);
         });
       }else{
         g.appendChild(stage.ownerDocument.importNode(n,true));
       }
     }
   });
+
+  // NEW: update url(#id) / href="#id" to the prefixed IDs we just created
+  rewriteURLRefs(g, idMap);
 
   const cxS=(w*scale)/2, cyS=(h*scale)/2;
   let tf = `scale(${scale})`;
