@@ -279,11 +279,11 @@ currentTheme = applyTheme(currentTheme);
 
 /* Exact asset names */
 const PENDANTS = ["Infinity Knot 1.svg"];
-const LINKS    = ["halo link.svg", "gold circle link.svg"];
+const LINKS    = ["halo link.svg"];
 
 /* Link layout meta (tweak targetH if your halo looks too big/small) */
 const LINK_META = { "halo link.svg": { targetH: 34, rotate: 0 } };
-const LINK_META = { "gold circle link.svg": { targetH: 34, rotate: 0 } };
+
 const LINK_PARTS = {
   "halo link.svg": {
     base:  "halo link.svg",
@@ -291,20 +291,7 @@ const LINK_PARTS = {
     over:  "top half of the halo link.svg",
     targetH: 34,
     rotate: 0
-  },
-
-  // NEW — gold circle “closure”
-  "gold circle link.svg": {
-    // base has the hidden pins:
-    base:  "gold circle link.svg",
-    // these two are your split art (exact paths you gave):
-    under: "gold circle link bottom.svg",
-    over:  "gold circle link top.svg",
-    // match sizing/rotation to your other link (tweak if needed)
-    targetH: 34,
-    rotate: 0
-  }
-};
+  };
 
 
 
@@ -324,7 +311,6 @@ const PENDANT_MASK_ID = "pendantCutMask";
 const WEIGHTS = {
   "Infinity Knot 1.svg": 0.32,
   "halo link.svg": 0.10,
-  "gold circle link.svg": 0.10,  // ← new
   "__default_pendant": 0.30,
   "__default_link": 0.10
 };
