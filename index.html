@@ -533,7 +533,10 @@ function buildLinkGroup(def, tx, ty){
     tintGold(overNode);
     g.appendChild(overNode);
   }
-  // Draw only one layer of a split link (so we can interleave around the pendant)
+  return g;
+}
+
+// Draw only one layer of a split link (so we can interleave around the pendant)
 function buildLinkLayer(def, tx, ty, which /* 'under' | 'over' */){
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
   g.setAttribute("transform", `translate(${tx}, ${ty})`);
@@ -547,9 +550,6 @@ function buildLinkLayer(def, tx, ty, which /* 'under' | 'over' */){
   return g;
 }
 
-
-  return g;
-}
 
 function clonePoint(pt){ return pt ? {x: pt.x, y: pt.y} : null; }
 
