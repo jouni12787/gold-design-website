@@ -393,27 +393,18 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
 
   const scale = targetH / h;
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
-   // NEW: track old id -> new id
-  const idMap = {};
-   [...svg.childNodes].forEach(n=>{
+  [...svg.childNodes].forEach(n=>{
     if(n.nodeType===1){
       if(n.tagName.toLowerCase()==="defs"){
         [...n.children].forEach(el=>{
-          if(!el.id) return;
-          const newId = `${filename.replace(/\W+/g,'_')}_${el.id}`;
-          idMap[el.id] = newId;
-          const clone = stage.ownerDocument.importNode(el,true);
-          clone.setAttribute("id", newId);
-          defs.appendChild(clone);
+          // Keep original IDs so clip-path="url(#clip-top|clip-bottom)" still matches.
+          defs.appendChild(stage.ownerDocument.importNode(el,true));
         });
       }else{
         g.appendChild(stage.ownerDocument.importNode(n,true));
       }
     }
   });
-
-  // NEW: update url(#id) / href="#id" to the prefixed IDs we just created
-  rewriteURLRefs(g, idMap);
 
   const cxS=(w*scale)/2, cyS=(h*scale)/2;
   let tf = `scale(${scale})`;
@@ -570,7 +561,7 @@ function buildLinkGroup(def, tx, ty){
   return g;
 }
 
-// Draw only one layer of a split link (so we can interleave around the pendant)
+// New: draw ONLY one half ("under" or "over")
 function buildLinkLayer(def, tx, ty, which /* 'under' | 'over' */){
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
   g.setAttribute("transform", `translate(${tx}, ${ty})`);
@@ -636,6 +627,15 @@ async function render(){
   const dbg = document.createElementNS("http://www.w3.org/2000/svg","g");
   dbg.setAttribute("id","pinOverlay");
   bracelet.appendChild(dbg);
+
+  // two z-stacks for the “woven” effect
+  const stackUnder = document.createElementNS("http://www.w3.org/2000/svg","g");
+  stackUnder.setAttribute("id","stackUnder");
+  const stackOver  = document.createElementNS("http://www.w3.org/2000/svg","g");
+  stackOver.setAttribute("id","stackOver");
+
+  // order: UNDER → (pendant) → OVER
+  bracelet.appendChild(stackUnder);
 
   const layoutLeft=[];
   const layoutRight=[];
@@ -719,6 +719,7 @@ async function render(){
     pendantMaskUrl = `url(#${PENDANT_MASK_ID})`;
   }
   tintGold(pendantPack.node); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
+  bracelet.appendChild(stackOver);
 
   layoutPendant = {
     type:'pendant',
@@ -746,16 +747,15 @@ async function render(){
     const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.base.width);
     const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.base.height/2);
 
-  const isFirstLeft = (i === leftSeq.length-1);
-if (isFirstLeft){
-  // place bottom half behind pendant
-  bracelet.insertBefore(buildLinkLayer(d, tx, ty, 'under'), gp);
-  // place top half above pendant
-  bracelet.insertBefore(buildLinkLayer(d, tx, ty, 'over'), gp.nextSibling);
-} else {
-  bracelet.appendChild(buildLinkGroup(d, tx, ty));
-}
+    // build both halves
+    const u = buildLinkLayer(d, tx, ty, 'under');
+    const o = buildLinkLayer(d, tx, ty, 'over');
 
+    // z-order rule for “weave”:
+    //  - UNDER (bottom halves): farther links should be behind → insert at beginning
+    //  - OVER  (top halves)   : farther links should be on top → append at end
+    stackUnder.insertBefore(u, stackUnder.firstChild || null);
+    stackOver.appendChild(o);
 
     layoutLeft.unshift({
       type:'link',
@@ -783,14 +783,11 @@ if (isFirstLeft){
     const tx = (L && R) ? (anchorR.x - L.x) : (anchorR.x);
     const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.base.height/2);
 
-    const isFirstRight = (i === 0);
-if (isFirstRight){
-  bracelet.insertBefore(buildLinkLayer(d, tx, ty, 'under'), gp);
-  bracelet.insertBefore(buildLinkLayer(d, tx, ty, 'over'), gp.nextSibling);
-} else {
-  bracelet.appendChild(buildLinkGroup(d, tx, ty));
-}
+    const u = buildLinkLayer(d, tx, ty, 'under');
+    const o = buildLinkLayer(d, tx, ty, 'over');
 
+    stackUnder.insertBefore(u, stackUnder.firstChild || null);
+    stackOver.appendChild(o);
 
     layoutRight.push({
       type:'link',
