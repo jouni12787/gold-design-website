@@ -1,4 +1,4 @@
-<svg id="svg-top" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="100" viewBox="0, 0, 400, 100">
+<svg id="svg-top" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="200" viewBox="0, 0, 400, 200">
   <defs>
     <clipPath id="clip-top">
       <rect x="0" y="0" width="400" height="100"/>
