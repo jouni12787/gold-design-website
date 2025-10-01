@@ -284,6 +284,16 @@ const LINKS    = ["halo link.svg"];
 /* Link layout meta (tweak targetH if your halo looks too big/small) */
 const LINK_META = { "halo link.svg": { targetH: 34, rotate: 0 } };
 
+const LINK_PARTS = {
+  "halo link.svg": {
+    base:  "bottom half of the halo link.svg",
+    under: "bottom half of the halo link.svg",
+    over:  "top half of the halo link.svg",
+    targetH: 34,
+    rotate: 0
+  }
+};
+
 const STL_FILES = {
   pendant: {
     "Infinity Knot 1.svg": "pendant/Infinity Knot 1 1mm.stl"
@@ -510,9 +520,17 @@ function clonePendantForMask(node){
 function buildLinkGroup(def, tx, ty){
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
   g.setAttribute("transform", `translate(${tx}, ${ty})`);
-  const node = def.node.cloneNode(true);
-  tintGold(node);
-  g.appendChild(node);
+
+  const underNode = (def.under || def.base).node.cloneNode(true);
+  tintGold(underNode);
+  g.appendChild(underNode);
+
+  if(def.over){
+    const overNode = def.over.node.cloneNode(true);
+    tintGold(overNode);
+    g.appendChild(overNode);
+  }
+
   return g;
 }
 
@@ -585,23 +603,35 @@ async function render(){
   const uniq = [...new Set(rows.map(r=>r.type))];
   const linkDefs = {};
   for(const t of uniq){
-    const meta = LINK_META[t] || {targetH:34, rotate:0};
     try{
-      linkDefs[t] = await loadScaleRotate("link", t, meta.targetH, meta.rotate);
+      if(LINK_PARTS[t]){
+        const p = LINK_PARTS[t];
+        const base  = await loadScaleRotate("link", p.base,  p.targetH, p.rotate);
+        const under = await loadScaleRotate("link", p.under, p.targetH, p.rotate);
+        const over  = await loadScaleRotate("link", p.over,  p.targetH, p.rotate);
+        linkDefs[t] = { base, under, over };
+      }else{
+        const meta = LINK_META[t] || {targetH:34, rotate:0};
+        const pack = await loadScaleRotate("link", t, meta.targetH, meta.rotate);
+        linkDefs[t] = { base: pack, under: pack, over: null };
+      }
     }catch(e){ console.error(e); }
     if(token!==lastToken) return;
   }
 
   // Layout
   const PAD=40, W=1080, midY=200;
-  function spanOf(def){ if(def?.pins?.L && def?.pins?.R) return def.pins.R.x - def.pins.L.x; return def?.width ?? 0; }
+  function spanOf(def){
+    const p = def?.base?.pins;
+    return (p?.L && p?.R) ? (p.R.x - p.L.x) : (def?.base?.width || 0);
+  }
 
   const leftSeq=[]; rows.forEach(r=>{ for(let i=0;i<r.qty;i++) leftSeq.push(r.type); });
   const rightSeq=[...leftSeq].reverse();
 
   const leftSpan = leftSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
   const rightSpan= rightSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
-  const pendSpan = spanOf(pendantPack);
+  const pendSpan = spanOf({base:pendantPack});
 
   const totalSpan = leftSpan + pendSpan + rightSpan;
   let startX = Math.max(PAD, (W - totalSpan)/2);
@@ -660,10 +690,10 @@ async function render(){
   for(let i=leftSeq.length-1;i>=0;i--){
     const t = leftSeq[i];
     const d = linkDefs[t]; if(!d) continue;
-    const L = d.pins?.L, R = d.pins?.R;
+    const L = d.base.pins?.L, R = d.base.pins?.R;
 
-    const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.width);
-    const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.height/2);
+    const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.base.width);
+    const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.base.height/2);
 
     const isFirstLeft = (i === leftSeq.length-1);
     if(isFirstLeft && pendantMaskUrl){
@@ -680,7 +710,7 @@ async function render(){
     layoutLeft.unshift({
       type:'link',
       name:t,
-      pack: sanitizePackFor3D(d, 'link', t),
+      pack: sanitizePackFor3D(d.base, 'link', t),
       tx,
       ty,
       pins: {
@@ -698,10 +728,10 @@ async function render(){
   for(let i=0;i<rightSeq.length;i++){
     const t = rightSeq[i];
     const d = linkDefs[t]; if(!d) continue;
-    const L = d.pins?.L, R = d.pins?.R;
+    const L = d.base.pins?.L, R = d.base.pins?.R;
 
     const tx = (L && R) ? (anchorR.x - L.x) : (anchorR.x);
-    const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.height/2);
+    const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.base.height/2);
 
     const isFirstRight = (i === 0);
     if(isFirstRight && pendantMaskUrl){
@@ -718,7 +748,7 @@ async function render(){
     layoutRight.push({
       type:'link',
       name:t,
-      pack: sanitizePackFor3D(d, 'link', t),
+      pack: sanitizePackFor3D(d.base, 'link', t),
       tx,
       ty,
       pins: {
@@ -728,7 +758,7 @@ async function render(){
     });
 
     if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y, 3, pinColors); drawDot(dbg, tx+R.x, ty+R.y, 3, pinColors); }
-    anchorR = L && R ? {x: tx + R.x, y: ty + R.y} : {x: tx + d.width, y: midY};
+    anchorR = L && R ? {x: tx + R.x, y: ty + R.y} : {x: tx + d.base.width, y: midY};
   }
 
   // Weight
