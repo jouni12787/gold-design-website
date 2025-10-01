@@ -533,6 +533,20 @@ function buildLinkGroup(def, tx, ty){
     tintGold(overNode);
     g.appendChild(overNode);
   }
+  // Draw only one layer of a split link (so we can interleave around the pendant)
+function buildLinkLayer(def, tx, ty, which /* 'under' | 'over' */){
+  const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+  g.setAttribute("transform", `translate(${tx}, ${ty})`);
+
+  const pack = which === 'over' ? (def.over || null) : (def.under || def.base);
+  if(!pack) return g;
+
+  const node = pack.node.cloneNode(true);
+  tintGold(node);
+  g.appendChild(node);
+  return g;
+}
+
 
   return g;
 }
@@ -698,17 +712,16 @@ async function render(){
     const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.base.width);
     const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.base.height/2);
 
-    const isFirstLeft = (i === leftSeq.length-1);
-    if(isFirstLeft && pendantMaskUrl){
-      const back = buildLinkGroup(d, tx, ty);
-      bracelet.insertBefore(back, gp);
-      const front = buildLinkGroup(d, tx, ty);
-      front.setAttribute("mask", pendantMaskUrl);
-      bracelet.insertBefore(front, gp.nextSibling);
-    }else{
-      const g = buildLinkGroup(d, tx, ty);
-      bracelet.appendChild(g);
-    }
+  const isFirstLeft = (i === leftSeq.length-1);
+if (isFirstLeft){
+  // place bottom half behind pendant
+  bracelet.insertBefore(buildLinkLayer(d, tx, ty, 'under'), gp);
+  // place top half above pendant
+  bracelet.insertBefore(buildLinkLayer(d, tx, ty, 'over'), gp.nextSibling);
+} else {
+  bracelet.appendChild(buildLinkGroup(d, tx, ty));
+}
+
 
     layoutLeft.unshift({
       type:'link',
@@ -737,16 +750,13 @@ async function render(){
     const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.base.height/2);
 
     const isFirstRight = (i === 0);
-    if(isFirstRight && pendantMaskUrl){
-      const back = buildLinkGroup(d, tx, ty);
-      bracelet.insertBefore(back, gp);
-      const front = buildLinkGroup(d, tx, ty);
-      front.setAttribute("mask", pendantMaskUrl);
-      bracelet.insertBefore(front, gp.nextSibling);
-    }else{
-      const g = buildLinkGroup(d, tx, ty);
-      bracelet.appendChild(g);
-    }
+if (isFirstRight){
+  bracelet.insertBefore(buildLinkLayer(d, tx, ty, 'under'), gp);
+  bracelet.insertBefore(buildLinkLayer(d, tx, ty, 'over'), gp.nextSibling);
+} else {
+  bracelet.appendChild(buildLinkGroup(d, tx, ty));
+}
+
 
     layoutRight.push({
       type:'link',
