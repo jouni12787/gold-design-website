@@ -268,6 +268,7 @@
 const THEMES = ["light", "dark", "plum"];
 const THEME_KEY = "bracelet-builder-theme";
 const DEFAULT_THEME = "light";
+  
 function applyPinsByRatio(pack, ratios){
   if(!pack || !ratios) return;
   const w = pack.width || 1, h = pack.height || 1;
@@ -627,10 +628,16 @@ function buildLinkGroup(def, tx, ty){
   return g;
 }
 
-// New: draw ONLY one half ("under" or "over")
-function buildLinkLayer(def, tx, ty, which /* 'under' | 'over' */){
+// draw ONLY one half ("under" | "over"), with optional rotation around a pivot
+function buildLinkLayer(def, tx, ty, which /* 'under'|'over' */, rotateDeg = 0, pivot = null){
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
-  g.setAttribute("transform", `translate(${tx}, ${ty})`);
+  // apply translate first, then rotate around the link's pin (pivot is in local coords)
+  if (rotateDeg && pivot) {
+    g.setAttribute("transform",
+      `translate(${tx}, ${ty}) rotate(${rotateDeg}, ${pivot.x}, ${pivot.y})`);
+  } else {
+    g.setAttribute("transform", `translate(${tx}, ${ty})`);
+  }
 
   const pack = which === 'over' ? (def.over || null) : (def.under || def.base);
   if(!pack) return g;
@@ -640,6 +647,7 @@ function buildLinkLayer(def, tx, ty, which /* 'under' | 'over' */){
   g.appendChild(node);
   return g;
 }
+
 
 
 function clonePoint(pt){ return pt ? {x: pt.x, y: pt.y} : null; }
@@ -833,30 +841,39 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
     drawDot(dbg, gpX + pendantPack.pins.R.x, gpY + pendantPack.pins.R.y, 3, pinColors);
   }
 
- // ---------- LEFT side (pendant → outward), iterate FORWARD ----------
+// ---------- LEFT side (pendant → outward), iterate FORWARD ----------
 let anchorL = { x: pendantLeftPinWorldX, y: midY };
+let leftAngleDeg = 0;
+
 for (let i = 0; i < leftSeq.length; i++) {
   const t = leftSeq[i];
   const d = linkDefs[t]; if (!d) continue;
   const L = d.base.pins?.L, R = d.base.pins?.R;
+  const rad = toRad(leftAngleDeg);
 
-  const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.base.width);
-  const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.base.height/2);
+  // pivot is the R-pin (we attach to previous via R)
+  const pivot = R || null;
 
-  // draw halves
-  const u = buildLinkLayer(d, tx, ty, 'under');
-  const o = buildLinkLayer(d, tx, ty, 'over');
+  // translation to place the unrotated link so R pin sits at anchor
+  const tx = pivot ? (anchorL.x - pivot.x) : (anchorL.x - d.base.width);
+  const ty = pivot ? (anchorL.y - pivot.y) : (midY - d.base.height/2);
 
-  // Z-order for weave:
-  // UNDER: farther links behind → insert at beginning
-  // OVER : farther links on top → append at end
+  // draw halves with rotation around the pivot
+  const u = buildLinkLayer(d, tx, ty, 'under', leftAngleDeg, pivot);
+  const o = buildLinkLayer(d, tx, ty, 'over',  leftAngleDeg, pivot);
+
+  // z-order for weave
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
   stackOver.appendChild(o);
+
+  // 3D payload — give this instance the extra rotation
+  const pack3D = sanitizePackFor3D(d.base, 'link', t);
+  if (pack3D) pack3D.rotation = (pack3D.rotation || 0) + leftAngleDeg;
 
   layoutLeft.push({
     type: 'link',
     name: t,
-    pack: sanitizePackFor3D(d.base, 'link', t),
+    pack: pack3D,
     tx, ty,
     pins: {
       L: L ? { x: tx + L.x, y: ty + L.y } : null,
@@ -868,8 +885,18 @@ for (let i = 0; i < leftSeq.length; i++) {
     drawDot(dbg, tx + L.x, ty + L.y, 3, pinColors);
     drawDot(dbg, tx + R.x, ty + R.y, 3, pinColors);
   }
-  anchorL = L && R ? { x: tx + L.x, y: ty + L.y } : { x: tx, y: midY };
+
+  // update anchor: rotate L around R by the same angle
+  if (L && R) {
+    const Lr = rotateAround(L.x, L.y, R.x, R.y, rad);
+    anchorL = { x: tx + Lr.x, y: ty + Lr.y };
+  } else {
+    anchorL = { x: tx, y: midY };
+  }
+
+  leftAngleDeg += STEP_DEG; // next link is +15°
 }
+
 
 // ----- LEFT terminal lock (optional) -----
 if (lockPack) {
@@ -904,24 +931,33 @@ if (lockPack) {
 
 // ---------- RIGHT side (pendant → outward), iterate FORWARD ----------
 let anchorR = { x: pendantLeftPinWorldX + pendSpan, y: midY };
+let rightAngleDeg = 0;
+
 for (let i = 0; i < rightSeq.length; i++) {
   const t = rightSeq[i];
   const d = linkDefs[t]; if (!d) continue;
   const L = d.base.pins?.L, R = d.base.pins?.R;
+  const rad = toRad(rightAngleDeg);
 
-  const tx = (L && R) ? (anchorR.x - L.x) : (anchorR.x);
-  const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.base.height/2);
+  // pivot is the L-pin (we attach to pendant/previous via L)
+  const pivot = L || null;
 
-  const u = buildLinkLayer(d, tx, ty, 'under');
-  const o = buildLinkLayer(d, tx, ty, 'over');
+  const tx = pivot ? (anchorR.x - pivot.x) : (anchorR.x);
+  const ty = pivot ? (anchorR.y - pivot.y) : (midY - d.base.height/2);
+
+  const u = buildLinkLayer(d, tx, ty, 'under', rightAngleDeg, pivot);
+  const o = buildLinkLayer(d, tx, ty, 'over',  rightAngleDeg, pivot);
 
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
   stackOver.appendChild(o);
 
+  const pack3D = sanitizePackFor3D(d.base, 'link', t);
+  if (pack3D) pack3D.rotation = (pack3D.rotation || 0) + rightAngleDeg;
+
   layoutRight.push({
     type: 'link',
     name: t,
-    pack: sanitizePackFor3D(d.base, 'link', t),
+    pack: pack3D,
     tx, ty,
     pins: {
       L: L ? { x: tx + L.x, y: ty + L.y } : null,
@@ -933,8 +969,18 @@ for (let i = 0; i < rightSeq.length; i++) {
     drawDot(dbg, tx + L.x, ty + L.y, 3, pinColors);
     drawDot(dbg, tx + R.x, ty + R.y, 3, pinColors);
   }
-  anchorR = L && R ? { x: tx + R.x, y: ty + R.y } : { x: tx + d.base.width, y: midY };
+
+  // update anchor: rotate R around L by the same angle
+  if (L && R) {
+    const Rr = rotateAround(R.x, R.y, L.x, L.y, rad);
+    anchorR = { x: tx + Rr.x, y: ty + Rr.y };
+  } else {
+    anchorR = { x: tx + d.base.width, y: midY };
+  }
+
+  rightAngleDeg += STEP_DEG; // next link is +15°
 }
+
 
   // Weight
   const pendantW = weightFor(pendantName,"pendant");
@@ -1004,6 +1050,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+// put near the top helpers
+const STEP_DEG = 15;
+const toRad = d => d * Math.PI / 180;
+function rotateAround(x, y, cx, cy, rad){
+  const dx = x - cx, dy = y - cy;
+  return { x: cx + dx*Math.cos(rad) - dy*Math.sin(rad),
+           y: cy + dx*Math.sin(rad) + dy*Math.cos(rad) };
+}
 
 const container = document.getElementById('preview3d');
 const canvas    = document.getElementById('stlCanvas');
