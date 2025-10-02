@@ -847,9 +847,14 @@ for (let i = 0; i < leftSeq.length; i++) {
   const tx = pivot ? (anchorL.x - pivot.x) : (anchorL.x - d.base.width);
   const ty = pivot ? (anchorL.y - pivot.y) : (midY - d.base.height/2);
 
-  // draw halves with rotation around the pivot
-  const u = buildLinkLayer(d, tx, ty, 'under', leftAngleDeg, pivot);
-  const o = buildLinkLayer(d, tx, ty, 'over',  leftAngleDeg, pivot);
+  // flip halves ONLY for the first link next to the pendant (if it has split art)
+  const hasSplit = !!d.over;                 // link provides separate 'over' layer?
+  const flipFirst = (i === 0 && hasSplit);   // first left-side link near pendant
+  const whichUnder = flipFirst ? 'over' : 'under';
+  const whichOver  = flipFirst ? 'under' : 'over';
+
+  const u = buildLinkLayer(d, tx, ty, whichUnder, leftAngleDeg, pivot);
+  const o = buildLinkLayer(d, tx, ty, whichOver,  leftAngleDeg, pivot);
 
   // z-order for weave
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
@@ -930,8 +935,14 @@ for (let i = 0; i < rightSeq.length; i++) {
   const tx = pivot ? (anchorR.x - pivot.x) : (anchorR.x);
   const ty = pivot ? (anchorR.y - pivot.y) : (midY - d.base.height/2);
 
-  const u = buildLinkLayer(d, tx, ty, 'under', rightAngleDeg, pivot);
-  const o = buildLinkLayer(d, tx, ty, 'over',  rightAngleDeg, pivot);
+  // flip halves ONLY for the first link next to the pendant (if it has split art)
+  const hasSplit = !!d.over;
+  const flipFirst = (i === 0 && hasSplit);   // first right-side link near pendant
+  const whichUnder = flipFirst ? 'over' : 'under';
+  const whichOver  = flipFirst ? 'under' : 'over';
+
+  const u = buildLinkLayer(d, tx, ty, whichUnder, rightAngleDeg, pivot);
+  const o = buildLinkLayer(d, tx, ty, whichOver,  rightAngleDeg, pivot);
 
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
   stackOver.appendChild(o);
