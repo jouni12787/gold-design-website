@@ -239,7 +239,6 @@
           <option value="__assembly__">Bracelet assembly</option>
           <option value="pendant/Infinity Knot 1 1mm.stl">Infinity Knot 1 — 1mm</option>
           <option value="link/halo link 1mm.stl">halo link — 1mm</option>
-          <option value="link/gold circle link.stl">gold circle link — 1mm</option>
         </select>
         <label style="display:inline-flex;gap:.35rem;align-items:center;">
           <input type="checkbox" id="stlAutoRotate"> Auto rotate
@@ -280,13 +279,10 @@ currentTheme = applyTheme(currentTheme);
 
 /* Exact asset names */
 const PENDANTS = ["Infinity Knot 1.svg"];
-const LINKS    = ["halo link.svg", "gold circle link.svg"];
+const LINKS    = ["halo link.svg"];
 
 /* Link layout meta (tweak targetH if your halo looks too big/small) */
-const LINK_META = {
-  "halo link.svg": { targetH: 34, rotate: 0 },
-  "gold circle link.svg": { targetH: 34, rotate: 0 }
-};
+const LINK_META = { "halo link.svg": { targetH: 34, rotate: 0 } };
 
 const LINK_PARTS = {
   "halo link.svg": {
@@ -295,15 +291,8 @@ const LINK_PARTS = {
     over:  "top half of the halo link.svg",
     targetH: 34,
     rotate: 0
-  },
-  "gold circle link.svg": {
-    base:  "gold circle link.svg",
-    under: "gold circle link bottom.svg",
-    over:  "gold circle link top.svg",
-    targetH: 34,
-    rotate: 0
   }
-};
+  };
 
 
 
@@ -312,8 +301,8 @@ const STL_FILES = {
     "Infinity Knot 1.svg": "pendant/Infinity Knot 1 1mm.stl"
   },
   link: {
-    "halo link.svg": "link/halo link 1mm.stl",
-    "gold circle link.svg": "link/gold circle link.stl"
+    "halo link.svg": "link/halo link 1mm.stl"
+    
   }
 };
 
@@ -323,7 +312,6 @@ const PENDANT_MASK_ID = "pendantCutMask";
 const WEIGHTS = {
   "Infinity Knot 1.svg": 0.32,
   "halo link.svg": 0.10,
-  "gold circle link.svg": 0.12,
   "__default_pendant": 0.30,
   "__default_link": 0.10
 };
