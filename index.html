@@ -757,73 +757,77 @@ const rightSpan = rightSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
     drawDot(dbg, gpX + pendantPack.pins.R.x, gpY + pendantPack.pins.R.y, 3, pinColors);
   }
 
-  // Left side
-  let anchorL = {x: pendantLeftPinWorldX, y: midY};
-  for(let i=leftSeq.length-1;i>=0;i--){
-    const t = leftSeq[i];
-    const d = linkDefs[t]; if(!d) continue;
-    const L = d.base.pins?.L, R = d.base.pins?.R;
+ // ---------- LEFT side (pendant → outward), iterate FORWARD ----------
+let anchorL = { x: pendantLeftPinWorldX, y: midY };
+for (let i = 0; i < leftSeq.length; i++) {
+  const t = leftSeq[i];
+  const d = linkDefs[t]; if (!d) continue;
+  const L = d.base.pins?.L, R = d.base.pins?.R;
 
-    const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.base.width);
-    const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.base.height/2);
+  const tx = (L && R) ? (anchorL.x - R.x) : (anchorL.x - d.base.width);
+  const ty = (L && R) ? (anchorL.y - R.y) : (midY - d.base.height/2);
 
-    // build both halves
-    const u = buildLinkLayer(d, tx, ty, 'under');
-    const o = buildLinkLayer(d, tx, ty, 'over');
+  // draw halves
+  const u = buildLinkLayer(d, tx, ty, 'under');
+  const o = buildLinkLayer(d, tx, ty, 'over');
 
-    // z-order rule for “weave”:
-    //  - UNDER (bottom halves): farther links should be behind → insert at beginning
-    //  - OVER  (top halves)   : farther links should be on top → append at end
-    stackUnder.insertBefore(u, stackUnder.firstChild || null);
-    stackOver.appendChild(o);
+  // Z-order for weave:
+  // UNDER: farther links behind → insert at beginning
+  // OVER : farther links on top → append at end
+  stackUnder.insertBefore(u, stackUnder.firstChild || null);
+  stackOver.appendChild(o);
 
-    layoutLeft.unshift({
-      type:'link',
-      name:t,
-      pack: sanitizePackFor3D(d.base, 'link', t),
-      tx,
-      ty,
-      pins: {
-        L: L ? {x: tx + L.x, y: ty + L.y} : null,
-        R: R ? {x: tx + R.x, y: ty + R.y} : null
-      }
-    });
+  layoutLeft.push({
+    type: 'link',
+    name: t,
+    pack: sanitizePackFor3D(d.base, 'link', t),
+    tx, ty,
+    pins: {
+      L: L ? { x: tx + L.x, y: ty + L.y } : null,
+      R: R ? { x: tx + R.x, y: ty + R.y } : null
+    }
+  });
 
-    if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y, 3, pinColors); drawDot(dbg, tx+R.x, ty+R.y, 3, pinColors); }
-    anchorL = L && R ? {x: tx + L.x, y: ty + L.y} : {x: tx, y: midY};
+  if (chkPins?.checked && L && R) {
+    drawDot(dbg, tx + L.x, ty + L.y, 3, pinColors);
+    drawDot(dbg, tx + R.x, ty + R.y, 3, pinColors);
   }
+  anchorL = L && R ? { x: tx + L.x, y: ty + L.y } : { x: tx, y: midY };
+}
 
-  // Right side
-  let anchorR = {x: pendantLeftPinWorldX + pendSpan, y: midY};
-  for(let i=0;i<rightSeq.length;i++){
-    const t = rightSeq[i];
-    const d = linkDefs[t]; if(!d) continue;
-    const L = d.base.pins?.L, R = d.base.pins?.R;
+// ---------- RIGHT side (pendant → outward), iterate FORWARD ----------
+let anchorR = { x: pendantLeftPinWorldX + pendSpan, y: midY };
+for (let i = 0; i < rightSeq.length; i++) {
+  const t = rightSeq[i];
+  const d = linkDefs[t]; if (!d) continue;
+  const L = d.base.pins?.L, R = d.base.pins?.R;
 
-    const tx = (L && R) ? (anchorR.x - L.x) : (anchorR.x);
-    const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.base.height/2);
+  const tx = (L && R) ? (anchorR.x - L.x) : (anchorR.x);
+  const ty = (L && R) ? (anchorR.y - L.y) : (midY - d.base.height/2);
 
-    const u = buildLinkLayer(d, tx, ty, 'under');
-    const o = buildLinkLayer(d, tx, ty, 'over');
+  const u = buildLinkLayer(d, tx, ty, 'under');
+  const o = buildLinkLayer(d, tx, ty, 'over');
 
-    stackUnder.insertBefore(u, stackUnder.firstChild || null);
-    stackOver.appendChild(o);
+  stackUnder.insertBefore(u, stackUnder.firstChild || null);
+  stackOver.appendChild(o);
 
-    layoutRight.push({
-      type:'link',
-      name:t,
-      pack: sanitizePackFor3D(d.base, 'link', t),
-      tx,
-      ty,
-      pins: {
-        L: L ? {x: tx + L.x, y: ty + L.y} : null,
-        R: R ? {x: tx + R.x, y: ty + R.y} : null
-      }
-    });
+  layoutRight.push({
+    type: 'link',
+    name: t,
+    pack: sanitizePackFor3D(d.base, 'link', t),
+    tx, ty,
+    pins: {
+      L: L ? { x: tx + L.x, y: ty + L.y } : null,
+      R: R ? { x: tx + R.x, y: ty + R.y } : null
+    }
+  });
 
-    if(chkPins?.checked && L && R){ drawDot(dbg, tx+L.x, ty+L.y, 3, pinColors); drawDot(dbg, tx+R.x, ty+R.y, 3, pinColors); }
-    anchorR = L && R ? {x: tx + R.x, y: ty + R.y} : {x: tx + d.base.width, y: midY};
+  if (chkPins?.checked && L && R) {
+    drawDot(dbg, tx + L.x, ty + L.y, 3, pinColors);
+    drawDot(dbg, tx + R.x, ty + R.y, 3, pinColors);
   }
+  anchorR = L && R ? { x: tx + R.x, y: ty + R.y } : { x: tx + d.base.width, y: midY };
+}
 
   // Weight
   const pendantW = weightFor(pendantName,"pendant");
