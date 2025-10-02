@@ -1,7 +1,7 @@
 {
-  "name": "hassan chakaroun juwelery",
-  "short_name": "HC Juwelery",
-  "start_url": "./",
+  "name": "Chakaroun Jewelry",
+  "short_name": "Chakaroun",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#17120a",
   "theme_color": "#17120a",
