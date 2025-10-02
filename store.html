@@ -134,6 +134,29 @@
   .comments form{display:flex;gap:8px;margin-top:8px}
   .comments input{flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--control-border);background:var(--control-bg);color:var(--ink)}
   .comments input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px var(--control-focus-shadow)}
+
+  /* === Store grid === */
+  .productsGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:14px;
+  }
+  .productCard{
+    display:flex;flex-direction:column;overflow:hidden;
+    background:linear-gradient(160deg,var(--card-overlay),var(--card));
+    border:1px solid var(--border-soft);border-radius:12px;box-shadow:var(--shadow);
+  }
+  .productCard .photo{
+    aspect-ratio:4/3;background:var(--bg2);display:flex;align-items:center;justify-content:center;
+  }
+  .productCard img{width:100%;height:100%;object-fit:cover;display:block}
+  .productCard .info{padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+  .productCard .title{margin:0;font-size:16px}
+  .productCard .desc{margin:0;color:var(--muted);font-size:13px}
+  .productCard .meta{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
+  .productCard .tag{border:1px solid var(--border-soft);padding:2px 8px;border-radius:999px}
+  .productCard .price{margin-top:6px;font-weight:800;color:var(--gold)}
+  #storeStatus{color:var(--muted);margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -153,121 +176,135 @@
 
 <main class="container">
   <h1 style="margin:6px 0 14px;font-size:22px;">Store</h1>
-  <div class="grid" id="productGrid">
-    <!-- Example product card (duplicate & edit as you add items) -->
-    <article class="card" data-sku="ring-001" data-karat="18" data-weight="6.2">
-      <div class="thumb" data-swap="hover">
-        <!-- Replace with your images -->
-        <img class="main" src="images/products/ring-001-1.jpg" loading="lazy" alt="Halo Ring — front">
-        <img class="alt"  src="images/products/ring-001-2.jpg" loading="lazy" alt="Halo Ring — side">
-      </div>
-      <div class="panel">
-        <h3 class="title">Halo Ring</h3>
-        <div class="meta">18k · 6.2 g</div>
-        <div class="priceBox">
-          <div class="price" aria-live="polite">$<span class="priceVal">—</span></div>
-          <button class="btn" type="button">Details</button>
-        </div>
-
-        <div class="comments">
-          <h4>Comments</h4>
-          <ul class="list"></ul>
-          <form>
-            <input type="text" name="msg" placeholder="Write a comment…" maxlength="140" aria-label="Comment">
-            <button class="btn" type="submit">Post</button>
-          </form>
-        </div>
-      </div>
-    </article>
-
-    <!-- Copy this block for more items -->
-    <article class="card" data-sku="bracelet-002" data-karat="14" data-weight="18.5">
-      <div class="thumb" data-swap="hover">
-        <img class="main" src="images/products/bracelet-002-1.jpg" loading="lazy" alt="Figaro Bracelet — top">
-        <img class="alt"  src="images/products/bracelet-002-2.jpg" loading="lazy" alt="Figaro Bracelet — clasp">
-      </div>
-      <div class="panel">
-        <h3 class="title">Figaro Bracelet</h3>
-        <div class="meta">14k · 18.5 g</div>
-        <div class="priceBox">
-          <div class="price">$<span class="priceVal">—</span></div>
-          <button class="btn" type="button">Details</button>
-        </div>
-        <div class="comments">
-          <h4>Comments</h4>
-          <ul class="list"></ul>
-          <form>
-            <input type="text" name="msg" placeholder="Write a comment…" maxlength="140">
-            <button class="btn" type="submit">Post</button>
-          </form>
-        </div>
-      </div>
-    </article>
-
-  </div>
+  <section class="card">
+    <div class="panel">
+      <div id="storeStatus" class="badge">Loading products…</div>
+      <div id="productsGrid" class="productsGrid"></div>
+    </div>
+  </section>
 </main>
 
 <script>
-/* ========= Image swap for touch too ========= */
-document.querySelectorAll('.thumb[data-swap="hover"]').forEach(t => {
-  let toggled = false;
-  t.addEventListener('click', () => {
-    toggled = !toggled;
-    t.querySelector('.main').style.opacity = toggled ? 0 : 1;
-    t.querySelector('.alt').style.opacity  = toggled ? 1 : 0;
-  });
+/* === Google Sheet → Store grid === */
+const SHEET_CSV_URL =
+  'https://docs.google.com/spreadsheets/d/1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk/gviz/tq?tqx=out:csv&sheet=Sheet1';
+
+const currencyFmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+const grid = document.getElementById('productsGrid');
+const statusEl = document.getElementById('storeStatus');
+
+loadStore().catch(err=>{
+  console.error(err);
+  if(statusEl) statusEl.textContent = 'Could not load products.';
 });
 
-/* ========= Local comments (no backend yet) ========= */
-(function(){
-  const key = 'hcj-store-comments';
-  const store = JSON.parse(localStorage.getItem(key) || '{}');
+async function loadStore(){
+  statusEl.textContent = 'Loading products…';
+  const res = await fetch(SHEET_CSV_URL, {cache:'no-store'});
+  const csv = await res.text();
+  const rows = parseCSV(csv);
+  const items = normalizeRows(rows);
+  render(items);
+  statusEl.textContent = items.length ? `${items.length} products` : 'No products yet.';
+}
 
-  function save(){ localStorage.setItem(key, JSON.stringify(store)); }
-  function renderCard(card){
-    const sku = card.dataset.sku;
-    const list = card.querySelector('.comments .list');
-    list.innerHTML = '';
-    (store[sku] || []).forEach(txt=>{
-      const li = document.createElement('li'); li.textContent = txt; list.appendChild(li);
-    });
+function normalizeRows(rows){
+  if(!rows.length) return [];
+  const header = rows[0].map(h => (h||'').trim().toLowerCase());
+  const idx = name => header.indexOf(name);
+
+  const ix = {
+    name: idx('name'),
+    price: idx('price'),
+    kirat: idx('kirat'),
+    photo: idx('photo'),
+    description: idx('description'),
+    sku: idx('sku'),
+    in_stock: idx('in_stock')
+  };
+
+  return rows.slice(1)
+    .filter(r => r.some(v => String(v||'').trim() !== ''))
+    .map(r => {
+      const photo = toDriveViewURL(r[ix.photo] || '');
+      return {
+        name: r[ix.name] || 'Untitled',
+        price: Number(r[ix.price] || 0),
+        kirat: (r[ix.kirat] || '').toString().trim(),
+        photo: photo,
+        description: r[ix.description] || '',
+        sku: r[ix.sku] || '',
+        inStock: toBool(r[ix.in_stock])
+      };
+    })
+    .filter(p => p.inStock);
+}
+
+function render(items){
+  grid.innerHTML = items.map(cardHTML).join('');
+}
+
+function cardHTML(p){
+  const price = isFinite(p.price) ? currencyFmt.format(p.price) : '';
+  const kirat = p.kirat ? `<span class="tag">${escapeHTML(p.kirat)}K</span>` : '';
+  const sku = p.sku ? `<span class="tag">SKU ${escapeHTML(p.sku)}</span>` : '';
+  const img = p.photo ? escapeAttr(p.photo) : 'icon/icon-500.png';
+  const alt = escapeAttr(p.name);
+
+  return `
+  <article class="productCard">
+    <div class="photo">
+      <img src="${img}" alt="${alt}" onerror="this.src='icon/icon-500.png'">
+    </div>
+    <div class="info">
+      <h3 class="title">${escapeHTML(p.name)}</h3>
+      <div class="meta">${kirat}${sku}</div>
+      ${p.description ? `<p class="desc">${escapeHTML(p.description)}</p>` : ''}
+      <div class="price">${price}</div>
+    </div>
+  </article>`;
+}
+
+/* --- helpers --- */
+function parseCSV(text){
+  const rows = []; let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i], next = text[i+1];
+    if(c === '"'){
+      if(inQuotes && next === '"'){ field += '"'; i++; }
+      else inQuotes = !inQuotes;
+    }else if(c === ',' && !inQuotes){
+      row.push(field); field = '';
+    }else if((c === '\n' || c === '\r') && !inQuotes){
+      if(c === '\r' && next === '\n') i++;
+      row.push(field); rows.push(row); row = []; field = '';
+    }else{
+      field += c;
+    }
   }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
 
-  document.querySelectorAll('.card').forEach(card=>{
-    const sku = card.dataset.sku;
-    store[sku] = store[sku] || [];
-    renderCard(card);
+function toBool(v){
+  const s = String(v||'').trim().toLowerCase();
+  if(s === '') return true; // blank = treat as in stock
+  return ['true','1','yes','y'].includes(s);
+}
 
-    card.querySelector('.comments form').addEventListener('submit', e=>{
-      e.preventDefault();
-      const inp = e.target.elements.msg;
-      const val = (inp.value || '').trim();
-      if(!val) return;
-      store[sku].push(val);
-      save();
-      inp.value = '';
-      renderCard(card);
-    });
-  });
-})();
+function toDriveViewURL(u){
+  const s = String(u||'').trim();
+  if(!s) return '';
+  const m1 = s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const m2 = s.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const id = m1?.[1] || m2?.[1];
+  return id ? `https://drive.google.com/uc?export=view&id=${id}` : s;
+}
 
-/* ========= Price placeholder (to be wired to your API later) =========
-   When your backend is ready, replace the fake pricing below with:
-   const data = await fetch('/api/prices').then(r=>r.json());
-   and map by SKU to fill .priceVal elements. */
-(function mockPrices(){
-  const mockUSDPerGram24k = 75;     // placeholder only
-  document.querySelectorAll('.card').forEach(card=>{
-    const karat  = parseFloat(card.dataset.karat || '24');
-    const weight = parseFloat(card.dataset.weight || '0');
-    const purity = karat / 24;
-    const base   = weight * mockUSDPerGram24k * purity;
-    const making = 50;              // demo
-    const price  = Math.round((base + making) * 1.15 * 100) / 100;
-    const out = card.querySelector('.priceVal');
-    if(out) out.textContent = price.toFixed(2);
-  });
-})();
+function escapeHTML(s){
+  return String(s||'').replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+}
+function escapeAttr(s){ return escapeHTML(s).replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>
