@@ -194,6 +194,16 @@
           <input id="lockScale" type="number" min="18" max="200" step="2" value="34"/>
         </div>
       </div>
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <label for="angleStep">Link bend per step (°)</label>
+          <input id="angleStep" type="range" min="0" max="15" step="0.5" value="15"/>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <output id="angleStepOut">15°</output>
+        </div>
+      </div>
       <div style="margin-top:8px"><button id="addRow">+ Add link type</button></div>
 
       <div class="summary" role="status" aria-live="polite">
@@ -387,6 +397,8 @@ const btnSVG = document.getElementById("downloadSVG");
 const btnPNG = document.getElementById("downloadPNG");
 const btnReset = document.getElementById("reset");
 const chkPins = document.getElementById("showPins");
+const inpStep = document.getElementById("angleStep");
+const outStep = document.getElementById("angleStepOut");
 
 let lastToken = 0;
 
@@ -398,6 +410,11 @@ function clear(n){ while(n.firstChild) n.removeChild(n.firstChild); }
 function makeOption(t,v){ const o=document.createElement("option"); o.textContent=t; o.value=v; return o; }
 function weightFor(name,type){ return WEIGHTS[name] ?? (type==="pendant" ? WEIGHTS.__default_pendant : WEIGHTS.__default_link); }
 const toNum = v => (v==null||v==="") ? null : (typeof v==="number" ? v : parseFloat(String(v)));
+function getStepDeg(){
+  const v = Math.max(0, Math.min(15, parseFloat(inpStep?.value ?? 15)));
+  if(outStep) outStep.textContent = `${v}°`;
+  return v;
+}
 function parseCoord(v, dim){ if(v==null) return null; const s=String(v).trim(); return s.endsWith("%") ? parseFloat(s)/100*dim : parseFloat(s); }
 function drawDot(parent,x,y,r=3,colors){
   const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
@@ -521,6 +538,11 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     selLock.addEventListener("change", render);
   }
   if(inpLockScale) inpLockScale.addEventListener("input", render);
+
+  if (inpStep) {
+    if (outStep) outStep.textContent = `${inpStep.value}°`;
+    inpStep.addEventListener("input", render);
+  }
 
   addRow({type:LINKS[0], qty:6}); // one link row by default
 
@@ -677,7 +699,6 @@ function sanitizePackFor3D(pack, type, name){
   };
 }
 // === rotation helpers for 2D layout ===
-const STEP_DEG = 15;
 const toRad = d => d * Math.PI / 180;
 function rotateAround(x, y, cx, cy, rad){
   const dx = x - cx, dy = y - cy;
@@ -799,6 +820,8 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
   const totalSpan = leftSpan + pendSpan + rightSpan;
   let startX = Math.max(PAD, (W - totalSpan)/2);
 
+  const STEP_UI = getStepDeg(); // 0..15 from the slider
+
   // Pendant position
   const pendPinMidY = (pendantPack.pins?.L?.y != null && pendantPack.pins?.R?.y != null)
                       ? (pendantPack.pins.L.y + pendantPack.pins.R.y)/2
@@ -904,7 +927,7 @@ for (let i = 0; i < leftSeq.length; i++) {
     anchorL = { x: tx, y: midY };
   }
 
-  leftAngleDeg += STEP_DEG; // next link is +15°
+  leftAngleDeg += STEP_UI;
 }
 
 
@@ -916,16 +939,21 @@ if (lockPack) {
   const tx = R ? (anchorL.x - R.x) : (anchorL.x - d.base.width);
   const ty = R ? (anchorL.y - R.y) : (midY - d.base.height / 2);
 
-  const u = buildLinkLayer(d, tx, ty, 'under');
-  const o = buildLinkLayer(d, tx, ty, 'over');
+  // rotate the lock around its R-pin by the current leftAngleDeg
+  const pivot = R || null;
+  const u = buildLinkLayer(d, tx, ty, 'under', leftAngleDeg, pivot);
+  const o = buildLinkLayer(d, tx, ty, 'over',  leftAngleDeg, pivot);
 
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
   stackOver.appendChild(o);
 
+  const pack3D = sanitizePackFor3D(d.base, 'link', lockName);
+  if (pack3D) pack3D.rotation = (pack3D.rotation || 0) + leftAngleDeg;
+
   layoutLeft.push({
     type: 'link',
     name: lockName,
-    pack: sanitizePackFor3D(d.base, 'link', lockName),
+    pack: pack3D,
     tx, ty,
     pins: {
       L: L ? { x: tx + L.x, y: ty + L.y } : null,
@@ -988,7 +1016,7 @@ for (let i = 0; i < rightSeq.length; i++) {
     anchorR = { x: tx + d.base.width, y: midY };
   }
 
-  rightAngleDeg += STEP_DEG; // next link is +15°
+  rightAngleDeg += STEP_UI;
 }
 
 
