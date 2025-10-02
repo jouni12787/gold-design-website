@@ -1,6 +1,18 @@
 <!doctype html>
 <html lang="en" data-theme="light">
 <head>
+<script>
+  // Apply saved theme ASAP (before CSS loads to avoid a flash)
+  (function () {
+    try {
+      var KEY = 'hcj-theme';
+      var saved = localStorage.getItem(KEY) || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      // expose the key so other scripts can use the same one
+      window.__HCJ_THEME_KEY = KEY;
+    } catch (e) {}
+  })();
+</script>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Hassan Chakaroun Jewelry — Store</title>
