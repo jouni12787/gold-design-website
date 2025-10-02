@@ -10,8 +10,8 @@
       fill="#000000" fill-rule="evenodd"/>  </g>
   
   <g id="pins" style="display:none">
-  <circle id="pinL" cx="80%" cy="50%" r="3" fill="red" stroke="black"/>
-  <circle id="pinR" cx="20%" cy="50%" r="3" fill="red" stroke="black"/>
+  <circle id="pinL" cx="20%" cy="50%" r="3" fill="red" stroke="black"/>
+  <circle id="pinR" cx="80%" cy="50%" r="3" fill="red" stroke="black"/>
   <!-- etc. -->
 </g>
 
