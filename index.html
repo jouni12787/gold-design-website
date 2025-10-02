@@ -268,6 +268,17 @@
 const THEMES = ["light", "dark", "plum"];
 const THEME_KEY = "bracelet-builder-theme";
 const DEFAULT_THEME = "light";
+function applyPinsByRatio(pack, ratios){
+  if(!pack || !ratios) return;
+  const w = pack.width || 1, h = pack.height || 1;
+  const L = ratios.L ? { x: ratios.L.x * w, y: ratios.L.y * h } : null;
+  const R = ratios.R ? { x: ratios.R.x * w, y: ratios.R.y * h } : null;
+  pack.pins = { L, R };
+  pack.pinRatios = {
+    L: L ? { x: ratios.L.x, y: ratios.L.y } : null,
+    R: R ? { x: ratios.R.x, y: ratios.R.y } : null
+  };
+}
 
 function applyTheme(theme){
   const normalized = theme === "navy" ? "dark" : theme;
@@ -297,8 +308,20 @@ const LINKS    = ["halo link.svg", "gold circle link.svg"];
 const LOCKS = ["dolphin fish lock.svg"];
 
 const LOCK_META = {
-  "dolphin fish lock.svg": { targetH: 65,rotate: -90 }
+  "dolphin fish lock.svg": {
+    targetH: 65,
+    rotate: -90,
+    // pin positions as ratios of the rendered box (0..1)
+    pins: {
+      L: { x: 0.20, y: 0.50 },
+      R: { x: 0.965, y: 0.505 } // connector ring center
+    },
+    // optional micro-nudge
+    dx: 0,
+    dy: 0
+  }
 };
+
 
 /* Link layout meta (tweak targetH if your halo looks too big/small) */
 const LINK_META = { "halo link.svg": { targetH: 34, rotate: 0 } };
@@ -695,17 +718,22 @@ async function render(){
   const pendantMaskClone = clonePendantForMask(pendantPack.node);
   const pendant3D = sanitizePackFor3D(pendantPack, 'pendant', pendantName);
 
-  let lockPack = null;
-  if(lockName){
-    try{
-      const meta = LOCK_META[lockName] || { rotate: 0 };
-      const targetH = Number.isFinite(lockH) ? lockH : (meta.targetH ?? 34);
-      lockPack = await loadScaleRotate("lock", lockName, targetH, meta.rotate ?? 0);
-    }catch(e){
-      console.error(e);
-      lockPack = null;
-    }
+ let lockPack = null;
+if(lockName){
+  try{
+    const meta = LOCK_META[lockName] || { rotate: 0 };
+    const targetH = Number.isFinite(lockH) ? lockH : (meta.targetH ?? 34);
+    lockPack = await loadScaleRotate("lock", lockName, targetH, meta.rotate ?? 0);
+
+    // NEW: override pins by ratio (no SVG changes needed)
+    if (meta.pins) applyPinsByRatio(lockPack, meta.pins);
+
+  }catch(e){
+    console.error(e);
+    lockPack = null;
   }
+}
+
   if(token!==lastToken) return;
 
   // Link defs
