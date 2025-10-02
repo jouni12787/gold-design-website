@@ -691,11 +691,17 @@ async function render(){
     return (p?.L && p?.R) ? (p.R.x - p.L.x) : (def?.base?.width || 0);
   }
 
-  const leftSeq=[]; rows.forEach(r=>{ for(let i=0;i<r.qty;i++) leftSeq.push(r.type); });
-  const rightSeq=[...leftSeq].reverse();
+// Build the sequence in the same order as your rows
+const leftSeq = [];
+rows.forEach(r => { for (let i = 0; i < r.qty; i++) leftSeq.push(r.type); });
 
-  const leftSpan = leftSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
-  const rightSpan= rightSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
+// Use the SAME order on the right (no reverse)
+const rightSeq = [...leftSeq];
+
+// (optional) spans stay the same:
+const leftSpan  = leftSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
+const rightSpan = rightSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
+
   const pendSpan = spanOf({base:pendantPack});
 
   const totalSpan = leftSpan + pendSpan + rightSpan;
