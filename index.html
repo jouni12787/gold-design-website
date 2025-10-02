@@ -3,9 +3,28 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#17120a">
+
+<!-- Favicon (uses your 1000px SVG) -->
+<link rel="icon" href="/gold-design-website/icon/icon-1000.svg" type="image/svg+xml">
+
+<!-- Apple touch icon (can be any square PNG; using your 500px) -->
+<link rel="apple-touch-icon" href="/gold-design-website/icon/icon-500.png">
 <title>Gold Design — Bracelet Builder (Pins + 3D)</title>
 <style>
-  :root{--radius:14px;--shadow:0 18px 36px rgba(0,0,0,.45)}
+  :root{
+    --radius:14px;
+    --shadow:0 18px 36px rgba(0,0,0,.45);
+    --bar-font:clamp(.98rem,.9rem + .35vw,1.15rem);
+    --bar-pad-y:14px;
+    --bar-pad-x:18px;
+    --bar-gap:12px;
+    --bar-icon:28px;
+    --bar-close:32px;
+    --bar-btn-py:8px;
+    --bar-btn-px:16px;
+  }
 
   html[data-theme="dark"]{
     --bg:#17120a;
@@ -107,6 +126,45 @@
     --pin-stroke:#f8ecff;
   }
 
+  /* === A2HS (Install) UI === */
+  #a2hsBanner{
+    position:fixed;top:0;left:0;right:0;z-index:9999;
+    transform:translateY(-110%);transition:transform .45s ease;
+    background:color-mix(in oklab,var(--bg) 88%,transparent);color:var(--ink);
+    border-bottom:1px solid var(--border-soft);
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    font-size:var(--bar-font);
+  }
+  #a2hsBanner.show{transform:translateY(0)}
+  #a2hsBanner .wrap{display:flex;align-items:center;gap:var(--bar-gap);padding:var(--bar-pad-y) var(--bar-pad-x);}
+  #a2hsBanner img.icon{width:var(--bar-icon);height:var(--bar-icon);border-radius:6px;flex:0 0 var(--bar-icon)}
+  #a2hsBanner .txt{flex:1;line-height:1.35}
+  #a2hsBanner .cta{
+    background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2b1f10;
+    border:0;border-radius:999px;padding:var(--bar-btn-py) var(--bar-btn-px);
+    font-weight:800;cursor:pointer;font-size:1em;
+  }
+  #a2hsBanner .close{
+    background:transparent;color:var(--ink);border:0;
+    width:var(--bar-close);height:var(--bar-close);
+    font-size:calc(var(--bar-close) * 0.56);line-height:var(--bar-close);cursor:pointer;flex:0 0 var(--bar-close);
+  }
+
+  #a2hsModal{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:24px 12px;}
+  #a2hsModal.open{display:flex}
+  #a2hsModal::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.6)}
+  #a2hsModal .sheet{
+    position:relative;width:min(560px,92vw);max-height:calc(100vh - 48px);overflow:auto;
+    background:color-mix(in oklab,var(--bg) 86%,transparent);color:var(--ink);
+    border:1px solid var(--border-soft);border-radius:16px;padding:16px;
+    box-shadow:0 20px 50px rgba(0,0,0,.65);
+  }
+  #a2hsModal .steps{margin-top:6px;font-size:14px;line-height:1.7}
+  #a2hsModal .steps .row{display:flex;gap:10px;margin:6px 0}
+  #a2hsModal .x{position:absolute;top:8px;left:10px;background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
+
+  body.has-topbar{padding-top:68px}
+
   *{box-sizing:border-box}html,body{height:100%}
   body{margin:0;background:
     radial-gradient(1100px 500px at 15% -15%, var(--accent-radial-1) 0%, transparent 60%),
@@ -153,6 +211,27 @@
 </style>
 </head>
 <body>
+<!-- A2HS Banner -->
+<div id="a2hsBanner" aria-hidden="true">
+  <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
+    <button class="close" type="button" aria-label="Close">×</button>
+    <img class="icon" src="/gold-design-website/icon/icon-500.png" alt="App icon">
+    <div class="txt">Install Gold Design for quick access — add it to your Home Screen.</div>
+    <button class="cta" type="button" id="a2hsGet">Install</button>
+  </div>
+</div>
+
+<!-- iOS Guide (no images; simple instructions) -->
+<div id="a2hsModal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
+    <button class="x" type="button" aria-label="Close">×</button>
+    <h3 id="a2hsTitle">Add to Home Screen</h3>
+    <div class="steps">
+      <div class="row"><strong>1.</strong> Tap <em>Share</em> in Safari.</div>
+      <div class="row"><strong>2.</strong> Choose <em>Add to Home Screen</em>, then <em>Add</em>.</div>
+    </div>
+  </div>
+</div>
 <div class="wrap">
   <!-- LEFT -->
   <section class="card">
@@ -258,6 +337,65 @@
     </div>
   </section>
 </div>
+
+<script>
+/* ============ A2HS banner logic (English) ============ */
+(function(){
+  var banner = document.getElementById('a2hsBanner');
+  var getBtn = document.getElementById('a2hsGet');
+  var modal = document.getElementById('a2hsModal');
+  var deferredPrompt = null;
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    try{
+      if(!isStandalone() && sessionStorage.getItem('a2hs_dismissed') !== '1' && !isIOS){
+        showBanner();
+      }
+    }catch{}
+  });
+
+  function isStandalone(){
+    var mql = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    var ios = window.navigator && window.navigator.standalone === true;
+    return !!(mql || ios);
+  }
+  function showBanner(){ banner.classList.add('show'); document.body.classList.add('has-topbar'); }
+  function hideBanner(){ banner.classList.remove('show'); document.body.classList.remove('has-topbar'); }
+  function openGuide(){ hideBanner(); modal.classList.add('open'); }
+  function closeGuide(){ modal.classList.remove('open'); }
+
+  banner.querySelector('.close').addEventListener('click', function(){
+    hideBanner(); try{ sessionStorage.setItem('a2hs_dismissed','1'); }catch(e){}
+  });
+  modal.querySelector('.x').addEventListener('click', closeGuide);
+  modal.addEventListener('click', function(e){ if(e.target === modal) closeGuide(); });
+
+  getBtn.addEventListener('click', async function(){
+    if(deferredPrompt){
+      try{ deferredPrompt.prompt(); await deferredPrompt.userChoice; }catch(e){}
+      deferredPrompt = null; hideBanner();
+    }else if(isIOS){ openGuide(); }
+  });
+
+  window.addEventListener('load', function(){
+    var dismissed = '0';
+    try{ dismissed = sessionStorage.getItem('a2hs_dismissed') || '0'; }catch(e){}
+    if(isStandalone() || dismissed === '1') return;
+    if(isIOS){ setTimeout(showBanner, 600); }
+  });
+})();
+</script>
+
+<script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+</script>
 
 <!-- ==================== 2D BUILDER ==================== -->
 <script>
