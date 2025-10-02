@@ -195,17 +195,38 @@
     radial-gradient(900px 600px at 120% 0%, var(--accent-radial-2) 0%, transparent 70%),
     linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
     color:var(--ink);font:15.5px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;transition:color .3s ease, background .3s ease}
-  .topbar{position:sticky;top:0;z-index:60;background:var(--head-bg);backdrop-filter:saturate(1.2) blur(6px);border-bottom:1px solid var(--border-soft)}
-  .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
- .topbar .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
-  .topbar .brand img{width:36px;height:36px;border-radius:8px}
-  .topbar .brand .brand-stack{display:flex;flex-direction:column;line-height:1.1}
-  .topbar .brand .brand-title{font-weight:800;letter-spacing:.4px;font-size:16px}
-  .topbar .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75}
-  .topbar .nav{margin-left:auto;display:flex;gap:10px}
-  .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:8px 12px;border-radius:10px}
-  .topbar .nav a:hover{border-color:var(--gold)}
-  .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold)}
+  .topbar{position:sticky;top:0;z-index:80;background:var(--head-bg);backdrop-filter:saturate(1.25) blur(10px);border-bottom:1px solid var(--border-soft)}
+  .topbar .wrap{max-width:1240px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:14px}
+  .topbar .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+  .topbar .brand img{width:40px;height:40px;border-radius:10px;box-shadow:0 8px 18px rgba(0,0,0,.35)}
+  .topbar .brand .brand-stack{display:flex;flex-direction:column;line-height:1.05}
+  .topbar .brand .brand-title{font-weight:800;letter-spacing:.42px;font-size:17px}
+  .topbar .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.6px}
+  .topbar .nav{margin-left:auto;display:flex;gap:12px;align-items:center}
+  .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;transition:border .2s,color .2s,background .2s}
+  .topbar .nav a:hover{border-color:var(--gold);color:var(--ink);background:color-mix(in oklab,var(--gold) 16%,transparent)}
+  .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold);background:color-mix(in oklab,var(--gold) 18%,transparent)}
+  .story-hero{position:relative;max-width:1240px;margin:0 auto;padding:54px 18px 58px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .story-hero::before{content:"";position:absolute;inset:18px;border-radius:24px;background:
+    radial-gradient(1200px 600px at 10% 10%, color-mix(in oklab,var(--gold) 18%,transparent) 0%, transparent 65%),
+    radial-gradient(1200px 680px at 90% 0%, color-mix(in oklab,var(--gold2) 24%,transparent) 0%, transparent 70%),
+    linear-gradient(140deg, color-mix(in oklab,var(--bg) 75%, transparent) 0%, color-mix(in oklab,var(--bg2) 85%, transparent) 100%);
+    opacity:.92;filter:blur(0);z-index:-2}
+  .story-hero::after{content:"";position:absolute;inset:18px;border-radius:24px;border:1px solid var(--border-soft);backdrop-filter:blur(6px);z-index:-1}
+  .story-hero .hero-content{max-width:720px;position:relative;z-index:1;display:flex;flex-direction:column;gap:18px;padding:32px 24px}
+  .story-hero .hero-eyebrow{letter-spacing:.45em;font-size:12px;text-transform:uppercase;color:var(--muted)}
+  .story-hero h2{margin:0;font-size:clamp(2.1rem,2.4vw + 1.6rem,3.2rem);letter-spacing:.02em}
+  .story-hero p{margin:0;font-size:1.05rem;color:color-mix(in oklab,var(--ink) 88%, transparent)}
+  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .hero-btn{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:700;font-size:.98rem;border:1px solid var(--border-strong);color:var(--ink);background:linear-gradient(120deg,var(--button-top),var(--button-bottom));transition:border .2s,transform .2s,background .2s}
+  .hero-btn:hover{border-color:var(--gold);transform:translateY(-1px);background:linear-gradient(120deg,var(--button-hover-top),var(--button-hover-bottom))}
+  .hero-btn.secondary{background:transparent;border-color:var(--border-soft)}
+  .story-blocks{max-width:1240px;margin:40px auto 0;padding:0 18px;display:grid;gap:32px}
+  .story-block{border:1px solid var(--border-soft);border-radius:24px;padding:28px;background:linear-gradient(160deg,var(--card-overlay),var(--card));box-shadow:var(--shadow);display:grid;gap:18px}
+  .story-block h3{margin:0;font-size:1.4rem}
+  .story-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .story-tile{padding:16px;border-radius:16px;border:1px solid color-mix(in oklab,var(--border-soft) 75%, transparent);background:color-mix(in oklab,var(--control-bg) 80%, transparent)}
+  .story-tile strong{display:block;font-size:1rem;margin-bottom:6px}
   .wrap{max-width:1200px;margin:28px auto;padding:0 16px;display:grid;gap:18px;grid-template-columns:1fr 1.35fr}
   @media (max-width:980px){.wrap{grid-template-columns:1fr}}
   .card{background:linear-gradient(160deg,var(--card-overlay),var(--card));
@@ -213,6 +234,7 @@
   .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border-soft);background:var(--head-bg)}
   .head h1{margin:0;font-size:18px}
   .headPrimary{display:flex;flex-direction:column;gap:4px}
+  .headActions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
   .badge{font-size:12px;color:var(--muted)}
   .themePicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
   .themePicker span{white-space:nowrap}
@@ -226,21 +248,57 @@
   .row{display:grid;grid-template-columns:1.2fr .7fr auto auto;gap:10px;align-items:end}
   button{appearance:none;background:linear-gradient(180deg,var(--button-top),var(--button-bottom));color:var(--ink);border:1px solid var(--border-strong);padding:10px 14px;border-radius:12px;cursor:pointer;transition:border .2s,background .2s,color .2s}
   button:hover{border-color:var(--gold);background:linear-gradient(180deg,var(--button-hover-top),var(--button-hover-bottom));color:var(--ink)}
-  .summary{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--summary-bg);border:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .summary .w{color:var(--gold)}
-  .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .summary{margin-top:16px;padding:18px;border-radius:18px;background:var(--summary-bg);border:1px solid var(--border-soft);display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+  .summary .summary-primary{flex:1 1 220px;display:flex;flex-direction:column;gap:6px}
+  .summary strong{font-size:1.05rem}
+  .summary .w{color:var(--gold);font-size:1.2rem}
+  .summary .summary-stats{display:flex;gap:16px;flex-wrap:wrap}
+  .summary .stat{background:color-mix(in oklab,var(--control-bg) 78%,transparent);border:1px solid color-mix(in oklab,var(--border-soft) 80%,transparent);border-radius:14px;padding:12px 14px;min-width:120px}
+  .summary .stat span{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+  .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .buttons button{flex:0 0 auto}
+  button.secondary{background:transparent;border-color:var(--border-soft)}
+  button.secondary:hover{border-color:var(--gold)}
+  button.ghost{background:transparent;border:1px dashed var(--border-soft)}
+  button.ghost:hover{border-color:var(--gold);background:color-mix(in oklab,var(--gold) 14%,transparent)}
   .preview{display:flex;align-items:center;justify-content:center;background:
     radial-gradient(600px 400px at 50% 0%, var(--preview-glow) 0%, transparent 70%),
     var(--bg2);min-height:320px;position:relative;transition:background .3s ease}
   svg#stage{width:100%;height:100%;max-height:560px}
   #stage [data-role="background"]{fill:var(--bg2);transition:fill .3s ease}
+  .materialNarrative{margin-top:10px;font-size:.9rem;color:var(--muted);line-height:1.5}
+  .themeDesigner{margin-top:12px;padding:14px;border-radius:14px;border:1px dashed var(--border-soft);background:color-mix(in oklab,var(--control-bg) 85%, transparent);display:none;gap:12px}
+  .themeDesigner.open{display:grid}
+  .themeDesigner__grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .themeDesigner label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+  .themeDesigner input[type="color"]{width:100%;height:40px;border:1px solid var(--border-soft);border-radius:12px;background:transparent;padding:0}
+  .themeDesigner button{justify-self:start}
+  #wishlistCTA{position:absolute;top:16px;right:16px;padding:10px 18px;border-radius:999px;border:1px solid var(--border-soft);background:color-mix(in oklab,var(--control-bg) 78%, transparent);color:var(--ink);font-weight:700;cursor:pointer;transition:transform .2s,border .2s}
+  #wishlistCTA:hover{border-color:var(--gold);transform:translateY(-1px)}
+  .stlHud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;align-items:center;background:var(--hud-bg);border:1px solid var(--hud-border);padding:8px 10px;border-radius:10px;color:var(--hud-text);backdrop-filter:blur(8px);transition:background .3s ease,border-color .3s ease,color .3s ease;flex-wrap:wrap}
+  .stlHud .cameraControls{display:flex;gap:6px}
+  .stlHud .cameraControls button{padding:6px 10px;font-size:11px;border-radius:8px;border:1px solid color-mix(in oklab,var(--hud-border) 70%, transparent);background:transparent;color:inherit;cursor:pointer}
+  .stlHud .cameraControls button:hover{border-color:var(--gold);color:var(--gold)}
+  .stlHud select{min-width:150px}
+  .toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(140%);transition:transform .4s ease,opacity .4s ease;opacity:0;background:var(--hud-bg);color:var(--hud-text);border:1px solid var(--hud-border);padding:14px 18px;border-radius:14px;z-index:1200;backdrop-filter:blur(12px);font-weight:600}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  #tourOverlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+  #tourOverlay.open{display:flex}
+  #tourSpotlight{position:absolute;border-radius:22px;box-shadow:0 0 0 200vmax rgba(0,0,0,.7);pointer-events:none;transition:all .3s ease}
+  #tourCard{position:relative;z-index:1;max-width:420px;background:color-mix(in oklab,var(--card) 92%, transparent);border-radius:18px;padding:22px;border:1px solid var(--border-soft);display:flex;flex-direction:column;gap:12px;color:var(--ink)}
+  #tourCard h4{margin:0;font-size:1.2rem}
+  #tourControls{display:flex;justify-content:space-between;gap:10px}
+  #tourControls button{flex:1}
+  @media (max-width:980px){
+    .wrap{grid-template-columns:1fr}
+    #wishlistCTA{top:auto;bottom:16px}
+  }
   .tabs{display:flex;gap:6px}
   .tab{background:var(--tab-bg);border:1px solid var(--border-soft);color:var(--muted);padding:6px 10px;border-radius:10px;cursor:pointer;font-size:12px;transition:border .2s,color .2s,background .2s}
   .tab:hover{color:var(--ink);border-color:var(--gold)}
   .tab.active{border-color:var(--gold);color:var(--gold);background:var(--tab-active-bg)}
   #preview3d{display:none}
   #stlCanvas{width:100%;height:100%;max-height:560px;display:block}
-  .stlHud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;align-items:center;background:var(--hud-bg);border:1px solid var(--hud-border);padding:8px 10px;border-radius:10px;color:var(--hud-text);backdrop-filter:blur(8px);transition:background .3s ease,border-color .3s ease,color .3s ease}
   .stlHud select,.stlHud label{margin:0}
   .stlStatus{position:absolute;right:12px;bottom:12px;font:12px/1.3 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--hud-bg);border:1px solid var(--hud-border);color:var(--hud-text);padding:6px 8px;border-radius:8px;pointer-events:none;transition:background .3s ease,border-color .3s ease,color .3s ease}
 </style>
@@ -288,10 +346,59 @@
     </a>
     <nav class="nav">
       <a href="index.html" aria-current="page">Bracelet Builder</a>
+      <a href="#heritage">Heritage</a>
+      <a href="#craftsmanship">Craftsmanship</a>
       <a href="store.html">Store</a>
     </nav>
   </div>
 </header>
+<section class="story-hero" id="maison">
+  <div class="hero-content">
+    <span class="hero-eyebrow">Maison Chakaroun · Established Beirut 1964</span>
+    <h2>Bespoke bracelets infused with Levantine poetry and Parisian polish.</h2>
+    <p>Craft a signature piece from the same atelier that shapes our haute joaillerie. Every pendant, halo link and clasp follows archival proportions that honour our founders while embracing contemporary luxury.</p>
+    <div class="hero-actions">
+      <a class="hero-btn" href="#craftsmanship">Discover our craftsmanship</a>
+      <a class="hero-btn secondary" href="store.html">Visit the online boutique</a>
+    </div>
+  </div>
+</section>
+<div class="story-blocks">
+  <section class="story-block" id="heritage">
+    <h3>Heritage</h3>
+    <div class="story-grid">
+      <div class="story-tile">
+        <strong>Damascus filigree lineage</strong>
+        <p>Our bracelets reinterpret filigree techniques preserved by Hassan Chakaroun, marrying slender wire twists with modern proportions.</p>
+      </div>
+      <div class="story-tile">
+        <strong>Family crest pendants</strong>
+        <p>Pendants echo the cedar crest carried by generations, ready for engraving initials, verses or bespoke monograms.</p>
+      </div>
+      <div class="story-tile">
+        <strong>Curated palettes</strong>
+        <p>Each theme references a chapter of our maison — Desert Dawn, Midnight Majlis and Plum Soirée — with a custom option for your house codes.</p>
+      </div>
+    </div>
+  </section>
+  <section class="story-block" id="craftsmanship">
+    <h3>Craftsmanship</h3>
+    <div class="story-grid">
+      <div class="story-tile">
+        <strong>Maison-approved weights</strong>
+        <p>Real densities for gold, platinum and sterling silver drive the gram estimate so production teams can quote confidently.</p>
+      </div>
+      <div class="story-tile">
+        <strong>Showroom lighting presets</strong>
+        <p>Orbit your 3D jewel through Gallery, Spotlight or Twilight scenes, or bookmark your own camera for export-ready frames.</p>
+      </div>
+      <div class="story-tile">
+        <strong>Saved ateliers</strong>
+        <p>Store favourite builds and palettes locally, then add them to a wishlist for private client previews.</p>
+      </div>
+    </div>
+  </section>
+</div>
 <div class="wrap">
   <!-- LEFT -->
   <section class="card">
@@ -300,16 +407,41 @@
         <h1>Bracelet Builder</h1>
         <span class="badge">Pin snapping · horizontal SVGs</span>
       </div>
-      <div class="themePicker">
-        <span>Theme</span>
-        <select id="themeSelect" aria-label="Select theme">
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-          <option value="plum">Plum</option>
-        </select>
+      <div class="headActions">
+        <div class="themePicker">
+          <span>Theme</span>
+          <select id="themeSelect" aria-label="Select theme">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+            <option value="plum">Plum</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <button class="ghost" type="button" id="startTour">Guide me</button>
       </div>
     </div>
     <div class="panel">
+      <div class="themeDesigner" id="themeDesigner" aria-hidden="true">
+        <div class="themeDesigner__grid">
+          <div>
+            <label for="customAccent">Accent color</label>
+            <input type="color" id="customAccent" value="#d4af37">
+          </div>
+          <div>
+            <label for="customBackground">Background</label>
+            <input type="color" id="customBackground" value="#17120a">
+          </div>
+          <div>
+            <label for="customBackground2">Background glow</label>
+            <input type="color" id="customBackground2" value="#2a1b0f">
+          </div>
+          <div>
+            <label for="customInk">Typography</label>
+            <input type="color" id="customInk" value="#fff7e6">
+          </div>
+        </div>
+        <button type="button" id="applyCustomTheme">Apply palette</button>
+      </div>
       <div class="grid2">
         <div>
           <label for="pendant">Pendant</label>
@@ -336,15 +468,55 @@
       </div>
       <div style="margin-top:8px"><button id="addRow">+ Add link type</button></div>
 
-      <div class="summary" role="status" aria-live="polite">
-        <div><strong>Estimated Weight:</strong> <span class="w" id="weight">0.00 g</span></div>
-        <div class="badge">Placeholder grams.</div>
+      <div class="grid2" style="margin-top:16px">
+        <div>
+          <label for="metalPreset">Metal &amp; purity</label>
+          <select id="metalPreset"></select>
+        </div>
+        <div>
+          <label for="wristSize">Wrist size (cm)</label>
+          <input id="wristSize" type="number" min="14" max="24" step="0.5" value="18">
+        </div>
       </div>
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <label for="gemCarats">Gemstone inserts (ct)</label>
+          <input id="gemCarats" type="number" min="0" step="0.1" value="0">
+        </div>
+        <div>
+          <label for="metalMarkup">Atelier markup (%)</label>
+          <input id="metalMarkup" type="number" min="0" step="1" value="20">
+        </div>
+      </div>
+
+      <div class="summary" id="materialSummary" role="status" aria-live="polite">
+        <div class="summary-primary">
+          <div><strong>Estimated Weight</strong></div>
+          <span class="w" id="totalWeight">0.00 g</span>
+          <div class="badge" id="materialDetails">Select a metal profile to see atelier-ready grams.</div>
+        </div>
+        <div class="summary-stats">
+          <div class="stat">
+            <span>Metal weight</span>
+            <strong id="metalWeight">0.00 g</strong>
+          </div>
+          <div class="stat">
+            <span>Gem weight</span>
+            <strong id="gemWeight">0.00 g</strong>
+          </div>
+          <div class="stat">
+            <span>Estimate</span>
+            <strong id="priceEstimate">$0.00</strong>
+          </div>
+        </div>
+      </div>
+      <div class="materialNarrative" id="materialNarrative">Weights are calibrated to 18K gold until you choose another alloy.</div>
 
       <div class="buttons">
         <button id="downloadSVG">Download SVG</button>
         <button id="downloadPNG">Download PNG</button>
-        <button id="reset">Reset</button>
+        <button id="saveSession" class="secondary">Save session</button>
+        <button id="reset" class="ghost">Reset</button>
       </div>
 
     </div>
@@ -380,6 +552,7 @@
 
     <!-- 3D -->
     <div class="preview" id="preview3d">
+      <button id="wishlistCTA" type="button">♡ Add to wishlist</button>
       <canvas id="stlCanvas"></canvas>
       <div class="stlHud">
         <select id="stlSelect" title="Choose model">
@@ -389,6 +562,16 @@
           <option value="link/gold circle link.stl">gold circle link — 1mm</option>
 
         </select>
+        <select id="lightingPreset" title="Lighting preset">
+          <option value="gallery">Gallery glow</option>
+          <option value="spotlight">Spotlight focus</option>
+          <option value="twilight">Twilight bloom</option>
+        </select>
+        <div class="cameraControls" role="group" aria-label="Camera bookmarks">
+          <button type="button" data-bookmark="front">Front</button>
+          <button type="button" data-bookmark="threeQuarter">Three-quarter</button>
+          <button type="button" data-bookmark="top">Top</button>
+        </div>
         <label style="display:inline-flex;gap:.35rem;align-items:center;">
           <input type="checkbox" id="stlAutoRotate"> Auto rotate
         </label>
@@ -396,6 +579,21 @@
       </div>
     </div>
   </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div id="tourOverlay" aria-hidden="true">
+  <div id="tourSpotlight"></div>
+  <div id="tourCard" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
+    <h4 id="tourTitle">Welcome to the Atelier</h4>
+    <p id="tourBody">Let us highlight the controls that shape your bracelet.</p>
+    <div id="tourControls">
+      <button type="button" id="tourPrev" class="ghost">Back</button>
+      <button type="button" id="tourNext">Next</button>
+    </div>
+    <button type="button" id="tourSkip" class="ghost" style="margin-top:6px">Skip tour</button>
+  </div>
 </div>
 
 <script>
@@ -477,11 +675,127 @@
 <script>
 "use strict";
 
-const THEMES = ["light", "dark", "plum"];
+const THEMES = ["light", "dark", "plum", "custom"];
 const THEME_KEY = window.__HCJ_THEME_KEY || "hcj-theme";
 const DEFAULT_THEME = document.documentElement.dataset.theme || "light";
 const STAGE_W = 1080;
 const STAGE_H = 320; // compact height
+const STORAGE_KEYS = {
+  session: 'hcj-builder-session',
+  wishlist: 'hcj-builder-wishlist',
+  customTheme: 'hcj-theme-custom',
+  tour: 'hcj-builder-tour'
+};
+const BASE_DENSITY = 15.6; // 18K heritage gold baseline (g/cm^3)
+const BASE_WRIST_CM = 18;
+const CARAT_TO_GRAM = 0.2;
+const GEM_PRICE_PER_CARAT = 450; // USD
+
+const METAL_PRESETS = [
+  { id: 'gold-18', label: '18K Heritage Gold', density: 15.6, pricePerGram: 62, narrative: 'Signature yellow gold balanced with palladium for warm luminosity and daily durability.' },
+  { id: 'gold-22', label: '22K Levantine Gold', density: 17.5, pricePerGram: 68, narrative: 'High-karat glow inspired by souk treasures, ideal for ceremonial commissions.' },
+  { id: 'gold-14', label: '14K Studio Gold', density: 13.1, pricePerGram: 45, narrative: 'Lean, contemporary alloy suited to everyday wear with atelier polish.' },
+  { id: 'rose-18', label: '18K Rose Gold', density: 15.2, pricePerGram: 60, narrative: 'Copper-rich hue with subtle blush undertones crafted for modern romantic silhouettes.' },
+  { id: 'platinum', label: 'Platinum 950', density: 21.45, pricePerGram: 85, narrative: 'Rare platinum with ruthenium reinforcement for mirror-bright settings and heirloom resilience.' },
+  { id: 'silver', label: 'Sterling Silver 925', density: 10.5, pricePerGram: 12, narrative: 'Artisan silver brightened with rhodium for crisp light play on intricate links.' }
+];
+
+const CUSTOM_THEME_DEFAULTS = {
+  accent: '#d4af37',
+  bg: '#17120a',
+  bg2: '#2a1b0f',
+  ink: '#fff7e6'
+};
+
+const priceFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+function ensureCustomThemeStyle(){
+  let styleEl = document.getElementById('hcj-custom-theme-style');
+  if(!styleEl){
+    styleEl = document.createElement('style');
+    styleEl.id = 'hcj-custom-theme-style';
+    document.head.appendChild(styleEl);
+  }
+  return styleEl;
+}
+
+function normalizeThemeConfig(cfg){
+  const base = { ...CUSTOM_THEME_DEFAULTS };
+  if(cfg && typeof cfg === 'object'){
+    if(typeof cfg.accent === 'string') base.accent = cfg.accent;
+    if(typeof cfg.bg === 'string') base.bg = cfg.bg;
+    if(typeof cfg.bg2 === 'string') base.bg2 = cfg.bg2;
+    if(typeof cfg.ink === 'string') base.ink = cfg.ink;
+  }
+  return base;
+}
+
+function applyCustomThemeVars(cfg){
+  const settings = normalizeThemeConfig(cfg);
+  const styleEl = ensureCustomThemeStyle();
+  const { accent, bg, bg2, ink } = settings;
+  styleEl.textContent = `html[data-theme="custom"]{
+    --bg:${bg};
+    --bg2:${bg2};
+    --card:color-mix(in oklab, ${bg} 85%, ${bg2});
+    --card-overlay:color-mix(in oklab, ${bg2} 70%, transparent);
+    --ink:${ink};
+    --muted:color-mix(in oklab, ${ink} 60%, transparent);
+    --gold:${accent};
+    --gold2:color-mix(in oklab, ${accent} 60%, #000 40%);
+    --border-soft:color-mix(in oklab, ${accent} 30%, transparent);
+    --border-strong:color-mix(in oklab, ${accent} 48%, transparent);
+    --control-border:color-mix(in oklab, ${accent} 36%, transparent);
+    --control-bg:color-mix(in oklab, ${bg} 88%, transparent);
+    --control-focus-bg:color-mix(in oklab, ${bg} 70%, ${bg2});
+    --control-focus-shadow:color-mix(in oklab, ${accent} 28%, transparent);
+    --head-bg:color-mix(in oklab, ${bg} 82%, transparent);
+    --summary-bg:color-mix(in oklab, ${bg} 80%, ${bg2});
+    --preview-glow:color-mix(in oklab, ${accent} 25%, transparent);
+    --tab-bg:color-mix(in oklab, ${bg} 82%, transparent);
+    --tab-active-bg:color-mix(in oklab, ${bg2} 70%, transparent);
+    --hud-bg:color-mix(in oklab, ${bg} 72%, transparent);
+    --hud-border:color-mix(in oklab, ${accent} 26%, transparent);
+    --hud-text:${ink};
+    --button-top:color-mix(in oklab, ${accent} 20%, transparent);
+    --button-bottom:color-mix(in oklab, ${accent} 16%, transparent);
+    --button-hover-top:color-mix(in oklab, ${accent} 30%, transparent);
+    --button-hover-bottom:color-mix(in oklab, ${accent} 24%, transparent);
+    --accent-radial-1:color-mix(in oklab, ${accent} 22%, transparent);
+    --accent-radial-2:color-mix(in oklab, ${accent} 18%, transparent);
+    --pin-fill:${accent};
+    --pin-stroke:${ink};
+  }`;
+  return settings;
+}
+
+function loadCustomTheme(){
+  try{
+    const raw = localStorage?.getItem(STORAGE_KEYS.customTheme);
+    if(raw){
+      return normalizeThemeConfig(JSON.parse(raw));
+    }
+  }catch(_){/* ignore */}
+  return { ...CUSTOM_THEME_DEFAULTS };
+}
+
+function saveCustomTheme(cfg){
+  try{
+    localStorage?.setItem(STORAGE_KEYS.customTheme, JSON.stringify(normalizeThemeConfig(cfg)));
+  }catch(_){/* ignore */}
+}
+
+function updateThemeDesignerVisibility(){
+  if(!themeDesigner) return;
+  const open = selTheme?.value === 'custom';
+  themeDesigner.classList.toggle('open', open);
+  themeDesigner.setAttribute('aria-hidden', open ? 'false' : 'true');
+  const cfg = normalizeThemeConfig(customThemeSettings);
+  if(inpCustomAccent) inpCustomAccent.value = cfg.accent;
+  if(inpCustomBackground) inpCustomBackground.value = cfg.bg;
+  if(inpCustomBackground2) inpCustomBackground2.value = cfg.bg2;
+  if(inpCustomInk) inpCustomInk.value = cfg.ink;
+}
   
 function applyPinsByRatio(pack, ratios){
   if(!pack || !ratios) return;
@@ -508,6 +822,7 @@ function applyTheme(theme){
   return next;
 }
 
+let customThemeSettings = applyCustomThemeVars(loadCustomTheme());
 let currentTheme = DEFAULT_THEME;
 try{
   const stored = (typeof localStorage !== "undefined") ? localStorage.getItem(THEME_KEY) : null;
@@ -594,14 +909,48 @@ const selPendant = document.getElementById("pendant");
 const selLock = document.getElementById("lockSelect");
 const rowsBox = document.getElementById("rows");
 const btnAddRow = document.getElementById("addRow");
-const lblWeight = document.getElementById("weight");
 const btnSVG = document.getElementById("downloadSVG");
 const btnPNG = document.getElementById("downloadPNG");
 const btnReset = document.getElementById("reset");
+const btnSaveSession = document.getElementById("saveSession");
 const inpStep = document.getElementById("angleStep");
 const outStep = document.getElementById("angleStepOut");
+const selMetal = document.getElementById("metalPreset");
+const inpWrist = document.getElementById("wristSize");
+const inpGem = document.getElementById("gemCarats");
+const inpMarkup = document.getElementById("metalMarkup");
+const lblTotalWeight = document.getElementById("totalWeight");
+const lblMetalWeight = document.getElementById("metalWeight");
+const lblGemWeight = document.getElementById("gemWeight");
+const lblEstimate = document.getElementById("priceEstimate");
+const lblMaterialDetails = document.getElementById("materialDetails");
+const materialNarrative = document.getElementById("materialNarrative");
+const toast = document.getElementById("toast");
+const btnStartTour = document.getElementById("startTour");
+const tourOverlay = document.getElementById("tourOverlay");
+const tourSpotlight = document.getElementById("tourSpotlight");
+const tourCard = document.getElementById("tourCard");
+const tourTitle = document.getElementById("tourTitle");
+const tourBody = document.getElementById("tourBody");
+const tourNext = document.getElementById("tourNext");
+const tourPrev = document.getElementById("tourPrev");
+const tourSkip = document.getElementById("tourSkip");
+const themeDesigner = document.getElementById("themeDesigner");
+const inpCustomAccent = document.getElementById("customAccent");
+const inpCustomBackground = document.getElementById("customBackground");
+const inpCustomBackground2 = document.getElementById("customBackground2");
+const inpCustomInk = document.getElementById("customInk");
+const btnApplyCustomTheme = document.getElementById("applyCustomTheme");
+const wishlistCTA = document.getElementById("wishlistCTA");
+const selLighting = document.getElementById("lightingPreset");
+const cameraButtons = Array.from(document.querySelectorAll('.cameraControls button'));
 
 let lastToken = 0;
+let lastMaterialSnapshot = null;
+let toastTimer = null;
+let isRestoringSession = false;
+let tourIndex = 0;
+let isTourActive = false;
 
 /* Utils */
 const enc = s => encodeURIComponent(s); // keep %20 for spaces (GitHub Pages)
@@ -642,6 +991,235 @@ function rewriteURLRefs(root, idMap){
         el.setAttribute('xlink:href', `#${idMap[key]}`);
       }
     }
+  }
+}
+
+function populateMetalOptions(){
+  if(!selMetal) return;
+  selMetal.innerHTML = '';
+  METAL_PRESETS.forEach(meta => {
+    selMetal.appendChild(makeOption(meta.label, meta.id));
+  });
+  if(!selMetal.value && METAL_PRESETS[0]) selMetal.value = METAL_PRESETS[0].id;
+}
+
+function getMetalPreset(){
+  const id = selMetal?.value || METAL_PRESETS[0]?.id;
+  return METAL_PRESETS.find(meta => meta.id === id) || METAL_PRESETS[0];
+}
+
+function getWristScale(){
+  const wrist = Math.max(10, Math.min(28, parseFloat(inpWrist?.value ?? BASE_WRIST_CM) || BASE_WRIST_CM));
+  if(inpWrist) inpWrist.value = wrist.toString();
+  return wrist / BASE_WRIST_CM;
+}
+
+function getGemCarats(){
+  const val = Math.max(0, parseFloat(inpGem?.value ?? 0) || 0);
+  if(inpGem) inpGem.value = val.toString();
+  return val;
+}
+
+function getMarkup(){
+  const val = Math.max(0, parseFloat(inpMarkup?.value ?? 0) || 0);
+  if(inpMarkup) inpMarkup.value = val.toString();
+  return val;
+}
+
+function updateMaterialSummary(baseWeight){
+  const preset = getMetalPreset();
+  const wristScale = getWristScale();
+  const gemCarats = getGemCarats();
+  const markup = getMarkup();
+  const volume = baseWeight / BASE_DENSITY;
+  const metalWeight = volume * preset.density * wristScale;
+  const gemWeight = gemCarats * CARAT_TO_GRAM;
+  const totalWeight = metalWeight + gemWeight;
+  const metalCost = metalWeight * preset.pricePerGram;
+  const gemCost = gemCarats * GEM_PRICE_PER_CARAT;
+  const estimate = (metalCost + gemCost) * (1 + markup / 100);
+
+  if(lblTotalWeight) lblTotalWeight.textContent = `${totalWeight.toFixed(2)} g`;
+  if(lblMetalWeight) lblMetalWeight.textContent = `${metalWeight.toFixed(2)} g`;
+  if(lblGemWeight) lblGemWeight.textContent = `${gemWeight.toFixed(2)} g`;
+  if(lblEstimate) lblEstimate.textContent = priceFormatter.format(estimate || 0);
+  if(lblMaterialDetails) lblMaterialDetails.textContent = `${preset.label} • density ${preset.density.toFixed(1)} g/cm³`;
+  if(materialNarrative) materialNarrative.textContent = `${preset.narrative} Wrist scaled ×${wristScale.toFixed(2)} with ${gemCarats.toFixed(1)} ct inserts and ${markup.toFixed(0)}% atelier finish.`;
+
+  lastMaterialSnapshot = {
+    baseWeight,
+    totalWeight,
+    metalWeight,
+    gemWeight,
+    estimate,
+    presetId: preset.id,
+    wristScale,
+    gemCarats,
+    markup
+  };
+  return lastMaterialSnapshot;
+}
+
+function showToast(message){
+  if(!toast) return;
+  toast.textContent = message;
+  toast.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> toast.classList.remove('show'), 3400);
+}
+
+function collectSessionState(){
+  return {
+    theme: selTheme?.value || currentTheme,
+    pendant: selPendant?.value || PENDANTS[0],
+    lock: selLock?.value || '',
+    rows: readRows(),
+    angle: parseFloat(inpStep?.value ?? 15) || 15,
+    metal: selMetal?.value || METAL_PRESETS[0]?.id,
+    wrist: parseFloat(inpWrist?.value ?? BASE_WRIST_CM) || BASE_WRIST_CM,
+    gem: parseFloat(inpGem?.value ?? 0) || 0,
+    markup: parseFloat(inpMarkup?.value ?? 0) || 0,
+    lighting: selLighting?.value || 'gallery',
+    model: document.getElementById('stlSelect')?.value || '__assembly__',
+    autoRotate: document.getElementById('stlAutoRotate')?.checked || false
+  };
+}
+
+function saveSession(auto = false){
+  if(isRestoringSession) return;
+  try{
+    localStorage?.setItem(STORAGE_KEYS.session, JSON.stringify(collectSessionState()));
+    if(!auto) showToast('Session saved to this device.');
+  }catch(_){ if(!auto) showToast('Session storage is unavailable in this browser.'); }
+}
+
+function hydrateSession(){
+  let data = null;
+  try{
+    const raw = localStorage?.getItem(STORAGE_KEYS.session);
+    if(raw) data = JSON.parse(raw);
+  }catch(_){ data = null; }
+  if(!data) return false;
+
+  isRestoringSession = true;
+
+  if(selTheme && data.theme){
+    selTheme.value = THEMES.includes(data.theme) ? data.theme : currentTheme;
+    currentTheme = applyTheme(selTheme.value);
+  }
+
+  if(selPendant && data.pendant && PENDANTS.includes(data.pendant)) selPendant.value = data.pendant;
+  if(selLock && typeof data.lock === 'string') selLock.value = data.lock;
+
+  rowsBox.innerHTML = '';
+  if(Array.isArray(data.rows) && data.rows.length){
+    data.rows.forEach(item => addRow(item));
+  }else{
+    addRow({type:LINKS[0], qty:6});
+  }
+
+  if(inpStep && typeof data.angle === 'number'){ inpStep.value = data.angle; }
+  if(outStep && inpStep){ outStep.textContent = `${inpStep.value}°`; }
+  if(selMetal && data.metal) selMetal.value = data.metal;
+  if(inpWrist && data.wrist != null) inpWrist.value = data.wrist;
+  if(inpGem && data.gem != null) inpGem.value = data.gem;
+  if(inpMarkup && data.markup != null) inpMarkup.value = data.markup;
+  if(selLighting && data.lighting) selLighting.value = data.lighting;
+  const stlSelect = document.getElementById('stlSelect');
+  if(stlSelect && data.model) stlSelect.value = data.model;
+  const stlAuto = document.getElementById('stlAutoRotate');
+  if(stlAuto && typeof data.autoRotate === 'boolean') stlAuto.checked = data.autoRotate;
+
+  isRestoringSession = false;
+  return true;
+}
+
+function hasCompletedTour(){
+  try{ return localStorage?.getItem(STORAGE_KEYS.tour) === '1'; }
+  catch(_){ return false; }
+}
+
+function markTourSeen(){
+  try{ localStorage?.setItem(STORAGE_KEYS.tour, '1'); }
+  catch(_){/* ignore */}
+}
+
+const TOUR_STEPS = [
+  { selector: '.headActions', title: 'Curate your ambience', body: 'Swap between maison themes or open the custom palette to match a client’s brand codes.' },
+  { selector: '#pendant', title: 'Select a pendant', body: 'Pick the pendant silhouette that anchors your bracelet narrative.' },
+  { selector: '#rows', title: 'Balance your links', body: 'Stack link families and quantities; the builder mirrors them on both sides automatically.' },
+  { selector: '#angleStep', title: 'Shape the drape', body: 'Adjust the per-link bend to simulate how the chain falls around the wrist.' },
+  { selector: '#materialSummary', title: 'Review atelier specs', body: 'Real densities, gemstone inserts and markups generate production-ready gram and price estimates.' },
+  { selector: '#preview3d', title: 'Preview in 3D', body: 'Orbit the bracelet, change lighting presets and bookmark camera angles for renders.' },
+  { selector: '.buttons', title: 'Export and save', body: 'Download files, save the session locally or reset to begin a new composition.' }
+];
+
+function spotlightStep(step){
+  if(!tourSpotlight) return;
+  const padding = 16;
+  const target = step?.selector ? document.querySelector(step.selector) : null;
+  if(target){
+    const rect = target.getBoundingClientRect();
+    const scrollLeft = window.scrollX || document.documentElement.scrollLeft || 0;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+    const x = rect.left + scrollLeft - padding;
+    const y = rect.top + scrollTop - padding;
+    const w = rect.width + padding * 2;
+    const h = rect.height + padding * 2;
+    tourSpotlight.style.width = `${w}px`;
+    tourSpotlight.style.height = `${h}px`;
+    tourSpotlight.style.transform = `translate(${x}px, ${y}px)`;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }else{
+    tourSpotlight.style.width = '0';
+    tourSpotlight.style.height = '0';
+  }
+}
+
+function showTourStep(idx){
+  const step = TOUR_STEPS[idx];
+  if(!step){ endTour(); return; }
+  tourIndex = idx;
+  if(tourTitle) tourTitle.textContent = step.title;
+  if(tourBody) tourBody.textContent = step.body;
+  spotlightStep(step);
+  if(tourPrev) tourPrev.disabled = idx === 0;
+  if(tourNext) tourNext.textContent = idx === TOUR_STEPS.length - 1 ? 'Finish' : 'Next';
+}
+
+function startTour(force = false){
+  if(!tourOverlay) return;
+  if(!force && hasCompletedTour()) return;
+  isTourActive = true;
+  tourOverlay.classList.add('open');
+  tourOverlay.setAttribute('aria-hidden', 'false');
+  showTourStep(0);
+}
+
+function endTour(markSeen = true){
+  if(!tourOverlay) return;
+  isTourActive = false;
+  tourOverlay.classList.remove('open');
+  tourOverlay.setAttribute('aria-hidden', 'true');
+  if(markSeen) markTourSeen();
+}
+
+function addToWishlist(){
+  const summary = lastMaterialSnapshot || {};
+  const entry = {
+    ...collectSessionState(),
+    summary,
+    savedAt: Date.now()
+  };
+  try{
+    const raw = localStorage?.getItem(STORAGE_KEYS.wishlist);
+    const list = raw ? JSON.parse(raw) : [];
+    list.unshift(entry);
+    if(list.length > 12) list.length = 12;
+    localStorage?.setItem(STORAGE_KEYS.wishlist, JSON.stringify(list));
+    showToast('Added to wishlist. Access it again on this device.');
+  }catch(_){
+    showToast('Wishlist is unavailable in private browsing.');
   }
 }
 
@@ -719,46 +1297,144 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
 /* Init UI */
 (function init(){
   PENDANTS.forEach(n=> selPendant.appendChild(makeOption(n,n)));
-  selPendant.value = PENDANTS[0];
+  if(selPendant && !selPendant.value) selPendant.value = PENDANTS[0];
 
   if(selLock){
     selLock.appendChild(makeOption("None", ""));
     LOCKS.forEach(n=> selLock.appendChild(makeOption(n, n)));
-    selLock.value = "";
+    selLock.value = selLock.value ?? "";
     selLock.addEventListener("change", render);
   }
 
-  if (inpStep) {
-    if (outStep) outStep.textContent = `${inpStep.value}°`;
-    inpStep.addEventListener("input", render);
-  }
-
-  addRow({type:LINKS[0], qty:6}); // one link row by default
-
-  if(selTheme){
-    selTheme.value = THEMES.includes(selTheme.value) ? selTheme.value : currentTheme;
-    if(selTheme.value !== currentTheme) selTheme.value = currentTheme;
-    selTheme.addEventListener("change", e=>{
-      const chosen = applyTheme(e.target.value);
-      currentTheme = chosen;
+  if(inpStep){
+    if(outStep) outStep.textContent = `${inpStep.value}°`;
+    inpStep.addEventListener("input", ()=>{
+      if(outStep) outStep.textContent = `${getStepDeg()}°`;
       render();
     });
   }
 
-  btnAddRow.addEventListener("click", ()=>addRow());
-  selPendant.addEventListener("change", render);
-  btnSVG.addEventListener("click", downloadSVG);
-  btnPNG.addEventListener("click", downloadPNG);
-  btnReset.addEventListener("click", ()=>{
-    rowsBox.innerHTML="";
-    addRow({type:LINKS[0], qty:6});
-    selPendant.value=PENDANTS[0];
-    if(selLock) selLock.value="";
-    render();
+  populateMetalOptions();
+
+  if(selTheme){
+    selTheme.value = THEMES.includes(currentTheme) ? currentTheme : DEFAULT_THEME;
+    updateThemeDesignerVisibility();
+    selTheme.addEventListener("change", e=>{
+      const chosen = applyTheme(e.target.value);
+      currentTheme = chosen;
+      updateThemeDesignerVisibility();
+      render();
+    });
+  }
+
+  if(selMetal) selMetal.addEventListener("change", render);
+  if(inpWrist) inpWrist.addEventListener("input", ()=>render());
+  if(inpGem) inpGem.addEventListener("input", ()=>render());
+  if(inpMarkup) inpMarkup.addEventListener("input", ()=>render());
+
+  if(btnAddRow) btnAddRow.addEventListener("click", ()=>{ addRow(); render(); });
+  if(selPendant) selPendant.addEventListener("change", render);
+  if(btnSVG) btnSVG.addEventListener("click", downloadSVG);
+  if(btnPNG) btnPNG.addEventListener("click", downloadPNG);
+
+  if(btnReset){
+    btnReset.addEventListener("click", ()=>{
+      rowsBox.innerHTML = "";
+      addRow({type:LINKS[0], qty:6});
+      if(selPendant) selPendant.value = PENDANTS[0];
+      if(selLock) selLock.value = "";
+      if(inpStep){ inpStep.value = "15"; if(outStep) outStep.textContent = "15°"; }
+      if(selMetal && METAL_PRESETS[0]) selMetal.value = METAL_PRESETS[0].id;
+      if(inpWrist) inpWrist.value = BASE_WRIST_CM.toString();
+      if(inpGem) inpGem.value = "0";
+      if(inpMarkup) inpMarkup.value = "20";
+      saveSession(true);
+      showToast('Design reset.');
+      render();
+    });
+  }
+
+  if(btnSaveSession) btnSaveSession.addEventListener("click", ()=> saveSession(false));
+  if(btnStartTour) btnStartTour.addEventListener("click", ()=> startTour(true));
+
+  if(btnApplyCustomTheme){
+    btnApplyCustomTheme.addEventListener("click", ()=>{
+      customThemeSettings = normalizeThemeConfig({
+        accent: inpCustomAccent?.value,
+        bg: inpCustomBackground?.value,
+        bg2: inpCustomBackground2?.value,
+        ink: inpCustomInk?.value
+      });
+      applyCustomThemeVars(customThemeSettings);
+      saveCustomTheme(customThemeSettings);
+      currentTheme = applyTheme('custom');
+      if(selTheme) selTheme.value = 'custom';
+      updateThemeDesignerVisibility();
+      render();
+      showToast('Custom palette applied.');
+    });
+  }
+
+  if(themeDesigner){
+    [inpCustomAccent, inpCustomBackground, inpCustomBackground2, inpCustomInk].forEach(input=>{
+      if(!input) return;
+      input.addEventListener('input', ()=>{
+        if(selTheme?.value === 'custom'){
+          customThemeSettings = normalizeThemeConfig({
+            accent: inpCustomAccent?.value,
+            bg: inpCustomBackground?.value,
+            bg2: inpCustomBackground2?.value,
+            ink: inpCustomInk?.value
+          });
+          applyCustomThemeVars(customThemeSettings);
+          saveCustomTheme(customThemeSettings);
+          render();
+        }
+      });
+    });
+  }
+
+  if(selLighting){
+    selLighting.addEventListener('change', ()=>{
+      if(typeof window.__setLightingPreset === 'function') window.__setLightingPreset(selLighting.value);
+      saveSession(true);
+    });
+  }
+
+  cameraButtons.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.bookmark;
+      if(typeof window.__goToBookmark === 'function') window.__goToBookmark(id);
+    });
   });
+
+  if(wishlistCTA) wishlistCTA.addEventListener('click', addToWishlist);
+
+  const restored = hydrateSession();
+  if(!restored){
+    addRow({type:LINKS[0], qty:6});
+  }
+
+  updateThemeDesignerVisibility();
+  render();
+
+  if(selLighting && typeof window.__setLightingPreset === 'function'){
+    window.__setLightingPreset(selLighting.value);
+  }
+
   document.getElementById('tab2d').addEventListener('click', ()=>switchMode('2d'));
   document.getElementById('tab3d').addEventListener('click', ()=>switchMode('3d'));
-  render();
+
+  if(!hasCompletedTour()){
+    setTimeout(()=> startTour(false), 900);
+  }
+
+  window.addEventListener('resize', ()=>{ if(isTourActive) showTourStep(tourIndex); });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && isTourActive) endTour(false); });
+  if(tourOverlay) tourOverlay.addEventListener('click', e=>{ if(e.target === tourOverlay) endTour(false); });
+  if(tourNext) tourNext.addEventListener('click', ()=>{ if(tourIndex >= TOUR_STEPS.length - 1) endTour(); else showTourStep(tourIndex + 1); });
+  if(tourPrev) tourPrev.addEventListener('click', ()=>{ if(tourIndex > 0) showTourStep(tourIndex - 1); });
+  if(tourSkip) tourSkip.addEventListener('click', ()=> endTour());
 })();
 
 function addRow(init={type:LINKS[0], qty:6}){
@@ -1197,7 +1873,7 @@ for (let i = 0; i < rightSeq.length; i++) {
   const pendantW = weightFor(pendantName,"pendant");
   const linksW = rows.reduce((s,r)=> s + weightFor(r.type,"link") * r.qty*2, 0);
   const lockW = lockName ? weightFor(lockName,"link") : 0;
-  lblWeight.textContent = (pendantW + linksW + lockW).toFixed(2) + " g";
+  updateMaterialSummary(pendantW + linksW + lockW);
 
   const layoutPayload = {
     items: [...layoutLeft, ...(layoutPendant ? [layoutPendant] : []), ...layoutRight],
@@ -1209,6 +1885,7 @@ for (let i = 0; i < rightSeq.length; i++) {
     try{ window.__update3DAssembly(layoutPayload); }
     catch(err){ console.error('3D update failed', err); }
   }
+  saveSession(true);
 }
 
 /* Export */
@@ -1272,6 +1949,46 @@ const canvas    = document.getElementById('stlCanvas');
 const sel       = document.getElementById('stlSelect');
 const auto      = document.getElementById('stlAutoRotate');
 const btnDownload = document.getElementById('stlDownload');
+const lightingSelect = document.getElementById('lightingPreset');
+
+const LIGHTING_PRESETS = {
+  gallery: {
+    exposure: 1.75,
+    lights: {
+      ambient: { intensity: 1.3, color: 0xffffff },
+      hemi: { intensity: 0.75, sky: 0xfff4d2, ground: 0x201810 },
+      key: { intensity: 1.6, position: [6,7,10], color: 0xffffff },
+      accent: { intensity: 1.1, position: [-6,-4,5], color: 0xfff4d2 },
+      rim: { intensity: 0.9, position: [-3,5,-4], color: 0xfff6e0 },
+      fill: { intensity: 0.75, position: [0,2,-8], color: 0xfff0d8 },
+      front: { intensity: 0.65, position: [0,-1,6], color: 0xfff4d2 }
+    }
+  },
+  spotlight: {
+    exposure: 2.05,
+    lights: {
+      ambient: { intensity: 0.85, color: 0xfdf2d1 },
+      hemi: { intensity: 0.55, sky: 0xffe9c0, ground: 0x120a06 },
+      key: { intensity: 2.2, position: [4,8,6], color: 0xffffff },
+      accent: { intensity: 0.9, position: [-8,-2,6], color: 0xffd8a2 },
+      rim: { intensity: 1.1, position: [-2,5,-5], color: 0xfff7da },
+      fill: { intensity: 0.6, position: [0,1,-6], color: 0xf8dcb2 },
+      front: { intensity: 0.85, position: [0,-0.5,5.2], color: 0xfff4d2 }
+    }
+  },
+  twilight: {
+    exposure: 1.55,
+    lights: {
+      ambient: { intensity: 0.95, color: 0xe6d0ff },
+      hemi: { intensity: 0.65, sky: 0xf4d7ff, ground: 0x130b1c },
+      key: { intensity: 1.4, position: [5,6,9], color: 0xf9e6ff },
+      accent: { intensity: 1.0, position: [-6,-3,4], color: 0xdac8ff },
+      rim: { intensity: 0.9, position: [-3,4,-6], color: 0xf5ddff },
+      fill: { intensity: 0.7, position: [0,1.5,-7], color: 0xd7c5ff },
+      front: { intensity: 0.55, position: [0,-1,5.5], color: 0xeed8ff }
+    }
+  }
+};
 
 // Debug HUD (load status + size)
 const msg = document.createElement('div');
@@ -1290,6 +2007,8 @@ let wire = false;
 let loadToken = 0;
 let lastLayout = null;
 let stageHeight = typeof STAGE_H !== 'undefined' ? STAGE_H : 320;
+let lastFitDistance = 12;
+const lights = {};
 
 window.__update3DAssembly = handleLayoutUpdate;
 if(window.__bracelet3DLayout){
@@ -1305,6 +2024,8 @@ btnDownload.addEventListener('click', downloadCurrent);
 window.addEventListener('resize', resize3D);
 // let non-module switcher force-resize when tab opens
 window.__resize3D = resize3D;
+window.__setLightingPreset = applyLightingPreset;
+window.__goToBookmark = goToBookmark;
 
 function updateViewerTheme(){
   if(!scene) return;
@@ -1360,6 +2081,14 @@ function init(){
   frontFill.position.set(0, -1, 6);
   scene.add(frontFill);
 
+  lights.ambient = ambient;
+  lights.hemi = hemi;
+  lights.key = d1;
+  lights.accent = d2;
+  lights.rim = rim;
+  lights.fill = fill;
+  lights.front = frontFill;
+
   // press "W" to toggle wireframe (debug)
   window.addEventListener('keydown', e=>{
     if(e.key.toLowerCase()==='w'){
@@ -1370,6 +2099,7 @@ function init(){
 
   resize3D();
   updateViewerTheme();
+  applyLightingPreset(lightingSelect?.value || 'gallery');
   animate();
 }
 
@@ -1380,6 +2110,73 @@ function resize3D(){
   camera.aspect = w/h;
   camera.updateProjectionMatrix();
   renderer.setSize(w, h, false);
+}
+
+function applyLightingPreset(id){
+  const preset = LIGHTING_PRESETS[id] || LIGHTING_PRESETS.gallery;
+  if(!preset || !renderer) return;
+  if(typeof preset.exposure === 'number') renderer.toneMappingExposure = preset.exposure;
+
+  const cfg = preset.lights || {};
+  if(lights.ambient){
+    if(typeof cfg.ambient?.intensity === 'number') lights.ambient.intensity = cfg.ambient.intensity;
+    if(cfg.ambient?.color) lights.ambient.color.setHex(cfg.ambient.color);
+  }
+  if(lights.hemi){
+    if(typeof cfg.hemi?.intensity === 'number') lights.hemi.intensity = cfg.hemi.intensity;
+    if(cfg.hemi?.sky) lights.hemi.color.setHex(cfg.hemi.sky);
+    if(cfg.hemi?.ground) lights.hemi.groundColor.setHex(cfg.hemi.ground);
+  }
+  if(lights.key){
+    if(typeof cfg.key?.intensity === 'number') lights.key.intensity = cfg.key.intensity;
+    if(cfg.key?.position) lights.key.position.set(...cfg.key.position);
+    if(cfg.key?.color) lights.key.color.setHex(cfg.key.color);
+  }
+  if(lights.accent){
+    if(typeof cfg.accent?.intensity === 'number') lights.accent.intensity = cfg.accent.intensity;
+    if(cfg.accent?.position) lights.accent.position.set(...cfg.accent.position);
+    if(cfg.accent?.color) lights.accent.color.setHex(cfg.accent.color);
+  }
+  if(lights.rim){
+    if(typeof cfg.rim?.intensity === 'number') lights.rim.intensity = cfg.rim.intensity;
+    if(cfg.rim?.position) lights.rim.position.set(...cfg.rim.position);
+    if(cfg.rim?.color) lights.rim.color.setHex(cfg.rim.color);
+  }
+  if(lights.fill){
+    if(typeof cfg.fill?.intensity === 'number') lights.fill.intensity = cfg.fill.intensity;
+    if(cfg.fill?.position) lights.fill.position.set(...cfg.fill.position);
+    if(cfg.fill?.color) lights.fill.color.setHex(cfg.fill.color);
+  }
+  if(lights.front){
+    if(typeof cfg.front?.intensity === 'number') lights.front.intensity = cfg.front.intensity;
+    if(cfg.front?.position) lights.front.position.set(...cfg.front.position);
+    if(cfg.front?.color) lights.front.color.setHex(cfg.front.color);
+  }
+}
+
+function goToBookmark(id){
+  if(!camera || !controls) return;
+  const dist = Math.max(4, lastFitDistance || 10);
+  const target = new THREE.Vector3(0,0,0);
+  let position;
+  switch(id){
+    case 'threeQuarter':
+      position = new THREE.Vector3(dist * 0.9, dist * 0.35, dist * 0.7);
+      camera.up.set(0,1,0);
+      break;
+    case 'top':
+      position = new THREE.Vector3(0, dist, 0.01);
+      camera.up.set(0,0,-1);
+      break;
+    case 'front':
+    default:
+      position = new THREE.Vector3(0, dist * 0.1, dist);
+      camera.up.set(0,1,0);
+      break;
+  }
+  camera.position.copy(position);
+  controls.target.copy(target);
+  controls.update();
 }
 
 async function loadCurrent(){
@@ -1648,6 +2445,8 @@ function fitToView(obj){
   const fov = camera.fov * (Math.PI/180);
   let dist = maxDim / (2 * Math.tan(fov/2));
   dist *= 1.6;
+  lastFitDistance = dist;
+  camera.up.set(0,1,0);
   camera.position.set(dist, dist*0.2, dist);
   camera.lookAt(0,0,0);
   controls.update();
