@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Hassan Chakaroun Jewelry — Store</title>
+
+<!-- PWA + Icons -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#17120a">
+<link rel="icon" href="icon/icon-1000.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon/icon-500.png">
+
+<!-- Basic SEO/Open Graph -->
+<meta name="description" content="Handcrafted gold jewelry. Live-priced by gold rate soon.">
+<meta property="og:title" content="Hassan Chakaroun Jewelry — Store">
+<meta property="og:description" content="Handcrafted gold jewelry.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icon/icon-500.png">
+
+<style>
+  :root{--radius:14px;--shadow:0 18px 36px rgba(0,0,0,.45)}
+  /* reuse your themes (copied light/dark/plum vars) */
+  html[data-theme="dark"]{
+    --bg:#17120a;--bg2:#0f0b06;--card:#211a0e;--card-overlay:rgba(48,37,19,.86);
+    --ink:#fff7e6;--muted:#e8d9b3;--gold:#d4af37;--gold2:#b88a1a;
+    --border-soft:rgba(212,175,55,.18);--border-strong:rgba(212,175,55,.35);
+    --control-border:rgba(212,175,55,.22);--control-bg:rgba(23,18,10,.75);
+    --control-focus-bg:rgba(33,26,14,.85);--control-focus-shadow:rgba(212,175,55,.18);
+    --head-bg:rgba(15,11,6,.45);--summary-bg:rgba(23,18,10,.85);
+    --preview-glow:rgba(212,175,55,.12);--tab-bg:rgba(23,18,10,.75);--tab-active-bg:rgba(33,26,14,.85);
+    --hud-bg:rgba(21,15,8,.72);--hud-border:rgba(212,175,55,.2);--hud-text:#fff7e6;
+    --button-top:rgba(212,175,55,.16);--button-bottom:rgba(184,138,26,.16);
+    --button-hover-top:rgba(212,175,55,.28);--button-hover-bottom:rgba(184,138,26,.2)
+  }
+  html:not([data-theme]), html[data-theme="light"]{
+    --bg:#f6f2ea;--bg2:#e4e9f3;--card:#ffffff;--card-overlay:rgba(255,255,255,.9);
+    --ink:#2b261c;--muted:#706b60;--gold:#c8892c;--gold2:#a56a18;
+    --border-soft:rgba(200,137,44,.28);--border-strong:rgba(200,137,44,.45);
+    --control-border:rgba(200,137,44,.34);--control-bg:rgba(250,244,234,.92);
+    --control-focus-bg:rgba(255,250,243,.97);--control-focus-shadow:rgba(200,137,44,.3);
+    --head-bg:rgba(242,234,220,.76);--summary-bg:rgba(255,250,243,.92);
+    --preview-glow:rgba(200,137,44,.2);--tab-bg:rgba(250,244,234,.88);--tab-active-bg:rgba(255,250,243,.96);
+    --hud-bg:rgba(255,250,243,.96);--hud-border:rgba(200,137,44,.38);--hud-text:#2b261c;
+    --button-top:rgba(200,137,44,.22);--button-bottom:rgba(165,106,24,.18);
+    --button-hover-top:rgba(200,137,44,.32);--button-hover-bottom:rgba(165,106,24,.26)
+  }
+  html[data-theme="plum"]{
+    --bg:#160b19;--bg2:#341844;--card:#2b1433;--card-overlay:rgba(73,35,94,.72);
+    --ink:#f8ecff;--muted:#d5c0ec;--gold:#d794ff;--gold2:#b162e4;
+    --border-soft:rgba(215,148,255,.32);--border-strong:rgba(215,148,255,.48);
+    --control-border:rgba(215,148,255,.36);--control-bg:rgba(41,20,51,.78);
+    --control-focus-bg:rgba(55,28,68,.86);--control-focus-shadow:rgba(215,148,255,.26);
+    --head-bg:rgba(39,18,50,.65);--summary-bg:rgba(41,20,51,.82);
+    --preview-glow:rgba(215,148,255,.18);--tab-bg:rgba(41,20,51,.78);--tab-active-bg:rgba(55,28,68,.88)
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;color:var(--ink);
+    background:
+      radial-gradient(1100px 500px at 15% -15%, rgba(0,0,0,0) 0%, transparent 60%),
+      radial-gradient(900px 600px at 120% 0%, rgba(0,0,0,0) 0%, transparent 70%),
+      linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
+    font:15.5px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial
+  }
+
+  /* top bar */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:var(--head-bg);backdrop-filter:saturate(1.2) blur(6px);
+    border-bottom:1px solid var(--border-soft)
+  }
+  .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.4px;text-decoration:none;color:var(--ink)}
+  .brand img{width:36px;height:36px;border-radius:8px}
+  .brand span{font-size:16px}
+  .nav{margin-left:auto;display:flex;gap:10px}
+  .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:8px 12px;border-radius:10px}
+  .nav a:hover{border-color:var(--gold)}
+  .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold)}
+
+  /* grid */
+  .container{max-width:1200px;margin:22px auto;padding:0 16px}
+  .grid{
+    display:grid;gap:16px;
+    grid-template-columns:repeat( auto-fill, minmax(240px, 1fr) );
+  }
+  .card{
+    background:linear-gradient(160deg,var(--card-overlay),var(--card));
+    border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)
+  }
+  .thumb{
+    position:relative;aspect-ratio:1/1;border-bottom:1px solid var(--border-soft);background:var(--bg2);
+    overflow:hidden
+  }
+  .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .35s ease}
+  .thumb img.alt{opacity:0}
+  .thumb:hover img.alt{opacity:1}
+  .thumb:hover img.main{opacity:0}
+
+  .panel{padding:12px 14px}
+  .title{margin:0 0 4px;font-size:16px;font-weight:700}
+  .meta{font-size:12px;color:var(--muted)}
+  .priceBox{
+    margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px
+  }
+  .price{
+    font-size:18px;font-weight:800;color:var(--gold)
+  }
+  .btn{
+    appearance:none;border:1px solid var(--border-strong);background:linear-gradient(180deg,var(--button-top),var(--button-bottom));
+    padding:8px 12px;border-radius:10px;color:var(--ink);cursor:pointer
+  }
+  .btn:hover{border-color:var(--gold)}
+
+  /* comments (local only for now) */
+  .comments{border-top:1px solid var(--border-soft);margin-top:10px;padding-top:10px}
+  .comments h4{margin:0 0 8px;font-size:13px;color:var(--muted)}
+  .comments ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:120px;overflow:auto}
+  .comments li{font-size:13px;background:var(--control-bg);border:1px solid var(--control-border);padding:6px 8px;border-radius:8px}
+  .comments form{display:flex;gap:8px;margin-top:8px}
+  .comments input{flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--control-border);background:var(--control-bg);color:var(--ink)}
+  .comments input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px var(--control-focus-shadow)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="icon/icon-500.png" alt="Logo">
+      <span>Hassan Chakaroun Jewelry</span>
+    </a>
+    <nav class="nav">
+      <a href="index.html">Bracelet Builder</a>
+      <a href="store.html" aria-current="page">Store</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <h1 style="margin:6px 0 14px;font-size:22px;">Store</h1>
+  <div class="grid" id="productGrid">
+    <!-- Example product card (duplicate & edit as you add items) -->
+    <article class="card" data-sku="ring-001" data-karat="18" data-weight="6.2">
+      <div class="thumb" data-swap="hover">
+        <!-- Replace with your images -->
+        <img class="main" src="images/products/ring-001-1.jpg" loading="lazy" alt="Halo Ring — front">
+        <img class="alt"  src="images/products/ring-001-2.jpg" loading="lazy" alt="Halo Ring — side">
+      </div>
+      <div class="panel">
+        <h3 class="title">Halo Ring</h3>
+        <div class="meta">18k · 6.2 g</div>
+        <div class="priceBox">
+          <div class="price" aria-live="polite">$<span class="priceVal">—</span></div>
+          <button class="btn" type="button">Details</button>
+        </div>
+
+        <div class="comments">
+          <h4>Comments</h4>
+          <ul class="list"></ul>
+          <form>
+            <input type="text" name="msg" placeholder="Write a comment…" maxlength="140" aria-label="Comment">
+            <button class="btn" type="submit">Post</button>
+          </form>
+        </div>
+      </div>
+    </article>
+
+    <!-- Copy this block for more items -->
+    <article class="card" data-sku="bracelet-002" data-karat="14" data-weight="18.5">
+      <div class="thumb" data-swap="hover">
+        <img class="main" src="images/products/bracelet-002-1.jpg" loading="lazy" alt="Figaro Bracelet — top">
+        <img class="alt"  src="images/products/bracelet-002-2.jpg" loading="lazy" alt="Figaro Bracelet — clasp">
+      </div>
+      <div class="panel">
+        <h3 class="title">Figaro Bracelet</h3>
+        <div class="meta">14k · 18.5 g</div>
+        <div class="priceBox">
+          <div class="price">$<span class="priceVal">—</span></div>
+          <button class="btn" type="button">Details</button>
+        </div>
+        <div class="comments">
+          <h4>Comments</h4>
+          <ul class="list"></ul>
+          <form>
+            <input type="text" name="msg" placeholder="Write a comment…" maxlength="140">
+            <button class="btn" type="submit">Post</button>
+          </form>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</main>
+
+<script>
+/* ========= Image swap for touch too ========= */
+document.querySelectorAll('.thumb[data-swap="hover"]').forEach(t => {
+  let toggled = false;
+  t.addEventListener('click', () => {
+    toggled = !toggled;
+    t.querySelector('.main').style.opacity = toggled ? 0 : 1;
+    t.querySelector('.alt').style.opacity  = toggled ? 1 : 0;
+  });
+});
+
+/* ========= Local comments (no backend yet) ========= */
+(function(){
+  const key = 'hcj-store-comments';
+  const store = JSON.parse(localStorage.getItem(key) || '{}');
+
+  function save(){ localStorage.setItem(key, JSON.stringify(store)); }
+  function renderCard(card){
+    const sku = card.dataset.sku;
+    const list = card.querySelector('.comments .list');
+    list.innerHTML = '';
+    (store[sku] || []).forEach(txt=>{
+      const li = document.createElement('li'); li.textContent = txt; list.appendChild(li);
+    });
+  }
+
+  document.querySelectorAll('.card').forEach(card=>{
+    const sku = card.dataset.sku;
+    store[sku] = store[sku] || [];
+    renderCard(card);
+
+    card.querySelector('.comments form').addEventListener('submit', e=>{
+      e.preventDefault();
+      const inp = e.target.elements.msg;
+      const val = (inp.value || '').trim();
+      if(!val) return;
+      store[sku].push(val);
+      save();
+      inp.value = '';
+      renderCard(card);
+    });
+  });
+})();
+
+/* ========= Price placeholder (to be wired to your API later) =========
+   When your backend is ready, replace the fake pricing below with:
+   const data = await fetch('/api/prices').then(r=>r.json());
+   and map by SKU to fill .priceVal elements. */
+(function mockPrices(){
+  const mockUSDPerGram24k = 75;     // placeholder only
+  document.querySelectorAll('.card').forEach(card=>{
+    const karat  = parseFloat(card.dataset.karat || '24');
+    const weight = parseFloat(card.dataset.weight || '0');
+    const purity = karat / 24;
+    const base   = weight * mockUSDPerGram24k * purity;
+    const making = 50;              // demo
+    const price  = Math.round((base + making) * 1.15 * 100) / 100;
+    const out = card.querySelector('.priceVal');
+    if(out) out.textContent = price.toFixed(2);
+  });
+})();
+</script>
+</body>
+</html>
