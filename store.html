@@ -112,6 +112,7 @@
   .thumb:hover img.main{opacity:0}
 
   .panel{padding:12px 14px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft);font-size:12px;color:var(--muted);background:var(--control-bg)}
   .title{margin:0 0 4px;font-size:16px;font-weight:700}
   .meta{font-size:12px;color:var(--muted)}
   .priceBox{
@@ -135,28 +136,9 @@
   .comments input{flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--control-border);background:var(--control-bg);color:var(--ink)}
   .comments input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px var(--control-focus-shadow)}
 
-  /* === Store grid === */
-  .productsGrid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-    gap:14px;
-  }
-  .productCard{
-    display:flex;flex-direction:column;overflow:hidden;
-    background:linear-gradient(160deg,var(--card-overlay),var(--card));
-    border:1px solid var(--border-soft);border-radius:12px;box-shadow:var(--shadow);
-  }
-  .productCard .photo{
-    aspect-ratio:4/3;background:var(--bg2);display:flex;align-items:center;justify-content:center;
-  }
-  .productCard img{width:100%;height:100%;object-fit:cover;display:block}
-  .productCard .info{padding:12px 14px;display:flex;flex-direction:column;gap:6px}
-  .productCard .title{margin:0;font-size:16px}
-  .productCard .desc{margin:0;color:var(--muted);font-size:13px}
-  .productCard .meta{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
-  .productCard .tag{border:1px solid var(--border-soft);padding:2px 8px;border-radius:999px}
-  .productCard .price{margin-top:6px;font-weight:800;color:var(--gold)}
-  #storeStatus{color:var(--muted);margin-bottom:10px}
+  .head{padding:14px 16px;border-bottom:1px solid var(--border-soft);background:var(--head-bg)}
+  .head h1{margin:0;font-size:22px}
+  .panel#storeList{min-height:120px}
 </style>
 </head>
 <body>
@@ -175,136 +157,83 @@
 </header>
 
 <main class="container">
-  <h1 style="margin:6px 0 14px;font-size:22px;">Store</h1>
   <section class="card">
-    <div class="panel">
-      <div id="storeStatus" class="badge">Loading products…</div>
-      <div id="productsGrid" class="productsGrid"></div>
-    </div>
+    <div class="head"><h1>Store</h1></div>
+    <div class="panel" id="storeList">Loading…</div>
   </section>
 </main>
 
 <script>
-/* === Google Sheet → Store grid === */
-const SHEET_CSV_URL =
-  'https://docs.google.com/spreadsheets/d/1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk/gviz/tq?tqx=out:csv&sheet=Sheet1';
+(function () {
+  const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk"; // your sheet
+  const SHEET_NAME = "Sheet1"; // tab name
+  // We’ll use the Google Visualization (gviz) endpoint — no API key required
+  const TQ = encodeURIComponent("select A,B,C,D,E,F,G"); // name,price,kirat,photo,description,sku,in_stock
+  const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
 
-const currencyFmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
-const grid = document.getElementById('productsGrid');
-const statusEl = document.getElementById('storeStatus');
+  const out = document.getElementById("storeList");
 
-loadStore().catch(err=>{
-  console.error(err);
-  if(statusEl) statusEl.textContent = 'Could not load products.';
-});
-
-async function loadStore(){
-  statusEl.textContent = 'Loading products…';
-  const res = await fetch(SHEET_CSV_URL, {cache:'no-store'});
-  const csv = await res.text();
-  const rows = parseCSV(csv);
-  const items = normalizeRows(rows);
-  render(items);
-  statusEl.textContent = items.length ? `${items.length} products` : 'No products yet.';
-}
-
-function normalizeRows(rows){
-  if(!rows.length) return [];
-  const header = rows[0].map(h => (h||'').trim().toLowerCase());
-  const idx = name => header.indexOf(name);
-
-  const ix = {
-    name: idx('name'),
-    price: idx('price'),
-    kirat: idx('kirat'),
-    photo: idx('photo'),
-    description: idx('description'),
-    sku: idx('sku'),
-    in_stock: idx('in_stock')
-  };
-
-  return rows.slice(1)
-    .filter(r => r.some(v => String(v||'').trim() !== ''))
-    .map(r => {
-      const photo = toDriveViewURL(r[ix.photo] || '');
-      return {
-        name: r[ix.name] || 'Untitled',
-        price: Number(r[ix.price] || 0),
-        kirat: (r[ix.kirat] || '').toString().trim(),
-        photo: photo,
-        description: r[ix.description] || '',
-        sku: r[ix.sku] || '',
-        inStock: toBool(r[ix.in_stock])
-      };
-    })
-    .filter(p => p.inStock);
-}
-
-function render(items){
-  grid.innerHTML = items.map(cardHTML).join('');
-}
-
-function cardHTML(p){
-  const price = isFinite(p.price) ? currencyFmt.format(p.price) : '';
-  const kirat = p.kirat ? `<span class="tag">${escapeHTML(p.kirat)}K</span>` : '';
-  const sku = p.sku ? `<span class="tag">SKU ${escapeHTML(p.sku)}</span>` : '';
-  const img = p.photo ? escapeAttr(p.photo) : 'icon/icon-500.png';
-  const alt = escapeAttr(p.name);
-
-  return `
-  <article class="productCard">
-    <div class="photo">
-      <img src="${img}" alt="${alt}" onerror="this.src='icon/icon-500.png'">
-    </div>
-    <div class="info">
-      <h3 class="title">${escapeHTML(p.name)}</h3>
-      <div class="meta">${kirat}${sku}</div>
-      ${p.description ? `<p class="desc">${escapeHTML(p.description)}</p>` : ''}
-      <div class="price">${price}</div>
-    </div>
-  </article>`;
-}
-
-/* --- helpers --- */
-function parseCSV(text){
-  const rows = []; let row = [], field = '', inQuotes = false;
-  for(let i=0;i<text.length;i++){
-    const c = text[i], next = text[i+1];
-    if(c === '"'){
-      if(inQuotes && next === '"'){ field += '"'; i++; }
-      else inQuotes = !inQuotes;
-    }else if(c === ',' && !inQuotes){
-      row.push(field); field = '';
-    }else if((c === '\n' || c === '\r') && !inQuotes){
-      if(c === '\r' && next === '\n') i++;
-      row.push(field); rows.push(row); row = []; field = '';
-    }else{
-      field += c;
-    }
+  function driveImage(url) {
+    // Accepts "https://drive.google.com/file/d/<id>/view?usp=..." or "...?id=<id>"
+    if (!url) return "";
+    const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([^&]+)/);
+    const id = m ? m[1] : null;
+    return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
   }
-  if(field.length || row.length){ row.push(field); rows.push(row); }
-  return rows;
-}
 
-function toBool(v){
-  const s = String(v||'').trim().toLowerCase();
-  if(s === '') return true; // blank = treat as in stock
-  return ['true','1','yes','y'].includes(s);
-}
+  function money(n) {
+    const v = Number(n);
+    return Number.isFinite(v) ? v.toLocaleString(undefined, {minimumFractionDigits:0}) : n;
+  }
 
-function toDriveViewURL(u){
-  const s = String(u||'').trim();
-  if(!s) return '';
-  const m1 = s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  const m2 = s.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  const id = m1?.[1] || m2?.[1];
-  return id ? `https://drive.google.com/uc?export=view&id=${id}` : s;
-}
+  function render(products) {
+    if (!products.length) {
+      out.innerHTML = `<div class="badge">No products yet.</div>`;
+      return;
+    }
+    const cards = products.map(p => {
+      const img = p.photo ? `<img src="${p.photo}" alt="${p.name}" style="width:120px;height:120px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft)">` : "";
+      const stockBadge = (p.in_stock && Number(p.in_stock) > 0) ? `<span class="badge" style="color:var(--gold)">In stock</span>` : `<span class="badge">Out of stock</span>`;
+      return `
+        <div style="display:grid;grid-template-columns:140px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--border-soft)">
+          <div>${img}</div>
+          <div>
+            <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
+              <h3 style="margin:0">${p.name || ""}</h3>
+              <div><strong>${money(p.price)}</strong> <span style="color:var(--muted)">USD</span></div>
+            </div>
+            <div style="color:var(--muted);margin:6px 0">${p.description || ""}</div>
+            <div style="display:flex;gap:12px;font-size:12px;color:var(--muted)">
+              <span>Kirat: ${p.kirat || "-"}</span>
+              <span>SKU: ${p.sku || "-"}</span>
+              ${stockBadge}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+    out.innerHTML = cards;
+  }
 
-function escapeHTML(s){
-  return String(s||'').replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
-}
-function escapeAttr(s){ return escapeHTML(s).replace(/"/g,'&quot;'); }
+  fetch(URL)
+    .then(r => r.text())
+    .then(txt => {
+      // gviz returns: "/*O_o*/ google.visualization.Query.setResponse({...});"
+      const json = JSON.parse(txt.substring(47, txt.length - 2));
+      const rows = (json.table?.rows || []);
+      const products = rows.map(r => {
+        const [name, price, kirat, photo, description, sku, in_stock] = r.c.map(c => c ? c.v : "");
+        return {
+          name, price, kirat, photo: driveImage(photo), description, sku, in_stock
+        };
+      });
+      render(products);
+    })
+    .catch(err => {
+      console.error(err);
+      out.innerHTML = `<div class="badge">Could not load products.</div>`;
+    });
+})();
 </script>
 </body>
 </html>
