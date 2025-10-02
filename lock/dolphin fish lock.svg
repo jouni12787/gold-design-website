@@ -16,8 +16,8 @@
        L is optional but included so the loader picks up pins. -->
   <g id="pins" style="display:none">
     <!-- Right pin (near the rightmost loop of the lock) -->
-    <circle id="pinR" cx="94%" cy="50%" r="3" fill="red" stroke="black"/>
+    <circle id="pinR" cx="44.5%" cy="79%" r="3" fill="red" stroke="black"/>
     <!-- Left pin (dummy or the small end ring). You can keep it equal to R or place it logically. -->
-    <circle id="pinL" cx="6%" cy="50%" r="3" fill="red" stroke="black"/>
+    <circle id="pinL" cx="44.5%" cy="30%" r="3" fill="red" stroke="black"/>
   </g>
 </svg>
