@@ -1,11 +1,11 @@
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0, 0, 400,400">
   <defs>
-    <clipPath id="clip-bottom" clipPathUnits="userSpaceOnUse">
+    <clipPath id="gcl-clip-bottom" clipPathUnits="userSpaceOnUse">
       <rect x="0" y="200" width="400" height="200"/>
     </clipPath>
   </defs>
 
-  <g id="svgg" clip-path="url(#clip-bottom)">
+  <g id="svgg" clip-path="url(#gcl-clip-bottom)">
     <path id="path0" d="M176.039 2.062 C 5.043 21.414,-59.462 238.519,72.462 350.673 C 130.996 400.436,218.299 410.785,287.305 376.140 C 356.843 341.229,396.539 276.863,396.539 199.022 C 396.539 79.008,295.288 -11.434,176.039 2.062 M234.931 47.245 C 356.559 77.147,398.970 225.177,311.077 313.027 C 229.093 394.972,89.479 363.756,50.496 254.764 C 18.438 165.133,75.228 63.886,167.237 46.636 C 171.809 45.779,176.430 44.866,177.506 44.607 C 184.568 42.905,224.798 44.753,234.931 47.245"
       fill="#000000" fill-rule="evenodd"/>
   </g>
