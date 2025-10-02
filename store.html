@@ -15,7 +15,8 @@
 </script>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Hassan Chakaroun Jewelry — Store</title>
+<title>Chakaroun Jewelry — Store</title>
+
 
 <!-- PWA + Icons -->
 <link rel="manifest" href="manifest.json">
@@ -25,10 +26,14 @@
 
 <!-- Basic SEO/Open Graph -->
 <meta name="description" content="Handcrafted gold jewelry. Live-priced by gold rate soon.">
-<meta property="og:title" content="Hassan Chakaroun Jewelry — Store">
+<meta name="application-name" content="Chakaroun Jewelry">
+<meta name="apple-mobile-web-app-title" content="Chakaroun Jewelry">
+<meta property="og:title" content="Chakaroun Jewelry — Store">
 <meta property="og:description" content="Handcrafted gold jewelry.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="icon/icon-500.png">
+<meta property="og:site_name" content="Chakaroun Jewelry">
+<meta name="twitter:title" content="Chakaroun Jewelry — Store">
 
 <style>
   :root{--radius:14px;--shadow:0 18px 36px rgba(0,0,0,.45)}
@@ -84,9 +89,11 @@
     border-bottom:1px solid var(--border-soft)
   }
   .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.4px;text-decoration:none;color:var(--ink)}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
   .brand img{width:36px;height:36px;border-radius:8px}
-  .brand span{font-size:16px}
+  .brand .brand-stack{display:flex;flex-direction:column;line-height:1.1}
+  .brand .brand-title{font-weight:800;letter-spacing:.4px;font-size:16px}
+  .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75}
   .nav{margin-left:auto;display:flex;gap:10px}
   .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:8px 12px;border-radius:10px}
   .nav a:hover{border-color:var(--gold)}
@@ -145,9 +152,12 @@
 
 <header class="topbar">
   <div class="wrap">
-    <a class="brand" href="index.html">
-      <img src="icon/icon-500.png" alt="Logo">
-      <span>Hassan Chakaroun Jewelry</span>
+    <a class="brand" href="index.html" aria-label="Chakaroun Jewelry — by Hassan Chakaroun &amp; Ali Jouni">
+      <img src="icon/icon-500.png" alt="Chakaroun Jewelry logo">
+      <span class="brand-stack">
+        <span class="brand-title">Chakaroun Jewelry</span>
+        <small class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</small>
+      </span>
     </a>
     <nav class="nav">
       <a href="index.html">Bracelet Builder</a>
