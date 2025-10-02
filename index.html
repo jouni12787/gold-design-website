@@ -699,8 +699,10 @@ async function render(){
   // two z-stacks for the “woven” effect
   const stackUnder = document.createElementNS("http://www.w3.org/2000/svg","g");
   stackUnder.setAttribute("id","stackUnder");
-  const stackOver  = document.createElementNS("http://www.w3.org/2000/svg","g");
-  stackOver.setAttribute("id","stackOver");
+  const stackOverMasked = document.createElementNS("http://www.w3.org/2000/svg","g");
+  stackOverMasked.setAttribute("id","stackOverMasked");
+  const stackOverTop = document.createElementNS("http://www.w3.org/2000/svg","g");
+  stackOverTop.setAttribute("id","stackOverTop");
 
   // order: UNDER → (pendant) → OVER
   bracelet.appendChild(stackUnder);
@@ -815,9 +817,9 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
     pendantMaskUrl = `url(#${PENDANT_MASK_ID})`;
   }
   tintGold(pendantPack.node); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
-  bracelet.appendChild(stackOver);
-  const front = stackOver;
-  if(pendantMaskUrl) front.setAttribute("mask", pendantMaskUrl);
+  bracelet.appendChild(stackOverMasked);
+  if(pendantMaskUrl) stackOverMasked.setAttribute("mask", pendantMaskUrl);
+  bracelet.appendChild(stackOverTop);
 
   layoutPendant = {
     type:'pendant',
@@ -858,7 +860,8 @@ for (let i = 0; i < leftSeq.length; i++) {
 
   // z-order for weave
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
-  stackOver.appendChild(o);
+  const frontTarget = flipFirst ? stackOverTop : stackOverMasked;
+  frontTarget.appendChild(o);
 
   // 3D payload — give this instance the extra rotation
   const pack3D = sanitizePackFor3D(d.base, 'link', t);
@@ -901,7 +904,7 @@ if (lockPack) {
   const o = buildLinkLayer(d, tx, ty, 'over',  leftAngleDeg, pivot);
 
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
-  stackOver.appendChild(o);
+  stackOverMasked.appendChild(o);
 
   const pack3D = sanitizePackFor3D(d.base, 'link', lockName);
   if (pack3D) pack3D.rotation = (pack3D.rotation || 0) + leftAngleDeg;
@@ -945,7 +948,8 @@ for (let i = 0; i < rightSeq.length; i++) {
   const o = buildLinkLayer(d, tx, ty, whichOver,  rightAngleDeg, pivot);
 
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
-  stackOver.appendChild(o);
+  const frontTarget = flipFirst ? stackOverTop : stackOverMasked;
+  frontTarget.appendChild(o);
 
   const pack3D = sanitizePackFor3D(d.base, 'link', t);
   if (pack3D) pack3D.rotation = (pack3D.rotation || 0) + rightAngleDeg;
