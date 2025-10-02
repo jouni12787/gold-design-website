@@ -12,6 +12,7 @@
   <circle id="pinL" cx="15%" cy="50%" r="3" fill="red" stroke="black"/>
   <circle id="pinR" cx="85%" cy="50%" r="3" fill="red" stroke="black"/>
   <!-- etc. -->
+     
 </g>
 
   
