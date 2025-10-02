@@ -23,7 +23,12 @@
 
 <!-- Apple touch icon (can be any square PNG; using your 500px) -->
 <link rel="apple-touch-icon" href="icon/icon-500.png">
-<title>Hassan Chakaroun Jewelry — Bracelet Builder</title>
+<meta name="application-name" content="Chakaroun Jewelry">
+<meta name="apple-mobile-web-app-title" content="Chakaroun Jewelry">
+<meta property="og:title" content="Chakaroun Jewelry">
+<meta property="og:site_name" content="Chakaroun Jewelry">
+<meta name="twitter:title" content="Chakaroun Jewelry">
+<title>Chakaroun Jewelry — Bracelet Builder</title>
 <style>
   :root{
     --radius:14px;
@@ -150,7 +155,10 @@
   #a2hsBanner.show{transform:translateY(0)}
   #a2hsBanner .wrap{display:flex;align-items:center;gap:var(--bar-gap);padding:var(--bar-pad-y) var(--bar-pad-x);}
   #a2hsBanner img.icon{width:var(--bar-icon);height:var(--bar-icon);border-radius:6px;flex:0 0 var(--bar-icon)}
-  #a2hsBanner .txt{flex:1;line-height:1.35}
+  #a2hsBanner .txt{flex:1;display:flex;flex-direction:column}
+  #a2hsBanner .txt .brand-title{font-weight:800;font-size:1.05em}
+  #a2hsBanner .txt .brand-byline{font-weight:600;font-size:.88em;opacity:.8}
+  #a2hsBanner .txt .banner-copy{font-size:.9em;opacity:.9;margin-top:2px}
   #a2hsBanner .cta{
     background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2b1f10;
     border:0;border-radius:999px;padding:var(--bar-btn-py) var(--bar-btn-px);
@@ -189,9 +197,11 @@
     color:var(--ink);font:15.5px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;transition:color .3s ease, background .3s ease}
   .topbar{position:sticky;top:0;z-index:60;background:var(--head-bg);backdrop-filter:saturate(1.2) blur(6px);border-bottom:1px solid var(--border-soft)}
   .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
-  .topbar .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.4px;text-decoration:none;color:var(--ink)}
+ .topbar .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
   .topbar .brand img{width:36px;height:36px;border-radius:8px}
-  .topbar .brand span{text-transform:none;font-size:16px}
+  .topbar .brand .brand-stack{display:flex;flex-direction:column;line-height:1.1}
+  .topbar .brand .brand-title{font-weight:800;letter-spacing:.4px;font-size:16px}
+  .topbar .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75}
   .topbar .nav{margin-left:auto;display:flex;gap:10px}
   .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:8px 12px;border-radius:10px}
   .topbar .nav a:hover{border-color:var(--gold)}
@@ -240,8 +250,12 @@
 <div id="a2hsBanner" aria-hidden="true">
   <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
     <button class="close" type="button" aria-label="Close">×</button>
-    <img class="icon" src="icon/icon-500.png" alt="App icon">
-    <div class="txt">Install hassan chakaroun juwelery — add it to your Home Screen.</div>
+    <img class="icon" src="icon/icon-500.png" alt="Chakaroun Jewelry icon">
+    <div class="txt">
+      <div class="brand-title">Chakaroun Jewelry</div>
+      <div class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</div>
+      <div class="banner-copy">Add it to your Home Screen.</div>
+    </div>
     <button class="cta" type="button" id="a2hsGet">Install</button>
   </div>
 </div>
@@ -250,7 +264,7 @@
 <div id="a2hsModal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
     <button class="x" type="button" aria-label="Close">×</button>
-    <h3 id="a2hsTitle">Add to Home Screen</h3>
+      <h3 id="a2hsTitle">Add “Chakaroun Jewelry” to Home Screen</h3>
     <div class="steps">
       <div class="row">
         <div><strong>1.</strong> Tap <em>Share</em> in Safari.</div>
@@ -265,9 +279,12 @@
 </div>
 <header class="topbar">
   <div class="wrap">
-    <a class="brand" href="index.html">
-      <img src="icon/icon-500.png" alt="Logo">
-      <span>Hassan Chakaroun Jewelry</span>
+   <a class="brand" href="index.html" aria-label="Chakaroun Jewelry — by Hassan Chakaroun &amp; Ali Jouni">
+      <img src="icon/icon-500.png" alt="Chakaroun Jewelry logo">
+      <span class="brand-stack">
+        <span class="brand-title">Chakaroun Jewelry</span>
+        <small class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</small>
+      </span>
     </a>
     <nav class="nav">
       <a href="index.html" aria-current="page">Bracelet Builder</a>
