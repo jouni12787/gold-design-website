@@ -725,8 +725,10 @@ if(lockName){
     const targetH = Number.isFinite(lockH) ? lockH : (meta.targetH ?? 34);
     lockPack = await loadScaleRotate("lock", lockName, targetH, meta.rotate ?? 0);
 
-    // NEW: override pins by ratio (no SVG changes needed)
-    if (meta.pins) applyPinsByRatio(lockPack, meta.pins);
+    // NEW: only override if the SVG had no pins
+if (!lockPack.pins?.L || !lockPack.pins?.R) {
+  if (meta.pins) applyPinsByRatio(lockPack, meta.pins);
+}
 
   }catch(e){
     console.error(e);
