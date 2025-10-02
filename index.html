@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#17120a">
 
 <!-- Favicon (uses your 1000px SVG) -->
-<link rel="icon" href="/gold-design-website/icon/icon-1000.svg" type="image/svg+xml">
+<link rel="icon" href="icon/icon-1000.svg" type="image/svg+xml">
 
 <!-- Apple touch icon (can be any square PNG; using your 500px) -->
-<link rel="apple-touch-icon" href="/gold-design-website/icon/icon-500.png">
-<title>Gold Design — Bracelet Builder (Pins + 3D)</title>
+<link rel="apple-touch-icon" href="icon/icon-500.png">
+<title>hassan chakaroun juwelery — Bracelet Builder</title>
 <style>
   :root{
     --radius:14px;
@@ -20,7 +20,7 @@
     --bar-pad-y:14px;
     --bar-pad-x:18px;
     --bar-gap:12px;
-    --bar-icon:28px;
+    --bar-icon:56px;
     --bar-close:32px;
     --bar-btn-py:8px;
     --bar-btn-px:16px;
@@ -160,10 +160,14 @@
     box-shadow:0 20px 50px rgba(0,0,0,.65);
   }
   #a2hsModal .steps{margin-top:6px;font-size:14px;line-height:1.7}
-  #a2hsModal .steps .row{display:flex;gap:10px;margin:6px 0}
+  #a2hsModal .steps .row{display:flex;gap:10px;margin:6px 0;flex-direction:column}
+  #a2hsModal .stepimg{
+    display:block;width:100%;height:auto;margin-top:8px;
+    border-radius:10px;border:1px solid var(--border-soft);
+  }
   #a2hsModal .x{position:absolute;top:8px;left:10px;background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
 
-  body.has-topbar{padding-top:68px}
+  body.has-topbar{padding-top:84px}
 
   *{box-sizing:border-box}html,body{height:100%}
   body{margin:0;background:
@@ -215,8 +219,8 @@
 <div id="a2hsBanner" aria-hidden="true">
   <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
     <button class="close" type="button" aria-label="Close">×</button>
-    <img class="icon" src="/gold-design-website/icon/icon-500.png" alt="App icon">
-    <div class="txt">Install Gold Design for quick access — add it to your Home Screen.</div>
+    <img class="icon" src="icon/icon-500.png" alt="App icon">
+    <div class="txt">Install hassan chakaroun juwelery — add it to your Home Screen.</div>
     <button class="cta" type="button" id="a2hsGet">Install</button>
   </div>
 </div>
@@ -227,8 +231,14 @@
     <button class="x" type="button" aria-label="Close">×</button>
     <h3 id="a2hsTitle">Add to Home Screen</h3>
     <div class="steps">
-      <div class="row"><strong>1.</strong> Tap <em>Share</em> in Safari.</div>
-      <div class="row"><strong>2.</strong> Choose <em>Add to Home Screen</em>, then <em>Add</em>.</div>
+      <div class="row">
+        <div><strong>1.</strong> Tap <em>Share</em> in Safari.</div>
+        <img class="stepimg" src="./icon/share.jpg" alt="iPhone Share button screenshot">
+      </div>
+      <div class="row">
+        <div><strong>2.</strong> Choose <em>Add to Home Screen</em>, then <em>Add</em>.</div>
+        <img class="stepimg" src="./icon/save%20to%20home%20screen.jpeg" alt="Add to Home Screen screenshot">
+      </div>
     </div>
   </div>
 </div>
@@ -346,10 +356,12 @@
   var modal = document.getElementById('a2hsModal');
   var deferredPrompt = null;
   var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var firedBIP = false;
 
   window.addEventListener('beforeinstallprompt', function(e){
     e.preventDefault();
     deferredPrompt = e;
+    firedBIP = true;
     try{
       if(!isStandalone() && sessionStorage.getItem('a2hs_dismissed') !== '1' && !isIOS){
         showBanner();
@@ -374,17 +386,31 @@
   modal.addEventListener('click', function(e){ if(e.target === modal) closeGuide(); });
 
   getBtn.addEventListener('click', async function(){
-    if(deferredPrompt){
+    if (deferredPrompt){
       try{ deferredPrompt.prompt(); await deferredPrompt.userChoice; }catch(e){}
       deferredPrompt = null; hideBanner();
-    }else if(isIOS){ openGuide(); }
+    } else if (isIOS){
+      openGuide();
+    } else {
+      alert('In your browser menu, choose “Install app” or “Create shortcut / Add to Home screen”.');
+      hideBanner();
+    }
   });
 
   window.addEventListener('load', function(){
     var dismissed = '0';
     try{ dismissed = sessionStorage.getItem('a2hs_dismissed') || '0'; }catch(e){}
     if(isStandalone() || dismissed === '1') return;
-    if(isIOS){ setTimeout(showBanner, 600); }
+
+    if(isIOS){
+      setTimeout(showBanner, 600);
+    } else {
+      setTimeout(function(){
+        if(!firedBIP && !isStandalone() && (sessionStorage.getItem('a2hs_dismissed') !== '1')){
+          showBanner();
+        }
+      }, 1200);
+    }
   });
 })();
 </script>
@@ -392,7 +418,7 @@
 <script>
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('/sw.js').catch(function(){});
+      navigator.serviceWorker.register('sw.js').catch(function(){});
     });
   }
 </script>
