@@ -1,6 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>
+  // Apply saved theme ASAP (before CSS loads to avoid a flash)
+  (function () {
+    try {
+      var KEY = 'hcj-theme';
+      var saved = localStorage.getItem(KEY) || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      // expose the key so other scripts can use the same one
+      window.__HCJ_THEME_KEY = KEY;
+    } catch (e) {}
+  })();
+</script>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="manifest" href="manifest.json">
@@ -209,7 +221,7 @@
   .buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
   .preview{display:flex;align-items:center;justify-content:center;background:
     radial-gradient(600px 400px at 50% 0%, var(--preview-glow) 0%, transparent 70%),
-    var(--bg2);min-height:420px;position:relative;transition:background .3s ease}
+    var(--bg2);min-height:320px;position:relative;transition:background .3s ease}
   svg#stage{width:100%;height:100%;max-height:560px}
   #stage [data-role="background"]{fill:var(--bg2);transition:fill .3s ease}
   .tabs{display:flex;gap:6px}
@@ -333,7 +345,7 @@
 
     <!-- 2D -->
     <div class="preview" id="preview2d">
-      <svg id="stage" viewBox="0 0 1080 400" role="img" aria-label="Bracelet preview">
+      <svg id="stage" viewBox="0 0 1080 320" role="img" aria-label="Bracelet preview">
         <defs id="defs">
           <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#fff7e6"/><stop offset="30%" stop-color="#f1d9a0"/>
@@ -344,7 +356,7 @@
             <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity=".35"/>
           </filter>
         </defs>
-        <rect x="0" y="0" width="1080" height="400" fill="#0f0b06" data-role="background"/>
+        <rect x="0" y="0" width="1080" height="320" fill="#0f0b06" data-role="background"/>
         <g id="bracelet"></g>
       </svg>
     </div>
@@ -449,8 +461,10 @@
 "use strict";
 
 const THEMES = ["light", "dark", "plum"];
-const THEME_KEY = "bracelet-builder-theme";
-const DEFAULT_THEME = "light";
+const THEME_KEY = window.__HCJ_THEME_KEY || "hcj-theme";
+const DEFAULT_THEME = document.documentElement.dataset.theme || "light";
+const STAGE_W = 1080;
+const STAGE_H = 320; // compact height
   
 function applyPinsByRatio(pack, ratios){
   if(!pack || !ratios) return;
@@ -946,7 +960,7 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
   }
 
   // Layout
-  const PAD=40, W=1080, midY=200;
+  const PAD = 40, W = STAGE_W, midY = STAGE_H / 2;
   function spanOf(def){
     const p = def?.base?.pins;
     return (p?.L && p?.R) ? (p.R.x - p.L.x) : (def?.base?.width || 0);
@@ -990,8 +1004,8 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
     const rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
     rect.setAttribute("x", "0");
     rect.setAttribute("y", "0");
-    rect.setAttribute("width", "1080");
-    rect.setAttribute("height", "400");
+    rect.setAttribute("width", String(STAGE_W));
+    rect.setAttribute("height", String(STAGE_H));
     rect.setAttribute("fill", "#fff");
     const maskGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
     maskGroup.setAttribute("transform", `translate(${gpX}, ${gpY})`);
@@ -1170,7 +1184,7 @@ for (let i = 0; i < rightSeq.length; i++) {
 
   const layoutPayload = {
     items: [...layoutLeft, ...(layoutPendant ? [layoutPendant] : []), ...layoutRight],
-    stage: { width: W, height: 400 },
+    stage: { width: W, height: STAGE_H },
     timestamp: Date.now()
   };
   window.__bracelet3DLayout = layoutPayload;
@@ -1188,13 +1202,18 @@ function downloadSVG(){
   const url = URL.createObjectURL(blob); trigger(url,"bracelet.svg");
 }
 function downloadPNG(){
-  const clone = stage.cloneNode(true); clone.setAttribute("width","1080"); clone.setAttribute("height","400");
+  const clone = stage.cloneNode(true);
+  clone.setAttribute("width", String(STAGE_W));
+  clone.setAttribute("height", String(STAGE_H));
   const xml = new XMLSerializer().serializeToString(clone);
   const data = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(xml)));
   const img = new Image();
   img.onload = function(){
-    const canvas=document.createElement("canvas"); canvas.width=1080; canvas.height=400;
-    const ctx=canvas.getContext("2d"); ctx.drawImage(img,0,0,1080,400);
+    const canvas = document.createElement("canvas");
+    canvas.width  = STAGE_W;
+    canvas.height = STAGE_H;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, STAGE_W, STAGE_H);
     canvas.toBlob(b=> trigger(URL.createObjectURL(b),"bracelet.png"),"image/png",0.98);
   };
   img.src = data;
@@ -1253,7 +1272,7 @@ let activeMaterials = [];
 let wire = false;
 let loadToken = 0;
 let lastLayout = null;
-let stageHeight = 400;
+let stageHeight = typeof STAGE_H !== 'undefined' ? STAGE_H : 320;
 
 window.__update3DAssembly = handleLayoutUpdate;
 if(window.__bracelet3DLayout){
