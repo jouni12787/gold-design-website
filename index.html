@@ -184,6 +184,16 @@
       </div>
 
       <div class="rows" id="rows"></div>
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <label for="lockSelect">Lock (left end)</label>
+          <select id="lockSelect"></select>
+        </div>
+        <div>
+          <label for="lockScale">Lock size (px height)</label>
+          <input id="lockScale" type="number" min="18" max="200" step="2" value="34"/>
+        </div>
+      </div>
       <div style="margin-top:8px"><button id="addRow">+ Add link type</button></div>
 
       <div class="summary" role="status" aria-live="polite">
@@ -283,6 +293,13 @@ currentTheme = applyTheme(currentTheme);
 const PENDANTS = ["Infinity Knot 1.svg"];
 const LINKS    = ["halo link.svg", "gold circle link.svg"];
 
+/* Locks (terminal, left end only) */
+const LOCKS = ["dolphin fish lock.svg"];
+
+const LOCK_META = {
+  "dolphin fish lock.svg": { rotate: 90 }
+};
+
 /* Link layout meta (tweak targetH if your halo looks too big/small) */
 const LINK_META = { "halo link.svg": { targetH: 34, rotate: 0 } };
 
@@ -313,8 +330,7 @@ const STL_FILES = {
   },
   link: {
     "halo link.svg": "link/halo link 1mm.stl",
-     "gold circle link.svg": "link/gold circle link.stl"
-    
+    "gold circle link.svg": "link/gold circle link.stl"
   }
 };
 
@@ -325,6 +341,7 @@ const WEIGHTS = {
   "Infinity Knot 1.svg": 0.32,
   "halo link.svg": 0.10,
   "gold circle link.svg": 0.10,
+  "dolphin fish lock.svg": 0.12,
   "__default_pendant": 0.30,
   "__default_link": 0.10
 };
@@ -337,6 +354,8 @@ const bracelet = document.getElementById("bracelet");
 const selTheme = document.getElementById("themeSelect");
 const selPendant = document.getElementById("pendant");
 const inpPendantScale = document.getElementById("pendantScale");
+const selLock = document.getElementById("lockSelect");
+const inpLockScale = document.getElementById("lockScale");
 const rowsBox = document.getElementById("rows");
 const btnAddRow = document.getElementById("addRow");
 const lblWeight = document.getElementById("weight");
@@ -471,6 +490,14 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   PENDANTS.forEach(n=> selPendant.appendChild(makeOption(n,n)));
   selPendant.value = PENDANTS[0];
 
+  if(selLock){
+    selLock.appendChild(makeOption("None", ""));
+    LOCKS.forEach(n=> selLock.appendChild(makeOption(n, n)));
+    selLock.value = "";
+    selLock.addEventListener("change", render);
+  }
+  if(inpLockScale) inpLockScale.addEventListener("input", render);
+
   addRow({type:LINKS[0], qty:6}); // one link row by default
 
   if(selTheme){
@@ -493,6 +520,8 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     addRow({type:LINKS[0], qty:6});
     selPendant.value=PENDANTS[0];
     inpPendantScale.value=160;
+    if(selLock) selLock.value="";
+    if(inpLockScale) inpLockScale.value = 34;
     render();
   });
   document.getElementById('tab2d').addEventListener('click', ()=>switchMode('2d'));
@@ -637,6 +666,8 @@ async function render(){
   const rows = readRows();
   const pendantName = selPendant.value;
   const pendantH = Math.max(20, Math.min(200, inpPendantScale.valueAsNumber||160));
+  const lockName = (selLock?.value || "").trim();
+  const lockH = Math.max(18, Math.min(200, inpLockScale?.valueAsNumber || 34));
 
   const dbg = document.createElementNS("http://www.w3.org/2000/svg","g");
   dbg.setAttribute("id","pinOverlay");
@@ -663,6 +694,19 @@ async function render(){
   if(token!==lastToken) return;
   const pendantMaskClone = clonePendantForMask(pendantPack.node);
   const pendant3D = sanitizePackFor3D(pendantPack, 'pendant', pendantName);
+
+  let lockPack = null;
+  if(lockName){
+    try{
+      const meta = LOCK_META[lockName] || { rotate: 0 };
+      const targetH = Number.isFinite(lockH) ? lockH : (meta.targetH ?? 34);
+      lockPack = await loadScaleRotate("lock", lockName, targetH, meta.rotate ?? 0);
+    }catch(e){
+      console.error(e);
+      lockPack = null;
+    }
+  }
+  if(token!==lastToken) return;
 
   // Link defs
   const uniq = [...new Set(rows.map(r=>r.type))];
@@ -691,16 +735,16 @@ async function render(){
     return (p?.L && p?.R) ? (p.R.x - p.L.x) : (def?.base?.width || 0);
   }
 
-// Build the sequence in the same order as your rows
-const leftSeq = [];
-rows.forEach(r => { for (let i = 0; i < r.qty; i++) leftSeq.push(r.type); });
+  const leftSeq = [];
+  rows.forEach(r => { for (let i = 0; i < r.qty; i++) leftSeq.push(r.type); });
+  const rightSeq = [...leftSeq];
 
-// Use the SAME order on the right (no reverse)
-const rightSeq = [...leftSeq];
+  const leftLinksSpan  = leftSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
+  const rightLinksSpan = rightSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
+  const lockSpan = lockPack ? spanOf({ base: lockPack }) : 0;
 
-// (optional) spans stay the same:
-const leftSpan  = leftSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
-const rightSpan = rightSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
+  const leftSpan  = leftLinksSpan + lockSpan;
+  const rightSpan = rightLinksSpan;
 
   const pendSpan = spanOf({base:pendantPack});
 
@@ -740,6 +784,8 @@ const rightSpan = rightSeq.reduce((s,t)=> s + spanOf(linkDefs[t]), 0);
   }
   tintGold(pendantPack.node); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
   bracelet.appendChild(stackOver);
+  const front = stackOver;
+  if(pendantMaskUrl) front.setAttribute("mask", pendantMaskUrl);
 
   layoutPendant = {
     type:'pendant',
@@ -795,6 +841,37 @@ for (let i = 0; i < leftSeq.length; i++) {
   anchorL = L && R ? { x: tx + L.x, y: ty + L.y } : { x: tx, y: midY };
 }
 
+// ----- LEFT terminal lock (optional) -----
+if (lockPack) {
+  const d = { base: lockPack, under: lockPack, over: null };
+  const L = d.base.pins?.L, R = d.base.pins?.R;
+
+  const tx = R ? (anchorL.x - R.x) : (anchorL.x - d.base.width);
+  const ty = R ? (anchorL.y - R.y) : (midY - d.base.height / 2);
+
+  const u = buildLinkLayer(d, tx, ty, 'under');
+  const o = buildLinkLayer(d, tx, ty, 'over');
+
+  stackUnder.insertBefore(u, stackUnder.firstChild || null);
+  stackOver.appendChild(o);
+
+  layoutLeft.push({
+    type: 'link',
+    name: lockName,
+    pack: sanitizePackFor3D(d.base, 'link', lockName),
+    tx, ty,
+    pins: {
+      L: L ? { x: tx + L.x, y: ty + L.y } : null,
+      R: R ? { x: tx + R.x, y: ty + R.y } : null
+    }
+  });
+
+  if (chkPins?.checked && (L || R)) {
+    if (L) drawDot(dbg, tx + L.x, ty + L.y, 3, pinColors);
+    if (R) drawDot(dbg, tx + R.x, ty + R.y, 3, pinColors);
+  }
+}
+
 // ---------- RIGHT side (pendant → outward), iterate FORWARD ----------
 let anchorR = { x: pendantLeftPinWorldX + pendSpan, y: midY };
 for (let i = 0; i < rightSeq.length; i++) {
@@ -832,7 +909,8 @@ for (let i = 0; i < rightSeq.length; i++) {
   // Weight
   const pendantW = weightFor(pendantName,"pendant");
   const linksW = rows.reduce((s,r)=> s + weightFor(r.type,"link") * r.qty*2, 0);
-  lblWeight.textContent = (pendantW + linksW).toFixed(2) + " g";
+  const lockW = lockName ? weightFor(lockName,"link") : 0;
+  lblWeight.textContent = (pendantW + linksW + lockW).toFixed(2) + " g";
 
   const layoutPayload = {
     items: [...layoutLeft, ...(layoutPendant ? [layoutPendant] : []), ...layoutRight],
