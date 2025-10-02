@@ -150,7 +150,6 @@
   .stlHud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;align-items:center;background:var(--hud-bg);border:1px solid var(--hud-border);padding:8px 10px;border-radius:10px;color:var(--hud-text);backdrop-filter:blur(8px);transition:background .3s ease,border-color .3s ease,color .3s ease}
   .stlHud select,.stlHud label{margin:0}
   .stlStatus{position:absolute;right:12px;bottom:12px;font:12px/1.3 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--hud-bg);border:1px solid var(--hud-border);color:var(--hud-text);padding:6px 8px;border-radius:8px;pointer-events:none;transition:background .3s ease,border-color .3s ease,color .3s ease}
-  .pin-dot{pointer-events:none}
 </style>
 </head>
 <body>
@@ -177,10 +176,6 @@
           <label for="pendant">Pendant</label>
           <select id="pendant"></select>
         </div>
-        <div>
-          <label for="pendantScale">Pendant size (px height)</label>
-          <input id="pendantScale" type="number" min="20" max="200" step="2" value="160"/>
-        </div>
       </div>
 
       <div class="rows" id="rows"></div>
@@ -188,10 +183,6 @@
         <div>
           <label for="lockSelect">Lock (left end)</label>
           <select id="lockSelect"></select>
-        </div>
-        <div>
-          <label for="lockScale">Lock size (px height)</label>
-          <input id="lockScale" type="number" min="18" max="200" step="2" value="34"/>
         </div>
       </div>
       <div class="grid2" style="margin-top:10px">
@@ -217,9 +208,6 @@
         <button id="reset">Reset</button>
       </div>
 
-      <label style="display:inline-flex;gap:.5rem;align-items:center;margin-top:10px">
-        <input type="checkbox" id="showPins"> Show pin overlay
-      </label>
     </div>
   </section>
 
@@ -387,16 +375,13 @@ const defs = document.getElementById("defs");
 const bracelet = document.getElementById("bracelet");
 const selTheme = document.getElementById("themeSelect");
 const selPendant = document.getElementById("pendant");
-const inpPendantScale = document.getElementById("pendantScale");
 const selLock = document.getElementById("lockSelect");
-const inpLockScale = document.getElementById("lockScale");
 const rowsBox = document.getElementById("rows");
 const btnAddRow = document.getElementById("addRow");
 const lblWeight = document.getElementById("weight");
 const btnSVG = document.getElementById("downloadSVG");
 const btnPNG = document.getElementById("downloadPNG");
 const btnReset = document.getElementById("reset");
-const chkPins = document.getElementById("showPins");
 const inpStep = document.getElementById("angleStep");
 const outStep = document.getElementById("angleStepOut");
 
@@ -416,17 +401,6 @@ function getStepDeg(){
   return v;
 }
 function parseCoord(v, dim){ if(v==null) return null; const s=String(v).trim(); return s.endsWith("%") ? parseFloat(s)/100*dim : parseFloat(s); }
-function drawDot(parent,x,y,r=3,colors){
-  const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
-  c.setAttribute("cx",x);
-  c.setAttribute("cy",y);
-  c.setAttribute("r",r);
-  c.setAttribute("fill",colors?.fill || "#d4af37");
-  c.setAttribute("stroke",colors?.stroke || "#fff7e6");
-  c.setAttribute("stroke-width","1");
-  c.setAttribute("class","pin-dot");
-  parent.appendChild(c);
-}
 function rewriteURLRefs(root, idMap){
   if(!root || !idMap) return;
   const ATTRS = ['clip-path','mask','filter','fill','stroke',
@@ -537,7 +511,6 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     selLock.value = "";
     selLock.addEventListener("change", render);
   }
-  if(inpLockScale) inpLockScale.addEventListener("input", render);
 
   if (inpStep) {
     if (outStep) outStep.textContent = `${inpStep.value}°`;
@@ -558,16 +531,13 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
 
   btnAddRow.addEventListener("click", ()=>addRow());
   selPendant.addEventListener("change", render);
-  inpPendantScale.addEventListener("input", render);
   btnSVG.addEventListener("click", downloadSVG);
   btnPNG.addEventListener("click", downloadPNG);
   btnReset.addEventListener("click", ()=>{
     rowsBox.innerHTML="";
     addRow({type:LINKS[0], qty:6});
     selPendant.value=PENDANTS[0];
-    inpPendantScale.value=160;
     if(selLock) selLock.value="";
-    if(inpLockScale) inpLockScale.value = 34;
     render();
   });
   document.getElementById('tab2d').addEventListener('click', ()=>switchMode('2d'));
@@ -720,20 +690,11 @@ async function render(){
   const bg2 = (themeStyles.getPropertyValue("--bg2") || "").trim() || "#0f0b06";
   const stageBg = stage.querySelector('[data-role="background"]');
   if(stageBg) stageBg.setAttribute("fill", bg2);
-  const pinColors = {
-    fill: (themeStyles.getPropertyValue("--pin-fill") || "").trim() || "#d4af37",
-    stroke: (themeStyles.getPropertyValue("--pin-stroke") || "").trim() || "#fff7e6"
-  };
-
   const rows = readRows();
   const pendantName = selPendant.value;
-  const pendantH = Math.max(20, Math.min(200, inpPendantScale.valueAsNumber||160));
+  const pendantH = 160;           // fixed pendant height
   const lockName = (selLock?.value || "").trim();
-  const lockH = Math.max(18, Math.min(200, inpLockScale?.valueAsNumber || 34));
-
-  const dbg = document.createElementNS("http://www.w3.org/2000/svg","g");
-  dbg.setAttribute("id","pinOverlay");
-  bracelet.appendChild(dbg);
+  const lockH = 70;               // fixed lock height
 
   // two z-stacks for the “woven” effect
   const stackUnder = document.createElementNS("http://www.w3.org/2000/svg","g");
@@ -869,11 +830,6 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
     }
   };
 
-  if (chkPins?.checked && pendantPack.pins?.L && pendantPack.pins?.R) {
-    drawDot(dbg, gpX + pendantPack.pins.L.x, gpY + pendantPack.pins.L.y, 3, pinColors);
-    drawDot(dbg, gpX + pendantPack.pins.R.x, gpY + pendantPack.pins.R.y, 3, pinColors);
-  }
-
 // ---------- LEFT side (pendant → outward), iterate FORWARD ----------
 let anchorL = { x: pendantLeftPinWorldX, y: midY };
 let leftAngleDeg = 0;
@@ -913,11 +869,6 @@ for (let i = 0; i < leftSeq.length; i++) {
       R: R ? { x: tx + R.x, y: ty + R.y } : null
     }
   });
-
-  if (chkPins?.checked && L && R) {
-    drawDot(dbg, tx + L.x, ty + L.y, 3, pinColors);
-    drawDot(dbg, tx + R.x, ty + R.y, 3, pinColors);
-  }
 
   // update anchor: rotate L around R by the same angle
   if (L && R) {
@@ -961,10 +912,6 @@ if (lockPack) {
     }
   });
 
-  if (chkPins?.checked && (L || R)) {
-    if (L) drawDot(dbg, tx + L.x, ty + L.y, 3, pinColors);
-    if (R) drawDot(dbg, tx + R.x, ty + R.y, 3, pinColors);
-  }
 }
 
 // ---------- RIGHT side (pendant → outward), iterate FORWARD ----------
@@ -1002,11 +949,6 @@ for (let i = 0; i < rightSeq.length; i++) {
       R: R ? { x: tx + R.x, y: ty + R.y } : null
     }
   });
-
-  if (chkPins?.checked && L && R) {
-    drawDot(dbg, tx + L.x, ty + L.y, 3, pinColors);
-    drawDot(dbg, tx + R.x, ty + R.y, 3, pinColors);
-  }
 
   // update anchor: rotate R around L by the same angle
   if (L && R) {
