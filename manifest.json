@@ -1,0 +1,12 @@
+{
+  "name": "Gold Design — Bracelet Builder",
+  "short_name": "Gold Design",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#17120a",
+  "theme_color": "#17120a",
+  "icons": [
+    { "src": "/gold-design-website/icon/icon-500.png", "sizes": "500x500", "type": "image/png" },
+    { "src": "/gold-design-website/icon/icon-1000.svg", "sizes": "1000x1000", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
