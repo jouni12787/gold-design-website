@@ -676,6 +676,16 @@ function sanitizePackFor3D(pack, type, name){
     }
   };
 }
+// === rotation helpers for 2D layout ===
+const STEP_DEG = 15;
+const toRad = d => d * Math.PI / 180;
+function rotateAround(x, y, cx, cy, rad){
+  const dx = x - cx, dy = y - cy;
+  return {
+    x: cx + dx * Math.cos(rad) - dy * Math.sin(rad),
+    y: cy + dx * Math.sin(rad) + dy * Math.cos(rad)
+  };
+}
 
 /* Render everything */
 async function render(){
@@ -1050,14 +1060,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
-// put near the top helpers
-const STEP_DEG = 15;
-const toRad = d => d * Math.PI / 180;
-function rotateAround(x, y, cx, cy, rad){
-  const dx = x - cx, dy = y - cy;
-  return { x: cx + dx*Math.cos(rad) - dy*Math.sin(rad),
-           y: cy + dx*Math.sin(rad) + dy*Math.cos(rad) };
-}
 
 const container = document.getElementById('preview3d');
 const canvas    = document.getElementById('stlCanvas');
