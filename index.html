@@ -11,7 +11,7 @@
 
 <!-- Apple touch icon (can be any square PNG; using your 500px) -->
 <link rel="apple-touch-icon" href="icon/icon-500.png">
-<title>hassan chakaroun juwelery — Bracelet Builder</title>
+<title>Hassan Chakaroun Jewelry — Bracelet Builder</title>
 <style>
   :root{
     --radius:14px;
@@ -175,6 +175,15 @@
     radial-gradient(900px 600px at 120% 0%, var(--accent-radial-2) 0%, transparent 70%),
     linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
     color:var(--ink);font:15.5px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;transition:color .3s ease, background .3s ease}
+  .topbar{position:sticky;top:0;z-index:60;background:var(--head-bg);backdrop-filter:saturate(1.2) blur(6px);border-bottom:1px solid var(--border-soft)}
+  .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
+  .topbar .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.4px;text-decoration:none;color:var(--ink)}
+  .topbar .brand img{width:36px;height:36px;border-radius:8px}
+  .topbar .brand span{text-transform:none;font-size:16px}
+  .topbar .nav{margin-left:auto;display:flex;gap:10px}
+  .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:8px 12px;border-radius:10px}
+  .topbar .nav a:hover{border-color:var(--gold)}
+  .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold)}
   .wrap{max-width:1200px;margin:28px auto;padding:0 16px;display:grid;gap:18px;grid-template-columns:1fr 1.35fr}
   @media (max-width:980px){.wrap{grid-template-columns:1fr}}
   .card{background:linear-gradient(160deg,var(--card-overlay),var(--card));
@@ -239,9 +248,21 @@
         <div><strong>2.</strong> Choose <em>Add to Home Screen</em>, then <em>Add</em>.</div>
         <img class="stepimg" src="./icon/save%20to%20home%20screen.jpeg" alt="Add to Home Screen screenshot">
       </div>
-    </div>
-  </div>
 </div>
+</div>
+</div>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="icon/icon-500.png" alt="Logo">
+      <span>Hassan Chakaroun Jewelry</span>
+    </a>
+    <nav class="nav">
+      <a href="index.html" aria-current="page">Bracelet Builder</a>
+      <a href="store.html">Store</a>
+    </nav>
+  </div>
+</header>
 <div class="wrap">
   <!-- LEFT -->
   <section class="card">
