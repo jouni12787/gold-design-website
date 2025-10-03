@@ -92,6 +92,7 @@
   .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;transition:border .2s,color .2s,background .2s;flex:0 0 auto;white-space:nowrap}
   .topbar .nav a:hover{border-color:var(--gold);color:var(--ink);background:color-mix(in oklab,var(--gold) 16%,transparent)}
   .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold);background:color-mix(in oklab,var(--gold) 18%,transparent)}
+  .topbar .nav select{border:1px solid var(--border-soft);background:var(--control-bg);color:var(--ink);padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600}
 
   .store-wrap{max-width:1100px;margin:0 auto;padding:32px 18px 64px;display:grid;gap:24px}
   .card{background:linear-gradient(160deg,var(--card-overlay),var(--card));border:1px solid var(--border-soft);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
@@ -181,8 +182,14 @@
     </a>
     <nav class="nav">
       <a href="index.html">Builder</a>
-      <a href="about.html">About</a>
       <a href="store.html" aria-current="page">Store</a>
+      <a href="about.html">About</a>
+      <select id="themeSelectTop" aria-label="Select theme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+        <option value="plum">Plum</option>
+        <option value="custom">Custom</option>
+      </select>
     </nav>
   </div>
 </header>
@@ -401,6 +408,32 @@
       console.error(err);
       out.innerHTML = `<span class="badge">Could not load products.</span>`;
     });
+})();
+</script>
+<script>
+(function(){
+  const KEY = window.__HCJ_THEME_KEY || 'hcj-theme';
+  const THEMES = ['light','dark','plum','custom'];
+  const top = document.getElementById('themeSelectTop');
+  const inner = document.getElementById('themeSelect');
+  function applySharedTheme(t){
+    const next = THEMES.includes(t) ? t : 'light';
+    if(typeof window.applyTheme === 'function'){
+      window.applyTheme(next);
+    }else{
+      document.documentElement.dataset.theme = next;
+    }
+    try{ localStorage.setItem(KEY,next);}catch(_){ }
+    if(inner && inner !== top) inner.value = next;
+    return next;
+  }
+  let saved = 'light';
+  try{ saved = localStorage.getItem(KEY) || document.documentElement.dataset.theme || 'light'; }catch(_){ }
+  applySharedTheme(saved);
+  if(top){
+    top.value = saved;
+    top.addEventListener('change', e => applySharedTheme(e.target.value));
+  }
 })();
 </script>
 <script>

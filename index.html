@@ -205,6 +205,7 @@
   .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;transition:border .2s,color .2s,background .2s;flex:0 0 auto;white-space:nowrap}
   .topbar .nav a:hover{border-color:var(--gold);color:var(--ink);background:color-mix(in oklab,var(--gold) 16%,transparent)}
   .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold);background:color-mix(in oklab,var(--gold) 18%,transparent)}
+  .topbar .nav select{border:1px solid var(--border-soft);background:var(--control-bg);color:var(--ink);padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600}
   .story-hero{position:relative;max-width:1240px;margin:0 auto;padding:48px 18px 52px;display:flex;align-items:center;justify-content:center;text-align:center}
   .story-hero::before{content:"";position:absolute;inset:18px;border-radius:24px;background:
     radial-gradient(1200px 600px at 10% 10%, color-mix(in oklab,var(--gold) 18%,transparent) 0%, transparent 65%),
@@ -229,13 +230,10 @@
   .headPrimary{display:flex;flex-direction:column;gap:4px}
   .headActions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
   .badge{font-size:12px;color:var(--muted)}
-  .themePicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
-  .themePicker span{white-space:nowrap}
   .panel{padding:16px 18px}
   label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
   select,input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--control-border);background:var(--control-bg);color:var(--ink);outline:none;transition:border .2s,box-shadow .2s,background .2s,color .3s ease}
   select:focus,input:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--control-focus-shadow);background:var(--control-focus-bg)}
-  .themePicker select{width:auto;min-width:120px;padding:6px 10px;font-size:12px}
   .grid2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
   .rows{display:flex;flex-direction:column;gap:10px;margin-top:10px}
   .row{display:grid;grid-template-columns:1.2fr .7fr auto auto;gap:10px;align-items:end}
@@ -412,8 +410,14 @@
     </a>
     <nav class="nav">
       <a href="index.html" aria-current="page">Builder</a>
-      <a href="about.html">About</a>
       <a href="store.html">Store</a>
+      <a href="about.html">About</a>
+      <select id="themeSelectTop" aria-label="Select theme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+        <option value="plum">Plum</option>
+        <option value="custom">Custom</option>
+      </select>
     </nav>
   </div>
 </header>
@@ -437,15 +441,6 @@
         <span class="badge">Pin snapping · horizontal SVGs</span>
       </div>
       <div class="headActions">
-        <div class="themePicker">
-          <span>Theme</span>
-          <select id="themeSelect" aria-label="Select theme">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="plum">Plum</option>
-            <option value="custom">Custom</option>
-          </select>
-        </div>
         <button class="ghost" type="button" id="startTour">Guide me</button>
       </div>
     </div>
@@ -507,17 +502,6 @@
           <input id="wristSize" type="number" min="14" max="24" step="0.5" value="18">
         </div>
       </div>
-      <div class="grid2" style="margin-top:10px">
-        <div>
-          <label for="gemCarats">Gemstone inserts (ct)</label>
-          <input id="gemCarats" type="number" min="0" step="0.1" value="0">
-        </div>
-        <div>
-          <label for="metalMarkup">Atelier markup (%)</label>
-          <input id="metalMarkup" type="number" min="0" step="1" value="20">
-        </div>
-      </div>
-
       <div class="summary" id="materialSummary" role="status" aria-live="polite">
         <div class="summary-primary">
           <div><strong>Estimated Weight</strong></div>
@@ -528,10 +512,6 @@
           <div class="stat">
             <span>Metal weight</span>
             <strong id="metalWeight">0.00 g</strong>
-          </div>
-          <div class="stat">
-            <span>Gem weight</span>
-            <strong id="gemWeight">0.00 g</strong>
           </div>
           <div class="stat">
             <span>Estimate</span>
@@ -652,15 +632,11 @@ const STORAGE_KEYS = {
 };
 const BASE_DENSITY = 15.6; // 18K heritage gold baseline (g/cm^3)
 const BASE_WRIST_CM = 18;
-const CARAT_TO_GRAM = 0.2;
-const GEM_PRICE_PER_CARAT = 450; // USD
 
 const METAL_PRESETS = [
   { id: 'gold-18', label: '18K Heritage Gold', density: 15.6, pricePerGram: 62, narrative: 'Signature yellow gold balanced with palladium for warm luminosity and daily durability.' },
   { id: 'gold-22', label: '22K Levantine Gold', density: 17.5, pricePerGram: 68, narrative: 'High-karat glow inspired by souk treasures, ideal for ceremonial commissions.' },
-  { id: 'gold-14', label: '14K Studio Gold', density: 13.1, pricePerGram: 45, narrative: 'Lean, contemporary alloy suited to everyday wear with atelier polish.' },
   { id: 'rose-18', label: '18K Rose Gold', density: 15.2, pricePerGram: 60, narrative: 'Copper-rich hue with subtle blush undertones crafted for modern romantic silhouettes.' },
-  { id: 'platinum', label: 'Platinum 950', density: 21.45, pricePerGram: 85, narrative: 'Rare platinum with ruthenium reinforcement for mirror-bright settings and heirloom resilience.' },
   { id: 'silver', label: 'Sterling Silver 925', density: 10.5, pricePerGram: 12, narrative: 'Artisan silver brightened with rhodium for crisp light play on intricate links.' }
 ];
 
@@ -868,7 +844,9 @@ const WEIGHTS = {
 const stage = document.getElementById("stage");
 const defs = document.getElementById("defs");
 const bracelet = document.getElementById("bracelet");
-const selTheme = document.getElementById("themeSelect");
+const selThemeInner = document.getElementById("themeSelect");
+const selThemeTop = document.getElementById("themeSelectTop");
+const selTheme = selThemeInner || selThemeTop;
 const selPendant = document.getElementById("pendant");
 const selLock = document.getElementById("lockSelect");
 const rowsBox = document.getElementById("rows");
@@ -881,11 +859,8 @@ const inpStep = document.getElementById("angleStep");
 const outStep = document.getElementById("angleStepOut");
 const selMetal = document.getElementById("metalPreset");
 const inpWrist = document.getElementById("wristSize");
-const inpGem = document.getElementById("gemCarats");
-const inpMarkup = document.getElementById("metalMarkup");
 const lblTotalWeight = document.getElementById("totalWeight");
 const lblMetalWeight = document.getElementById("metalWeight");
-const lblGemWeight = document.getElementById("gemWeight");
 const lblEstimate = document.getElementById("priceEstimate");
 const lblMaterialDetails = document.getElementById("materialDetails");
 const materialNarrative = document.getElementById("materialNarrative");
@@ -978,51 +953,102 @@ function getWristScale(){
   return wrist / BASE_WRIST_CM;
 }
 
-function getGemCarats(){
-  const val = Math.max(0, parseFloat(inpGem?.value ?? 0) || 0);
-  if(inpGem) inpGem.value = val.toString();
-  return val;
-}
-
-function getMarkup(){
-  const val = Math.max(0, parseFloat(inpMarkup?.value ?? 0) || 0);
-  if(inpMarkup) inpMarkup.value = val.toString();
-  return val;
-}
-
 function updateMaterialSummary(baseWeight){
   const preset = getMetalPreset();
   const wristScale = getWristScale();
-  const gemCarats = getGemCarats();
-  const markup = getMarkup();
-  const volume = baseWeight / BASE_DENSITY;
-  const metalWeight = volume * preset.density * wristScale;
-  const gemWeight = gemCarats * CARAT_TO_GRAM;
-  const totalWeight = metalWeight + gemWeight;
-  const metalCost = metalWeight * preset.pricePerGram;
-  const gemCost = gemCarats * GEM_PRICE_PER_CARAT;
-  const estimate = (metalCost + gemCost) * (1 + markup / 100);
+
+  // Convert the baseline volume to the selected alloy’s mass
+  const volume = baseWeight / BASE_DENSITY;            // cm³
+  const metalWeight = volume * preset.density * wristScale; // g
+  const totalWeight = metalWeight;
+
+  // Price comes from live spot (store logic); filled by refresh loop
+  const k = kiratForPreset(preset.id);
+  const pricePerGram = k ? (window.__HCJ_PRICE_PER_GRAM__ || preset.pricePerGram) : preset.pricePerGram;
+  const estimate = pricePerGram * metalWeight;
 
   if(lblTotalWeight) lblTotalWeight.textContent = `${totalWeight.toFixed(2)} g`;
   if(lblMetalWeight) lblMetalWeight.textContent = `${metalWeight.toFixed(2)} g`;
-  if(lblGemWeight) lblGemWeight.textContent = `${gemWeight.toFixed(2)} g`;
   if(lblEstimate) lblEstimate.textContent = priceFormatter.format(estimate || 0);
-  if(lblMaterialDetails) lblMaterialDetails.textContent = `${preset.label} • density ${preset.density.toFixed(1)} g/cm³`;
-  if(materialNarrative) materialNarrative.textContent = `${preset.narrative} Wrist scaled ×${wristScale.toFixed(2)} with ${gemCarats.toFixed(1)} ct inserts and ${markup.toFixed(0)}% atelier finish.`;
+  if(lblMaterialDetails) lblMaterialDetails.textContent =
+    `${preset.label} • density ${preset.density.toFixed(1)} g/cm³`;
+  if(materialNarrative) materialNarrative.textContent =
+    `Signature weight estimate for ${preset.label}. Wrist scaled ×${wristScale.toFixed(2)}.`;
 
-  lastMaterialSnapshot = {
-    baseWeight,
-    totalWeight,
-    metalWeight,
-    gemWeight,
-    estimate,
-    presetId: preset.id,
-    wristScale,
-    gemCarats,
-    markup
-  };
+  lastMaterialSnapshot = { baseWeight, totalWeight, metalWeight, estimate, presetId: preset.id, wristScale };
   return lastMaterialSnapshot;
 }
+
+/* ===== Live gold price (shared with store) ===== */
+const GOLDAPI_FREE = [
+  "https://api.gold-api.com/price/XAU",
+  "https://api.gold-api.com/price/XAU/USD",
+  "https://www.gold-api.com/price/XAU",
+  "https://www.gold-api.com/price/XAU/USD"
+];
+function pickOuncePrice(d){
+  const c = [d?.price, d?.usd, d?.usd_ounce, d?.price_ounce, d?.ounce, d?.oz,
+             d?.result?.price, d?.XAU?.USD].map(Number).filter(v => isFinite(v) && v > 0);
+  if (c.length) return c[0];
+  const g24 = Number(d?.gram_24k || d?.price_gram_24k || d?.g24 || d?.per_gram);
+  return (isFinite(g24) && g24 > 0) ? g24 * 31.1 : NaN;
+}
+function timeoutFetch(u,ms){
+  const c = new AbortController(); const id = setTimeout(() => c.abort(), ms);
+  return fetch(u,{signal:c.signal,cache:"no-store"}).finally(() => clearTimeout(id));
+}
+async function getSpotFast(){
+  const tries = GOLDAPI_FREE.map(u =>
+    timeoutFetch(u,3500)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(pickOuncePrice)
+      .then(v => (isFinite(v) && v > 0) ? v : Promise.reject("bad"))
+  );
+  return Promise.any(tries);
+}
+
+// Same formula set you use in the store:
+function perGramForKirat(oz, kiratStr, fee){
+  const k = String(kiratStr||"").toLowerCase();
+  const add = Number.isFinite(fee) ? fee : 10; // default fee/gram
+  if (/\b18\b/.test(k)) return (((oz + 30) * 32 * 750 / 995)/1000) + add;
+  if (/\b21\b/.test(k)) return (((oz + 30) * 32 * 875 / 995)/1000) + add;
+  if (/\b22\b/.test(k)) return (((oz + 30) * 32 * 916 / 995)/1000) + add;
+  if (/\b24\b/.test(k)) return (((oz + 30) / 31.1)/1000) + add;
+  return NaN;
+}
+
+/* Map the current metal preset to a “kirat” label used by perGramForKirat.
+   18K Heritage and 18K Rose => "18", 22K Levantine => "22".
+   Silver will fall back to its fixed pricePerGram in the preset. */
+function kiratForPreset(presetId){
+  if(/gold-18|rose-18/.test(presetId)) return "18";
+  if(/gold-22/.test(presetId)) return "22";
+  return ""; // no kirat -> fallback to fixed price
+}
+
+// Refresh a global per-gram price used by updateMaterialSummary()
+let _ppgTimer = null;
+if(typeof window.__HCJ_PRICE_PER_GRAM__ === 'undefined') window.__HCJ_PRICE_PER_GRAM__ = undefined;
+
+async function refreshPerGramPrice(){
+  try{
+    const oz = await getSpotFast();
+    const preset = getMetalPreset();
+    const k = kiratForPreset(preset.id);
+    const ppg = k ? perGramForKirat(oz, k, 10) : preset.pricePerGram; // fee=10 default
+    if(isFinite(ppg) && ppg > 0){
+      window.__HCJ_PRICE_PER_GRAM__ = ppg;
+      // Recompute the summary with the fresh price
+      if(lastMaterialSnapshot) updateMaterialSummary(lastMaterialSnapshot.baseWeight);
+    }
+  }catch(_){ /* keep last price */ }
+}
+
+// start loop
+refreshPerGramPrice();
+if(_ppgTimer) clearInterval(_ppgTimer);
+_ppgTimer = setInterval(refreshPerGramPrice, 10000);
 
 function showToast(message){
   if(!toast) return;
@@ -1041,8 +1067,6 @@ function collectSessionState(){
     angle: parseFloat(inpStep?.value ?? 15) || 15,
     metal: selMetal?.value || METAL_PRESETS[0]?.id,
     wrist: parseFloat(inpWrist?.value ?? BASE_WRIST_CM) || BASE_WRIST_CM,
-    gem: parseFloat(inpGem?.value ?? 0) || 0,
-    markup: parseFloat(inpMarkup?.value ?? 0) || 0,
     lighting: selLighting?.value || 'gallery',
     model: document.getElementById('stlSelect')?.value || '__assembly__',
     autoRotate: document.getElementById('stlAutoRotate')?.checked || false
@@ -1086,8 +1110,6 @@ function hydrateSession(){
   if(outStep && inpStep){ outStep.textContent = `${inpStep.value}°`; }
   if(selMetal && data.metal) selMetal.value = data.metal;
   if(inpWrist && data.wrist != null) inpWrist.value = data.wrist;
-  if(inpGem && data.gem != null) inpGem.value = data.gem;
-  if(inpMarkup && data.markup != null) inpMarkup.value = data.markup;
   if(selLighting && data.lighting) selLighting.value = data.lighting;
   const stlSelect = document.getElementById('stlSelect');
   if(stlSelect && data.model) stlSelect.value = data.model;
@@ -1113,7 +1135,7 @@ const TOUR_STEPS = [
   { selector: '#pendant', title: 'Select a pendant', body: 'Pick the pendant silhouette that anchors your bracelet narrative.' },
   { selector: '#rows', title: 'Balance your links', body: 'Stack link families and quantities; the builder mirrors them on both sides automatically.' },
   { selector: '#angleStep', title: 'Shape the drape', body: 'Adjust the per-link bend to simulate how the chain falls around the wrist.' },
-  { selector: '#materialSummary', title: 'Review atelier specs', body: 'Real densities, gemstone inserts and markups generate production-ready gram and price estimates.' },
+  { selector: '#materialSummary', title: 'Review atelier specs', body: 'Real densities and live market pricing generate production-ready gram and price estimates.' },
   { selector: '#preview3d', title: 'Preview in 3D', body: 'Orbit the bracelet, change lighting presets and bookmark camera angles for renders.' },
   { selector: '.buttons', title: 'Export and save', body: 'Download files, save the session locally or reset to begin a new composition.' }
 ];
@@ -1281,20 +1303,24 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   populateMetalOptions();
 
   if(selTheme){
-    selTheme.value = THEMES.includes(currentTheme) ? currentTheme : DEFAULT_THEME;
+    const initial = THEMES.includes(currentTheme) ? currentTheme : DEFAULT_THEME;
+    selTheme.value = initial;
+    if(selThemeInner && selThemeInner !== selTheme) selThemeInner.value = initial;
+    if(selThemeTop && selThemeTop !== selTheme) selThemeTop.value = initial;
     updateThemeDesignerVisibility();
     selTheme.addEventListener("change", e=>{
       const chosen = applyTheme(e.target.value);
       currentTheme = chosen;
+      if(selThemeInner && selThemeInner !== e.target) selThemeInner.value = chosen;
+      if(selThemeTop && selThemeTop !== e.target) selThemeTop.value = chosen;
       updateThemeDesignerVisibility();
+      saveSession(true);
       render();
     });
   }
 
-  if(selMetal) selMetal.addEventListener("change", render);
+  if(selMetal) selMetal.addEventListener("change", ()=>{ refreshPerGramPrice(); render(); });
   if(inpWrist) inpWrist.addEventListener("input", ()=>render());
-  if(inpGem) inpGem.addEventListener("input", ()=>render());
-  if(inpMarkup) inpMarkup.addEventListener("input", ()=>render());
 
   if(btnAddRow) btnAddRow.addEventListener("click", ()=>{ addRow(); render(); });
   if(selPendant) selPendant.addEventListener("change", render);
@@ -1310,8 +1336,6 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
       if(inpStep){ inpStep.value = "15"; if(outStep) outStep.textContent = "15°"; }
       if(selMetal && METAL_PRESETS[0]) selMetal.value = METAL_PRESETS[0].id;
       if(inpWrist) inpWrist.value = BASE_WRIST_CM.toString();
-      if(inpGem) inpGem.value = "0";
-      if(inpMarkup) inpMarkup.value = "20";
       saveSession(true);
       showToast('Design reset.');
       render();
@@ -1379,6 +1403,7 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     addRow({type:LINKS[0], qty:6});
   }
 
+  refreshPerGramPrice();
   updateThemeDesignerVisibility();
   render();
 
@@ -2464,6 +2489,32 @@ function handleLayoutUpdate(layout){
     loadCurrent();
   }
 }
+</script>
+<script>
+(function(){
+  const KEY = window.__HCJ_THEME_KEY || 'hcj-theme';
+  const THEMES = ['light','dark','plum','custom'];
+  const top = document.getElementById('themeSelectTop');
+  const inner = document.getElementById('themeSelect');
+  function applyTopTheme(t){
+    const next = THEMES.includes(t) ? t : 'light';
+    if(typeof window.applyTheme === 'function'){
+      window.applyTheme(next);
+    }else{
+      document.documentElement.dataset.theme = next;
+    }
+    try{ localStorage.setItem(KEY,next);}catch(_){ }
+    if(inner && inner !== top) inner.value = next;
+    return next;
+  }
+  let saved = 'light';
+  try{ saved = localStorage.getItem(KEY) || document.documentElement.dataset.theme || 'light'; }catch(_){ }
+  applyTopTheme(saved);
+  if(top){
+    top.value = saved;
+    top.addEventListener('change', e => applyTopTheme(e.target.value));
+  }
+})();
 </script>
 </body>
 </html>
