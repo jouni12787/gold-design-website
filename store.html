@@ -202,7 +202,7 @@
 (function () {
   const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk";
   const SHEET_NAME = "Form Responses 1";
-  const TQ = encodeURIComponent("select A,B,C,D,E,F,G");
+  const TQ = encodeURIComponent("select A,B,C,D,E,F,G,H");
   const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
 
   const out = document.getElementById("storeList");
@@ -239,25 +239,26 @@
     return Promise.any(tries);
   }
 
-  // === Your per-gram equations (EXACTLY as you requested) ===
-  // 18k: ((oz + 30)*32*750/995) + 10
-  // 21k: ((oz + 30)*32*875/995) + 10
-  // 22k: ((oz + 30)*32*916/995) + 10
-  // 24k: ((oz + 30)/31.1)       + 10
-  function perGramForKirat(oz, kiratStr){
-    const k = String(kiratStr || "").toLowerCase();
-    if (/\b18\b/.test(k) || /18/.test(k)) return ((oz + 30) * 32 * 750 / 995) + 10;
-    if (/\b21\b/.test(k) || /21/.test(k)) return ((oz + 30) * 32 * 875 / 995) + 10;
-    if (/\b22\b/.test(k) || /22/.test(k)) return ((oz + 30) * 32 * 916 / 995) + 10;
-    if (/\b24\b/.test(k) || /24/.test(k)) return ((oz + 30) / 31.1) + 10;
+  // 18k: ((oz + 30)*32*750/995) + fee
+  // 21k: ((oz + 30)*32*875/995) + fee
+  // 22k: ((oz + 30)*32*916/995) + fee
+  // 24k: ((oz + 30)/31.1)       + fee
+  function perGramForKirat(oz, kiratStr, fee){
+    const k   = String(kiratStr || "").toLowerCase();
+    const add = Number.isFinite(fee) ? fee : 10; // default to 10 if blank
+    if (/\b18\b/.test(k)) return ((oz + 30) * 32 * 750 / 995) + add;
+    if (/\b21\b/.test(k)) return ((oz + 30) * 32 * 875 / 995) + add;
+    if (/\b22\b/.test(k)) return ((oz + 30) * 32 * 916 / 995) + add;
+    if (/\b24\b/.test(k)) return ((oz + 30) / 31.1) + add;
     return NaN; // leave price blank for non-gold items (e.g., silver)
   }
 
   function computeItemPriceUSD(oz, product){
-    const w = Number(product.weight);
-    if (!isFinite(w) || w <= 0) return NaN;
-    const ppg = perGramForKirat(oz, product.kirat);
-    return isFinite(ppg) ? (ppg * w) : NaN;
+    const w   = toNum(product.weight);
+    if (!Number.isFinite(w) || w <= 0) return NaN;
+    const fee = toNum(product.fee); // per-gram اجور + ربح from the sheet
+    const ppg = perGramForKirat(oz, product.kirat, fee);
+    return Number.isFinite(ppg) ? (ppg * w) : NaN;
   }
 
   // Start a 10s refresh loop to update prices in-place
@@ -321,6 +322,11 @@
     return Number.isFinite(v) ? v.toLocaleString(undefined, {minimumFractionDigits:0}) : "";
   }
 
+  function toNum(v){
+    const n = parseFloat(String(v ?? "").replace(/[^\d.-]/g, "").replace(",", "."));
+    return Number.isFinite(n) ? n : NaN;
+  }
+
   function render(products) {
     if (!products.length) {
       out.innerHTML = `<span class="badge">No products yet.</span>`;
@@ -368,19 +374,20 @@
         // Keep both the raw value (v) and the formatted value (f) – links often come in .f
         const cells = (r.c || []).map(c => c ? (c.f || c.v || "") : "");
 
-        // Your Form columns: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo
+        // Form columns now: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo, H fee
         const name = cells[1];
         const weight = cells[2];
         const kirat = cells[3];
         const description = cells[4];
         const sku = cells[5];
         const photo = cells[6];
+        const fee = cells[7]; // "اجور + ربح" (per gram). Example: 2.5, 10, etc.
 
         // You don’t have price or in_stock in the form yet — set sensible defaults
         const price = "";
         const in_stock = 1;
 
-        return { name, price, kirat, photo, description, sku, in_stock, weight };
+        return { name, price, kirat, photo, description, sku, in_stock, weight, fee };
       });
       startSpotRefresh(products);
     })
