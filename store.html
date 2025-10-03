@@ -143,13 +143,13 @@
 <div id="a2hsBanner" aria-hidden="true">
   <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
     <button class="close" type="button" aria-label="Close">×</button>
-    <img class="icon" src="icon/icon-500.png" alt="Chakaroun Jewelry icon">
+    <img class="icon" src="icon/icon-500.png" alt="Chakaroun Jewelry icon" data-i18n-attr="alt:brand.logoAlt">
     <div class="txt">
-      <div class="brand-title">Chakaroun Jewelry</div>
-      <div class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</div>
-      <div class="banner-copy">Add it to your Home Screen.</div>
+      <div class="brand-title" data-i18n="brand.title">Chakaroun Jewelry</div>
+      <div class="brand-byline" data-i18n="brand.byline">by Hassan Chakaroun &amp; Ali Jouni</div>
+      <div class="banner-copy" data-i18n="a2hs.banner">Add it to your Home Screen.</div>
     </div>
-    <button class="cta" type="button" id="a2hsGet">Install</button>
+    <button class="cta" type="button" id="a2hsGet" data-i18n="a2hs.install">Install</button>
   </div>
 </div>
 
@@ -157,14 +157,14 @@
 <div id="a2hsModal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
     <button class="x" type="button" aria-label="Close">×</button>
-    <h3 id="a2hsTitle">Add “Chakaroun Jewelry” to Home Screen</h3>
+    <h3 id="a2hsTitle" data-i18n="a2hs.title">Add “Chakaroun Jewelry” to Home Screen</h3>
     <div class="steps">
       <div class="row">
-        <div><strong>1.</strong> Tap <em>Share</em> in Safari.</div>
+        <div><strong>1.</strong> <span data-i18n="a2hs.step1">Tap <em>Share</em> in Safari.</span></div>
         <img class="stepimg" src="./icon/share.jpg" alt="iPhone Share button screenshot">
       </div>
       <div class="row">
-        <div><strong>2.</strong> Choose <em>Add to Home Screen</em>, then <em>Add</em>.</div>
+        <div><strong>2.</strong> <span data-i18n="a2hs.step2">Choose <em>Add to Home Screen</em>, then <em>Add</em>.</span></div>
         <img class="stepimg" src="./icon/save%20to%20home%20screen.jpeg" alt="Add to Home Screen screenshot">
       </div>
     </div>
@@ -173,22 +173,28 @@
 
 <header class="topbar">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="Chakaroun Jewelry — by Hassan Chakaroun &amp; Ali Jouni">
-      <img src="icon/icon-500.png" alt="Chakaroun Jewelry logo">
+    <a class="brand" href="index.html" aria-label="Chakaroun Jewelry — by Hassan Chakaroun &amp; Ali Jouni" data-i18n-attr="aria-label:brand.aria">
+      <img src="icon/icon-500.png" alt="Chakaroun Jewelry logo" data-i18n-attr="alt:brand.logoAlt">
       <span class="brand-stack">
-        <span class="brand-title">Chakaroun Jewelry</span>
-        <small class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</small>
+        <span class="brand-title" data-i18n="brand.title">Chakaroun Jewelry</span>
+        <small class="brand-byline" data-i18n="brand.byline">by Hassan Chakaroun &amp; Ali Jouni</small>
       </span>
     </a>
     <nav class="nav">
-      <a href="index.html">Builder</a>
-      <a href="store.html" aria-current="page">Store</a>
-      <a href="about.html">About</a>
+      <a href="index.html" data-i18n="nav.builder">Builder</a>
+      <a href="store.html" aria-current="page" data-i18n="nav.store">Store</a>
+      <a href="about.html" data-i18n="nav.about">About</a>
       <select id="themeSelectTop" aria-label="Select theme">
         <option value="dark">Dark</option>
         <option value="light">Light</option>
         <option value="plum">Plum</option>
         <option value="custom">Custom</option>
+      </select>
+      <select id="langSelectTop" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="it">Italiano</option>
       </select>
     </nav>
   </div>
@@ -197,14 +203,15 @@
 <main class="store-wrap">
   <section class="card">
     <div class="head">
-      <h1>Store</h1>
-      <span class="badge">Atelier selections</span>
+      <h1 data-i18n="store.title">Store</h1>
+      <span class="badge" data-i18n="store.badge">Atelier selections</span>
     </div>
-    <div class="panel" id="storeList" aria-live="polite">Loading…</div>
+    <div class="panel" id="storeList" data-i18n="store.loading" aria-live="polite">Loading…</div>
   </section>
 </main>
 
 <script src="scripts/a2hs.js"></script>
+<script src="scripts/translations.js"></script>
 <script>
 (function () {
   const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk";
@@ -213,6 +220,35 @@
   const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
 
   const out = document.getElementById("storeList");
+
+  let __t = (key)=> (window.__TRANSLATIONS?.[document.documentElement.lang || 'en']?.[key] || window.__TRANSLATIONS?.en?.[key] || key);
+
+  function syncTranslator(){
+    const lang = document.documentElement.lang || 'en';
+    __t = (key)=> (window.__TRANSLATIONS?.[lang]?.[key] || window.__TRANSLATIONS?.en?.[key] || key);
+  }
+  let lastProducts = [];
+  let lastStatus = 'loading';
+
+  syncTranslator();
+
+  window.addEventListener('DOMContentLoaded', syncTranslator);
+  window.addEventListener('hcj:lang', ()=>{
+    syncTranslator();
+    if(!out) return;
+    if(lastStatus === 'products'){
+      render(lastProducts);
+    }else if(lastStatus === 'empty'){
+      out.removeAttribute('data-i18n');
+      out.innerHTML = `<span class="badge">${__t('store.empty')}</span>`;
+    }else if(lastStatus === 'error'){
+      out.removeAttribute('data-i18n');
+      out.innerHTML = `<span class="badge">${__t('store.loadFail')}</span>`;
+    }else{
+      out.setAttribute('data-i18n', 'store.loading');
+      out.textContent = __t('store.loading') || out.textContent;
+    }
+  });
 
   /* ================== Live gold pricing (every 10s) ================== */
   // Endpoints (free) – we’ll race them for speed:
@@ -341,21 +377,27 @@
   }
 
   function render(products) {
+    if(!out) return;
+    out.removeAttribute('data-i18n');
     if (!products.length) {
-      out.innerHTML = `<span class="badge">No products yet.</span>`;
+      lastProducts = products;
+      lastStatus = 'empty';
+      out.innerHTML = `<span class="badge">${__t('store.empty')}</span>`;
       return;
     }
+    lastProducts = products;
+    lastStatus = 'products';
     const cards = products.map(p => {
       const title = sentenceCase(p.name || "");
       const safeTitle = escapeHtml(title);
       const photo = driveImage(p.photo);
       const price = money(p.price);
       const description = escapeHtml(p.description || "");
-      const kirat = p.kirat ? `<span>Karat: ${escapeHtml(p.kirat)}</span>` : "";
-      const sku = p.sku ? `<span>SKU: ${escapeHtml(p.sku)}</span>` : "";
-      const weight = p.weight ? `<span>Weight: ${escapeHtml(p.weight)} g</span>` : "";
+      const kirat = p.kirat ? `<span>${__t('store.karat')} ${escapeHtml(p.kirat)}</span>` : "";
+      const sku = p.sku ? `<span>${__t('store.sku')} ${escapeHtml(p.sku)}</span>` : "";
+      const weight = p.weight ? `<span>${__t('store.weight')} ${escapeHtml(p.weight)} g</span>` : "";
       const badgeClass = (p.in_stock && Number(p.in_stock) > 0) ? "store-item__badge store-item__badge--stock" : "store-item__badge";
-      const badgeLabel = (p.in_stock && Number(p.in_stock) > 0) ? "In stock" : "Out of stock";
+      const badgeLabel = (p.in_stock && Number(p.in_stock) > 0) ? __t('store.inStock') : __t('store.outOfStock');
       const metaBits = [kirat, weight, sku, `<span class="${badgeClass}">${badgeLabel}</span>`]
         .filter(Boolean)
         .join("\n");
@@ -406,7 +448,12 @@
     })
     .catch(err => {
       console.error(err);
-      out.innerHTML = `<span class="badge">Could not load products.</span>`;
+      if(out){
+        out.removeAttribute('data-i18n');
+        out.innerHTML = `<span class="badge">${__t('store.loadFail')}</span>`;
+      }
+      lastProducts = [];
+      lastStatus = 'error';
     });
 })();
 </script>
@@ -442,6 +489,57 @@
       navigator.serviceWorker.register('sw.js').catch(function(){});
     });
   }
+</script>
+<script>
+/* ===== Minimal i18n engine (shared) ===== */
+(function () {
+  const LANG_KEY = 'hcj-lang';
+  const langSelect = document.getElementById('langSelectTop');
+
+  function t(key) {
+    const lang = document.documentElement.lang || 'en';
+    const dict = (window.__TRANSLATIONS && window.__TRANSLATIONS[lang]) || {};
+    return (key in dict) ? dict[key] : (window.__TRANSLATIONS?.en?.[key] ?? '');
+  }
+
+  function applyDir(lang){
+    document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+  }
+
+  function translateDOM(){
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const txt = t(key);
+      if (txt) el.textContent = txt;
+    });
+    document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+      const map = el.getAttribute('data-i18n-attr').split(';').map(s=>s.trim()).filter(Boolean);
+      map.forEach(pair=>{
+        const [attr, key] = pair.split(':').map(s=>s.trim());
+        const val = t(key);
+        if(attr && val) el.setAttribute(attr, val);
+      });
+    });
+  }
+
+  function setLang(lang){
+    applyDir(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch(e) {}
+    translateDOM();
+    window.dispatchEvent(new CustomEvent('hcj:lang', { detail: { lang } }));
+  }
+
+  let saved = 'en';
+  try { saved = localStorage.getItem(LANG_KEY) || 'en'; } catch(e) {}
+  applyDir(saved);
+
+  if(langSelect){
+    langSelect.value = saved;
+    langSelect.addEventListener('change', e => setLang(e.target.value));
+  }
+  window.addEventListener('DOMContentLoaded', translateDOM);
+})();
 </script>
 </body>
 </html>

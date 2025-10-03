@@ -372,13 +372,13 @@
 <div id="a2hsBanner" aria-hidden="true">
   <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
     <button class="close" type="button" aria-label="Close">×</button>
-    <img class="icon" src="icon/icon-500.png" alt="Chakaroun Jewelry icon">
+    <img class="icon" src="icon/icon-500.png" alt="Chakaroun Jewelry icon" data-i18n-attr="alt:brand.logoAlt">
     <div class="txt">
-      <div class="brand-title">Chakaroun Jewelry</div>
-      <div class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</div>
-      <div class="banner-copy">Add it to your Home Screen.</div>
+      <div class="brand-title" data-i18n="brand.title">Chakaroun Jewelry</div>
+      <div class="brand-byline" data-i18n="brand.byline">by Hassan Chakaroun &amp; Ali Jouni</div>
+      <div class="banner-copy" data-i18n="a2hs.banner">Add it to your Home Screen.</div>
     </div>
-    <button class="cta" type="button" id="a2hsGet">Install</button>
+    <button class="cta" type="button" id="a2hsGet" data-i18n="a2hs.install">Install</button>
   </div>
 </div>
 
@@ -386,14 +386,14 @@
 <div id="a2hsModal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
     <button class="x" type="button" aria-label="Close">×</button>
-      <h3 id="a2hsTitle">Add “Chakaroun Jewelry” to Home Screen</h3>
+      <h3 id="a2hsTitle" data-i18n="a2hs.title">Add “Chakaroun Jewelry” to Home Screen</h3>
     <div class="steps">
       <div class="row">
-        <div><strong>1.</strong> Tap <em>Share</em> in Safari.</div>
+        <div><strong>1.</strong> <span data-i18n="a2hs.step1">Tap <em>Share</em> in Safari.</span></div>
         <img class="stepimg" src="./icon/share.jpg" alt="iPhone Share button screenshot">
       </div>
       <div class="row">
-        <div><strong>2.</strong> Choose <em>Add to Home Screen</em>, then <em>Add</em>.</div>
+        <div><strong>2.</strong> <span data-i18n="a2hs.step2">Choose <em>Add to Home Screen</em>, then <em>Add</em>.</span></div>
         <img class="stepimg" src="./icon/save%20to%20home%20screen.jpeg" alt="Add to Home Screen screenshot">
       </div>
 </div>
@@ -401,34 +401,40 @@
 </div>
 <header class="topbar">
   <div class="wrap">
-   <a class="brand" href="index.html" aria-label="Chakaroun Jewelry — by Hassan Chakaroun &amp; Ali Jouni">
-      <img src="icon/icon-500.png" alt="Chakaroun Jewelry logo">
+   <a class="brand" href="index.html" aria-label="Chakaroun Jewelry — by Hassan Chakaroun &amp; Ali Jouni" data-i18n-attr="aria-label:brand.aria">
+      <img src="icon/icon-500.png" alt="Chakaroun Jewelry logo" data-i18n-attr="alt:brand.logoAlt">
       <span class="brand-stack">
-        <span class="brand-title">Chakaroun Jewelry</span>
-        <small class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</small>
+        <span class="brand-title" data-i18n="brand.title">Chakaroun Jewelry</span>
+        <small class="brand-byline" data-i18n="brand.byline">by Hassan Chakaroun &amp; Ali Jouni</small>
       </span>
     </a>
     <nav class="nav">
-      <a href="index.html" aria-current="page">Builder</a>
-      <a href="store.html">Store</a>
-      <a href="about.html">About</a>
+      <a href="index.html" aria-current="page" data-i18n="nav.builder">Builder</a>
+      <a href="store.html" data-i18n="nav.store">Store</a>
+      <a href="about.html" data-i18n="nav.about">About</a>
       <select id="themeSelectTop" aria-label="Select theme">
         <option value="dark">Dark</option>
         <option value="light">Light</option>
         <option value="plum">Plum</option>
         <option value="custom">Custom</option>
       </select>
+      <select id="langSelectTop" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="it">Italiano</option>
+      </select>
     </nav>
   </div>
 </header>
 <section class="story-hero" id="maison">
   <div class="hero-content">
-    <span class="hero-eyebrow">Maison Chakaroun · Established Beirut 1964</span>
-    <h2>Bespoke bracelets infused with Levantine poetry and Parisian polish.</h2>
-    <p>Craft a signature piece from the same atelier that shapes our haute joaillerie. Every pendant, halo link and clasp follows archival proportions that honour our founders while embracing contemporary luxury.</p>
+    <span class="hero-eyebrow" data-i18n="home.eyebrow">Maison Chakaroun · Established Beirut 1964</span>
+    <h2 data-i18n="home.headline">Bespoke bracelets infused with Levantine poetry and Parisian polish.</h2>
+    <p data-i18n="home.copy">Craft a signature piece from the same atelier that shapes our haute joaillerie. Every pendant, halo link and clasp follows archival proportions that honour our founders while embracing contemporary luxury.</p>
     <div class="hero-actions">
-      <a class="hero-btn" href="about.html#craftsmanship">Discover our craftsmanship</a>
-      <a class="hero-btn secondary" href="store.html">Visit the online boutique</a>
+      <a class="hero-btn" href="about.html#craftsmanship" data-i18n="home.cta.primary">Discover our craftsmanship</a>
+      <a class="hero-btn secondary" href="store.html" data-i18n="home.cta.secondary">Visit the online boutique</a>
     </div>
   </div>
 </section>
@@ -437,11 +443,11 @@
   <section class="card">
     <div class="head">
       <div class="headPrimary">
-        <h1>Bracelet Builder</h1>
-        <span class="badge">Pin snapping · horizontal SVGs</span>
+        <h1 data-i18n="builder.title">Bracelet Builder</h1>
+        <span class="badge" data-i18n="builder.badge">Pin snapping · horizontal SVGs</span>
       </div>
       <div class="headActions">
-        <button class="ghost" type="button" id="startTour">Guide me</button>
+        <button class="ghost" type="button" id="startTour" data-i18n="builder.tour.start">Guide me</button>
       </div>
     </div>
     <div class="panel">
@@ -468,7 +474,7 @@
       </div>
       <div class="grid2">
         <div>
-          <label for="pendant">Pendant</label>
+          <label for="pendant" data-i18n="builder.pendant">Pendant</label>
           <select id="pendant"></select>
         </div>
       </div>
@@ -476,13 +482,13 @@
       <div class="rows" id="rows"></div>
       <div class="grid2" style="margin-top:10px">
         <div>
-          <label for="lockSelect">Lock (left end)</label>
+          <label for="lockSelect" data-i18n="builder.lock">Lock (left end)</label>
           <select id="lockSelect"></select>
         </div>
       </div>
       <div class="grid2" style="margin-top:10px">
         <div>
-          <label for="angleStep">Link bend per step (°)</label>
+          <label for="angleStep" data-i18n="builder.angle">Link bend per step (°)</label>
           <input id="angleStep" type="range" min="0" max="15" step="0.5" value="15"/>
         </div>
         <div>
@@ -490,42 +496,42 @@
           <output id="angleStepOut">15°</output>
         </div>
       </div>
-      <div style="margin-top:8px"><button id="addRow">+ Add link type</button></div>
+      <div style="margin-top:8px"><button id="addRow" data-i18n="builder.addRow">+ Add link type</button></div>
 
       <div class="grid2" style="margin-top:16px">
         <div>
-          <label for="metalPreset">Metal &amp; purity</label>
+          <label for="metalPreset" data-i18n="builder.metal">Metal &amp; purity</label>
           <select id="metalPreset"></select>
         </div>
         <div>
-          <label for="wristSize">Wrist size (cm)</label>
+          <label for="wristSize" data-i18n="builder.wrist">Wrist size (cm)</label>
           <input id="wristSize" type="number" min="14" max="24" step="0.5" value="18">
         </div>
       </div>
       <div class="summary" id="materialSummary" role="status" aria-live="polite">
         <div class="summary-primary">
-          <div><strong>Estimated Weight</strong></div>
+          <div><strong data-i18n="builder.summary.h">Estimated Weight</strong></div>
           <span class="w" id="totalWeight">0.00 g</span>
-          <div class="badge" id="materialDetails">Select a metal profile to see atelier-ready grams.</div>
+          <div class="badge" id="materialDetails" data-i18n="builder.summary.details">Select a metal profile to view density, price &amp; narrative.</div>
         </div>
         <div class="summary-stats">
           <div class="stat">
-            <span>Metal weight</span>
+            <span data-i18n="builder.summary.metalWeight.label">Metal weight</span>
             <strong id="metalWeight">0.00 g</strong>
           </div>
           <div class="stat">
-            <span>Estimate</span>
+            <span data-i18n="builder.summary.estimate.label">Estimate</span>
             <strong id="priceEstimate">$0.00</strong>
           </div>
         </div>
       </div>
-      <div class="materialNarrative" id="materialNarrative">Weights are calibrated to 18K gold until you choose another alloy.</div>
+      <div class="materialNarrative" id="materialNarrative" data-i18n="builder.narrative">Weights are calibrated to our atelier’s 1:1 prototypes.</div>
 
       <div class="buttons">
-        <button id="downloadSVG">Download SVG</button>
-        <button id="downloadPNG">Download PNG</button>
-        <button id="saveSession" class="secondary">Save session</button>
-        <button id="reset" class="ghost">Reset</button>
+        <button id="downloadSVG" data-i18n="builder.actions.svg">Download SVG</button>
+        <button id="downloadPNG" data-i18n="builder.actions.png">Download PNG</button>
+        <button id="saveSession" class="secondary" data-i18n="builder.actions.save">Save session</button>
+        <button id="reset" class="ghost" data-i18n="builder.actions.reset">Reset</button>
       </div>
 
     </div>
@@ -534,10 +540,10 @@
   <!-- RIGHT -->
   <section class="card">
     <div class="head">
-      <h1>Preview</h1>
+      <h1 data-i18n="builder.preview.h">Preview</h1>
       <div class="tabs">
-        <button class="tab active" id="tab2d">2D</button>
-        <button class="tab" id="tab3d">3D (STL)</button>
+        <button class="tab active" id="tab2d" data-i18n="builder.preview.tab2d">2D</button>
+        <button class="tab" id="tab3d" data-i18n="builder.preview.tab3d">3D (STL)</button>
       </div>
     </div>
 
@@ -582,7 +588,7 @@
 
     <!-- 3D -->
     <div class="preview" id="preview3d">
-      <button id="wishlistCTA" type="button">♡ Add to wishlist</button>
+      <button id="wishlistCTA" type="button" data-i18n="builder.wishlist">♡ Add to wishlist</button>
       <canvas id="stlCanvas"></canvas>
       <div class="stlHud">
         <select id="stlSelect" title="Choose model">
@@ -603,9 +609,10 @@
           <button type="button" data-bookmark="top">Top</button>
         </div>
         <label style="display:inline-flex;gap:.35rem;align-items:center;">
-          <input type="checkbox" id="stlAutoRotate"> Auto rotate
+          <input type="checkbox" id="stlAutoRotate">
+          <span data-i18n="builder.preview.auto">Auto rotate</span>
         </label>
-        <button id="stlDownload" type="button">Download STL</button>
+        <button id="stlDownload" type="button" data-i18n="builder.preview.download">Download STL</button>
       </div>
     </div>
   </section>
@@ -627,6 +634,7 @@
 </div>
 
 <script src="scripts/a2hs.js"></script>
+<script src="scripts/translations.js"></script>
 
 <script>
   if('serviceWorker' in navigator){
@@ -639,6 +647,11 @@
 <!-- ==================== 2D BUILDER ==================== -->
 <script>
 "use strict";
+
+function t(k){
+  return (window.__TRANSLATIONS?.[document.documentElement.lang]?.[k] || window.__TRANSLATIONS?.en?.[k] || k);
+}
+window.addEventListener('hcj:lang', ()=> render());
 
 const THEMES = ["light", "dark", "plum", "custom"];
 const THEME_KEY = window.__HCJ_THEME_KEY || "hcj-theme";
@@ -1148,13 +1161,13 @@ function markTourSeen(){
 }
 
 const TOUR_STEPS = [
-  { selector: '.headActions', title: 'Curate your ambience', body: 'Swap between maison themes or open the custom palette to match a client’s brand codes.' },
-  { selector: '#pendant', title: 'Select a pendant', body: 'Pick the pendant silhouette that anchors your bracelet narrative.' },
-  { selector: '#rows', title: 'Balance your links', body: 'Stack link families and quantities; the builder mirrors them on both sides automatically.' },
-  { selector: '#angleStep', title: 'Shape the drape', body: 'Adjust the per-link bend to simulate how the chain falls around the wrist.' },
-  { selector: '#materialSummary', title: 'Review atelier specs', body: 'Real densities and live market pricing generate production-ready gram and price estimates.' },
-  { selector: '#preview3d', title: 'Preview in 3D', body: 'Orbit the bracelet, change lighting presets and bookmark camera angles for renders.' },
-  { selector: '.buttons', title: 'Export and save', body: 'Download files, save the session locally or reset to begin a new composition.' }
+  { selector: '.headActions', title: t('tour.s1.h'), body: t('tour.s1.p') },
+  { selector: '#pendant', title: t('tour.s2.h'), body: t('tour.s2.p') },
+  { selector: '#rows', title: t('tour.s3.h'), body: t('tour.s3.p') },
+  { selector: '#angleStep', title: t('tour.s4.h'), body: t('tour.s4.p') },
+  { selector: '#materialSummary', title: t('tour.s5.h'), body: t('tour.s5.p') },
+  { selector: '#preview3d', title: t('tour.s6.h'), body: t('tour.s6.p') },
+  { selector: '.buttons', title: t('tour.s7.h'), body: t('tour.s7.p') }
 ];
 
 function spotlightStep(step){
@@ -2542,6 +2555,57 @@ function handleLayoutUpdate(layout){
     top.value = saved;
     top.addEventListener('change', e => applyTopTheme(e.target.value));
   }
+})();
+</script>
+<script>
+/* ===== Minimal i18n engine (shared) ===== */
+(function () {
+  const LANG_KEY = 'hcj-lang';
+  const langSelect = document.getElementById('langSelectTop');
+
+  function t(key) {
+    const lang = document.documentElement.lang || 'en';
+    const dict = (window.__TRANSLATIONS && window.__TRANSLATIONS[lang]) || {};
+    return (key in dict) ? dict[key] : (window.__TRANSLATIONS?.en?.[key] ?? '');
+  }
+
+  function applyDir(lang){
+    document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+  }
+
+  function translateDOM(){
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const txt = t(key);
+      if (txt) el.textContent = txt;
+    });
+    document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+      const map = el.getAttribute('data-i18n-attr').split(';').map(s=>s.trim()).filter(Boolean);
+      map.forEach(pair=>{
+        const [attr, key] = pair.split(':').map(s=>s.trim());
+        const val = t(key);
+        if(attr && val) el.setAttribute(attr, val);
+      });
+    });
+  }
+
+  function setLang(lang){
+    applyDir(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch(e) {}
+    translateDOM();
+    window.dispatchEvent(new CustomEvent('hcj:lang', { detail: { lang } }));
+  }
+
+  let saved = 'en';
+  try { saved = localStorage.getItem(LANG_KEY) || 'en'; } catch(e) {}
+  applyDir(saved);
+
+  if(langSelect){
+    langSelect.value = saved;
+    langSelect.addEventListener('change', e => setLang(e.target.value));
+  }
+  window.addEventListener('DOMContentLoaded', translateDOM);
 })();
 </script>
 </body>
