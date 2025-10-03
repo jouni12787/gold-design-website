@@ -301,6 +301,55 @@
   #stlCanvas{width:100%;height:100%;max-height:560px;display:block}
   .stlHud select,.stlHud label{margin:0}
   .stlStatus{position:absolute;right:12px;bottom:12px;font:12px/1.3 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--hud-bg);border:1px solid var(--hud-border);color:var(--hud-text);padding:6px 8px;border-radius:8px;pointer-events:none;transition:background .3s ease,border-color .3s ease,color .3s ease}
+
+  /* ====== Clean look overrides (paste at end of <style>) ====== */
+
+  /* Simpler background */
+  body{
+    background: linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%) !important;
+  }
+
+  /* Remove hero’s extra glass frames */
+  .story-hero::before,
+  .story-hero::after{ display:none !important; }
+
+  /* Flatter chrome */
+  :root{
+    --radius:10px !important;
+    --shadow:0 10px 24px rgba(0,0,0,.25) !important;
+  }
+
+  .card{ background: var(--card) !important; box-shadow: var(--shadow) !important; }
+  .head{ background: color-mix(in oklab,var(--bg) 8%, transparent) !important; }
+
+  /* Hero spacing tighter */
+  .story-hero{
+    padding: 40px 18px 28px !important;
+    border:1px solid var(--border-soft);
+    border-radius: 18px;
+    background: color-mix(in oklab,var(--bg2) 12%, transparent);
+  }
+  .story-hero .hero-content{ padding: 18px !important; }
+
+  /* Main grid tighter and narrower for a luxe feel */
+  .wrap{ max-width: 1100px !important; grid-template-columns: 1.1fr 1fr !important; }
+  @media (max-width:980px){ .wrap{ grid-template-columns: 1fr !important; } }
+
+  /* Preview: remove glow */
+  .preview{ background: var(--bg2) !important; }
+
+  /* Buttons: small polish */
+  button, .hero-btn{
+    border-radius: 10px !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,.15);
+  }
+
+  /* A2HS banner doesn’t bump layout */
+  body.has-topbar{ padding-top: 0 !important; }
+  #a2hsBanner.show{ transform: translateY(0) !important; position: sticky; top: 0; }
+
+  /* Keep 3D canvas proportioned */
+  #stlCanvas{ aspect-ratio: 4 / 3; width:100%; height:auto; }
 </style>
 </head>
 <body>
@@ -346,8 +395,7 @@
     </a>
     <nav class="nav">
       <a href="index.html" aria-current="page">Bracelet Builder</a>
-      <a href="#heritage">Heritage</a>
-      <a href="#craftsmanship">Craftsmanship</a>
+      <a href="about.html">About</a>
       <a href="store.html">Store</a>
     </nav>
   </div>
@@ -358,47 +406,11 @@
     <h2>Bespoke bracelets infused with Levantine poetry and Parisian polish.</h2>
     <p>Craft a signature piece from the same atelier that shapes our haute joaillerie. Every pendant, halo link and clasp follows archival proportions that honour our founders while embracing contemporary luxury.</p>
     <div class="hero-actions">
-      <a class="hero-btn" href="#craftsmanship">Discover our craftsmanship</a>
+      <a class="hero-btn" href="about.html">Discover our craftsmanship</a>
       <a class="hero-btn secondary" href="store.html">Visit the online boutique</a>
     </div>
   </div>
 </section>
-<div class="story-blocks">
-  <section class="story-block" id="heritage">
-    <h3>Heritage</h3>
-    <div class="story-grid">
-      <div class="story-tile">
-        <strong>Damascus filigree lineage</strong>
-        <p>Our bracelets reinterpret filigree techniques preserved by Hassan Chakaroun, marrying slender wire twists with modern proportions.</p>
-      </div>
-      <div class="story-tile">
-        <strong>Family crest pendants</strong>
-        <p>Pendants echo the cedar crest carried by generations, ready for engraving initials, verses or bespoke monograms.</p>
-      </div>
-      <div class="story-tile">
-        <strong>Curated palettes</strong>
-        <p>Each theme references a chapter of our maison — Desert Dawn, Midnight Majlis and Plum Soirée — with a custom option for your house codes.</p>
-      </div>
-    </div>
-  </section>
-  <section class="story-block" id="craftsmanship">
-    <h3>Craftsmanship</h3>
-    <div class="story-grid">
-      <div class="story-tile">
-        <strong>Maison-approved weights</strong>
-        <p>Real densities for gold, platinum and sterling silver drive the gram estimate so production teams can quote confidently.</p>
-      </div>
-      <div class="story-tile">
-        <strong>Showroom lighting presets</strong>
-        <p>Orbit your 3D jewel through Gallery, Spotlight or Twilight scenes, or bookmark your own camera for export-ready frames.</p>
-      </div>
-      <div class="story-tile">
-        <strong>Saved ateliers</strong>
-        <p>Store favourite builds and palettes locally, then add them to a wishlist for private client previews.</p>
-      </div>
-    </div>
-  </section>
-</div>
 <div class="wrap">
   <!-- LEFT -->
   <section class="card">
