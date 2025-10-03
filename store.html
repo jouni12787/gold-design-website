@@ -245,18 +245,18 @@
   // 24k: ((oz + 30)/31.1)       + fee
   function perGramForKirat(oz, kiratStr, fee){
     const k   = String(kiratStr || "").toLowerCase();
-    const add = Number.isFinite(fee) ? fee : 10; // default to 10 if blank
+    const add = Number.isFinite(fee) ? fee : 10; // fallback to 10 if the sheet cell is empty
     if (/\b18\b/.test(k)) return ((oz + 30) * 32 * 750 / 995) + add;
     if (/\b21\b/.test(k)) return ((oz + 30) * 32 * 875 / 995) + add;
     if (/\b22\b/.test(k)) return ((oz + 30) * 32 * 916 / 995) + add;
     if (/\b24\b/.test(k)) return ((oz + 30) / 31.1) + add;
-    return NaN; // leave price blank for non-gold items (e.g., silver)
+    return NaN;
   }
 
   function computeItemPriceUSD(oz, product){
     const w   = toNum(product.weight);
     if (!Number.isFinite(w) || w <= 0) return NaN;
-    const fee = toNum(product.fee); // per-gram اجور + ربح from the sheet
+    const fee = toNum(product.fee);      // ← “أجور + ربح ex.2.5” (per gram) from column H
     const ppg = perGramForKirat(oz, product.kirat, fee);
     return Number.isFinite(ppg) ? (ppg * w) : NaN;
   }
@@ -322,8 +322,14 @@
     return Number.isFinite(v) ? v.toLocaleString(undefined, {minimumFractionDigits:0}) : "";
   }
 
+  // Parses "2.5" or "2,5" into a Number. Returns NaN if not numeric.
   function toNum(v){
-    const n = parseFloat(String(v ?? "").replace(/[^\d.-]/g, "").replace(",", "."));
+    const s = String(v ?? "").trim()
+      // Arabic decimal comma -> dot
+      .replace(",", ".")
+      // strip everything except digits, minus, and dot
+      .replace(/[^\d.-]/g, "");
+    const n = parseFloat(s);
     return Number.isFinite(n) ? n : NaN;
   }
 
@@ -371,17 +377,17 @@
       const json = JSON.parse(txt.substring(47, txt.length - 2));
       const rows = (json.table?.rows || []);
       const products = rows.map(r => {
-        // Keep both the raw value (v) and the formatted value (f) – links often come in .f
+        // Keep both the raw value (v) and the formatted value (f)
         const cells = (r.c || []).map(c => c ? (c.f || c.v || "") : "");
 
-        // Form columns now: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo, H fee
-        const name = cells[1];
-        const weight = cells[2];
-        const kirat = cells[3];
+        // Columns: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo, H fee ("أجور + ربح ex.2.5")
+        const name        = cells[1];
+        const weight      = cells[2];
+        const kirat       = cells[3];
         const description = cells[4];
-        const sku = cells[5];
-        const photo = cells[6];
-        const fee = cells[7]; // "اجور + ربح" (per gram). Example: 2.5, 10, etc.
+        const sku         = cells[5];
+        const photo       = cells[6];
+        const fee         = cells[7];
 
         // You don’t have price or in_stock in the form yet — set sensible defaults
         const price = "";
