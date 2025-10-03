@@ -142,7 +142,7 @@
 <!-- A2HS Banner -->
 <div id="a2hsBanner" aria-hidden="true">
   <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
-    <button class="close" type="button" aria-label="Close">×</button>
+    <button class="close" type="button" aria-label="Close" data-i18n-attr="aria-label:common.close">×</button>
     <img class="icon" src="icon/icon-500.png" alt="Chakaroun Jewelry icon" data-i18n-attr="alt:brand.logoAlt">
     <div class="txt">
       <div class="brand-title" data-i18n="brand.title">Chakaroun Jewelry</div>
@@ -156,7 +156,7 @@
 <!-- iOS Guide -->
 <div id="a2hsModal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
-    <button class="x" type="button" aria-label="Close">×</button>
+    <button class="x" type="button" aria-label="Close" data-i18n-attr="aria-label:common.close">×</button>
     <h3 id="a2hsTitle" data-i18n="a2hs.title">Add “Chakaroun Jewelry” to Home Screen</h3>
     <div class="steps">
       <div class="row">
@@ -184,11 +184,11 @@
       <a href="index.html" data-i18n="nav.builder">Builder</a>
       <a href="store.html" aria-current="page" data-i18n="nav.store">Store</a>
       <a href="about.html" data-i18n="nav.about">About</a>
-      <select id="themeSelectTop" aria-label="Select theme">
-        <option value="dark">Dark</option>
-        <option value="light">Light</option>
-        <option value="plum">Plum</option>
-        <option value="custom">Custom</option>
+      <select id="themeSelectTop" aria-label="Select theme" data-i18n-attr="aria-label:common.theme.select">
+        <option value="dark" data-i18n="theme.dark">Dark</option>
+        <option value="light" data-i18n="theme.light">Light</option>
+        <option value="plum" data-i18n="theme.plum">Plum</option>
+        <option value="custom" data-i18n="theme.custom">Custom</option>
       </select>
       <select id="langSelectTop" aria-label="Select language">
         <option value="en">English</option>
@@ -221,11 +221,32 @@
 
   const out = document.getElementById("storeList");
 
-  let __t = (key)=> (window.__TRANSLATIONS?.[document.documentElement.lang || 'en']?.[key] || window.__TRANSLATIONS?.en?.[key] || key);
+  let __t = (key, vars) => {
+    const lang = document.documentElement.lang || 'en';
+    const dict = window.__TRANSLATIONS?.[lang] || {};
+    const fallback = window.__TRANSLATIONS?.en || {};
+    let value = dict[key];
+    if(value == null) value = fallback[key];
+    if(value == null) value = key;
+    if(typeof value === 'string' && vars && typeof vars === 'object'){
+      value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
+    }
+    return value;
+  };
 
   function syncTranslator(){
     const lang = document.documentElement.lang || 'en';
-    __t = (key)=> (window.__TRANSLATIONS?.[lang]?.[key] || window.__TRANSLATIONS?.en?.[key] || key);
+    __t = (key, vars)=>{
+      const dict = window.__TRANSLATIONS?.[lang] || {};
+      const fallback = window.__TRANSLATIONS?.en || {};
+      let value = dict[key];
+      if(value == null) value = fallback[key];
+      if(value == null) value = key;
+      if(typeof value === 'string' && vars && typeof vars === 'object'){
+        value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
+      }
+      return value;
+    };
   }
   let lastProducts = [];
   let lastStatus = 'loading';
@@ -496,10 +517,21 @@
   const LANG_KEY = 'hcj-lang';
   const langSelect = document.getElementById('langSelectTop');
 
-  function t(key) {
+  function translate(key, vars){
     const lang = document.documentElement.lang || 'en';
-    const dict = (window.__TRANSLATIONS && window.__TRANSLATIONS[lang]) || {};
-    return (key in dict) ? dict[key] : (window.__TRANSLATIONS?.en?.[key] ?? '');
+    const dict = window.__TRANSLATIONS?.[lang] || {};
+    const fallback = window.__TRANSLATIONS?.en || {};
+    let value = dict[key];
+    if(value == null) value = fallback[key];
+    if(value == null) value = '';
+    if(typeof value === 'string' && vars && typeof vars === 'object'){
+      value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
+    }
+    return value;
+  }
+
+  function t(key, vars){
+    return translate(key, vars);
   }
 
   function applyDir(lang){
