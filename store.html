@@ -223,11 +223,22 @@
     }
     return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
   }
-  function driveImage(url) {
-    if (!url) return "";
+  function driveImage(value) {
+    if (!value) return "";
+
+    // If GViz gave us an HTML anchor (Sheets link chip), pull out the href
+    const str = String(value);
+    const hrefMatch = str.match(/href="([^"]+)"/i);
+    const url = hrefMatch ? hrefMatch[1] : str;
+
+    // Accept both /file/d/ID/... and ...?id=ID forms
     const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([^&]+)/);
     const id = m ? m[1] : null;
-    return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
+    if (!id) return url; // fall back to whatever it is
+
+    // Thumbnail/preview URL (fast & works in <img>)
+    return `https://lh3.googleusercontent.com/d/${id}=w800`;
+    // If you prefer, you can use: return `https://drive.google.com/uc?export=view&id=${id}`;
   }
   function money(n) {
     const v = Number(n);
