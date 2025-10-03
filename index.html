@@ -545,10 +545,31 @@
     <div class="preview" id="preview2d">
       <svg id="stage" viewBox="0 0 1080 320" role="img" aria-label="Bracelet preview">
         <defs id="defs">
-          <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#fff7e6"/><stop offset="30%" stop-color="#f1d9a0"/>
-            <stop offset="60%" stop-color="#d4af37"/><stop offset="85%" stop-color="#b88a1a"/>
+          <!-- 18K: warm classic gold -->
+          <linearGradient id="gold18" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#fff7e6"/>
+            <stop offset="28%"  stop-color="#f3dfa9"/>
+            <stop offset="58%"  stop-color="#d4af37"/>
+            <stop offset="85%"  stop-color="#b88a1a"/>
             <stop offset="100%" stop-color="#f6e4bb"/>
+          </linearGradient>
+
+          <!-- 21K: more concentrated/saturated gold (deeper body, tighter highlight) -->
+          <linearGradient id="gold21" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#fff3c9"/>
+            <stop offset="18%"  stop-color="#f2cf5a"/>
+            <stop offset="50%"  stop-color="#c89a00"/>
+            <stop offset="78%"  stop-color="#a87900"/>
+            <stop offset="100%" stop-color="#f3e08b"/>
+          </linearGradient>
+
+          <!-- Silver: neutral metallic greys (no gold tint) -->
+          <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#ffffff"/>
+            <stop offset="25%"  stop-color="#e5e5e5"/>
+            <stop offset="55%"  stop-color="#bfc0c2"/>
+            <stop offset="82%"  stop-color="#9a9a9a"/>
+            <stop offset="100%" stop-color="#efefef"/>
           </linearGradient>
           <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity=".35"/>
@@ -634,10 +655,9 @@ const BASE_DENSITY = 15.6; // 18K heritage gold baseline (g/cm^3)
 const BASE_WRIST_CM = 18;
 
 const METAL_PRESETS = [
-  { id: 'gold-18', label: '18K Heritage Gold', density: 15.6, pricePerGram: 62, narrative: 'Signature yellow gold balanced with palladium for warm luminosity and daily durability.' },
-  { id: 'gold-22', label: '22K Levantine Gold', density: 17.5, pricePerGram: 68, narrative: 'High-karat glow inspired by souk treasures, ideal for ceremonial commissions.' },
-  { id: 'rose-18', label: '18K Rose Gold', density: 15.2, pricePerGram: 60, narrative: 'Copper-rich hue with subtle blush undertones crafted for modern romantic silhouettes.' },
-  { id: 'silver', label: 'Sterling Silver 925', density: 10.5, pricePerGram: 12, narrative: 'Artisan silver brightened with rhodium for crisp light play on intricate links.' }
+  { id: 'gold-18', label: '18K Gold', density: 15.6, pricePerGram: 62, narrative: 'Daily-durable atelier balance.' },
+  { id: 'gold-21', label: '21K Gold', density: 17.2, pricePerGram: 66, narrative: 'High-karat glow.' },
+  { id: 'silver',  label: 'Sterling Silver 925', density: 10.5, pricePerGram: 10, narrative: 'Bright artisan silver.' }
 ];
 
 const CUSTOM_THEME_DEFAULTS = {
@@ -1018,13 +1038,10 @@ function perGramForKirat(oz, kiratStr, fee){
   return NaN;
 }
 
-/* Map the current metal preset to a “kirat” label used by perGramForKirat.
-   18K Heritage and 18K Rose => "18", 22K Levantine => "22".
-   Silver will fall back to its fixed pricePerGram in the preset. */
 function kiratForPreset(presetId){
-  if(/gold-18|rose-18/.test(presetId)) return "18";
-  if(/gold-22/.test(presetId)) return "22";
-  return ""; // no kirat -> fallback to fixed price
+  if(/gold-18/.test(presetId)) return "18";
+  if(/gold-21/.test(presetId)) return "21";
+  return ""; // silver uses fixed pricePerGram
 }
 
 // Refresh a global per-gram price used by updateMaterialSummary()
@@ -1449,17 +1466,27 @@ function readRows(){
   }).filter(r=>r.qty>0);
 }
 
-/* Gold tint */
-function tintGold(node){
+function tintMetal(node, metalId){
+  const fillId =
+    metalId === 'gold-21' ? 'gold21' :
+    metalId === 'silver'  ? 'silver' :
+                            'gold18';
+
+  const strokeColor =
+    metalId === 'silver'  ? '#8a8a8a' :
+    metalId === 'gold-21' ? '#8a6a00' :
+                            '#b88a1a';
+
   const w = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
   while(w.nextNode()){
-    const el=w.currentNode, tag=el.tagName?.toLowerCase?.()||"";
+    const el  = w.currentNode;
+    const tag = (el.tagName || '').toLowerCase();
     if(["path","circle","ellipse","rect","polygon","polyline","line"].includes(tag)){
-      const fill = el.getAttribute("fill");
+      const fill   = el.getAttribute("fill");
       const stroke = el.getAttribute("stroke");
-      if(!fill || fill!=="none") el.setAttribute("fill","url(#gold)");
-      if(stroke && stroke!=="none") el.setAttribute("stroke","#b88a1a");
-      el.setAttribute("filter","url(#softShadow)");
+      if(!fill || fill!=="none") el.setAttribute("fill", `url(#${fillId})`);
+      if(stroke && stroke!=="none") el.setAttribute("stroke", strokeColor);
+      el.setAttribute("filter", "url(#softShadow)");
     }
   }
 }
@@ -1485,24 +1512,24 @@ function clonePendantForMask(node){
   return clone;
 }
 
-function buildLinkGroup(def, tx, ty){
+function buildLinkGroup(def, tx, ty, metalId = getMetalPreset().id){
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
   g.setAttribute("transform", `translate(${tx}, ${ty})`);
 
   const underNode = (def.under || def.base).node.cloneNode(true);
-  tintGold(underNode);
+  tintMetal(underNode, metalId);
   g.appendChild(underNode);
 
   if(def.over){
     const overNode = def.over.node.cloneNode(true);
-    tintGold(overNode);
+    tintMetal(overNode, metalId);
     g.appendChild(overNode);
   }
   return g;
 }
 
 // draw ONLY one half ("under" | "over"), with optional rotation around a pivot
-function buildLinkLayer(def, tx, ty, which /* 'under'|'over' */, rotateDeg = 0, pivot = null){
+function buildLinkLayer(def, tx, ty, which /* 'under'|'over' */, rotateDeg = 0, pivot = null, metalId = getMetalPreset().id){
   const g = document.createElementNS("http://www.w3.org/2000/svg","g");
   // apply translate first, then rotate around the link's pin (pivot is in local coords)
   if (rotateDeg && pivot) {
@@ -1516,7 +1543,7 @@ function buildLinkLayer(def, tx, ty, which /* 'under'|'over' */, rotateDeg = 0, 
   if(!pack) return g;
 
   const node = pack.node.cloneNode(true);
-  tintGold(node);
+  tintMetal(node, metalId);
   g.appendChild(node);
   return g;
 }
@@ -1576,6 +1603,7 @@ async function render(){
   const pendantH = 160;           // fixed pendant height
   const lockName = (selLock?.value || "").trim();
   const lockH = 70;               // fixed lock height
+  const currentMetal = getMetalPreset().id;
 
   // two z-stacks for the “woven” effect
   const stackUnder = document.createElementNS("http://www.w3.org/2000/svg","g");
@@ -1697,7 +1725,7 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
     defs.appendChild(mask);
     pendantMaskUrl = `url(#${PENDANT_MASK_ID})`;
   }
-  tintGold(pendantPack.node); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
+  tintMetal(pendantPack.node, currentMetal); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
   bracelet.appendChild(stackOverMasked);
   if(pendantMaskUrl) stackOverMasked.setAttribute("mask", pendantMaskUrl);
   bracelet.appendChild(stackOverTop);
@@ -1736,8 +1764,8 @@ for (let i = 0; i < leftSeq.length; i++) {
   const whichUnder = flipFirst ? 'over' : 'under';
   const whichOver  = flipFirst ? 'under' : 'over';
 
-  const u = buildLinkLayer(d, tx, ty, whichUnder, leftAngleDeg, pivot);
-  const o = buildLinkLayer(d, tx, ty, whichOver,  leftAngleDeg, pivot);
+  const u = buildLinkLayer(d, tx, ty, whichUnder, leftAngleDeg, pivot, currentMetal);
+  const o = buildLinkLayer(d, tx, ty, whichOver,  leftAngleDeg, pivot, currentMetal);
 
   // z-order for weave
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
@@ -1781,8 +1809,8 @@ if (lockPack) {
 
   // rotate the lock around its R-pin by the current leftAngleDeg
   const pivot = R || null;
-  const u = buildLinkLayer(d, tx, ty, 'under', leftAngleDeg, pivot);
-  const o = buildLinkLayer(d, tx, ty, 'over',  leftAngleDeg, pivot);
+  const u = buildLinkLayer(d, tx, ty, 'under', leftAngleDeg, pivot, currentMetal);
+  const o = buildLinkLayer(d, tx, ty, 'over',  leftAngleDeg, pivot, currentMetal);
 
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
   stackOverMasked.appendChild(o);
@@ -1825,8 +1853,8 @@ for (let i = 0; i < rightSeq.length; i++) {
   const whichUnder = flipFirst ? 'over' : 'under';
   const whichOver  = flipFirst ? 'under' : 'over';
 
-  const u = buildLinkLayer(d, tx, ty, whichUnder, rightAngleDeg, pivot);
-  const o = buildLinkLayer(d, tx, ty, whichOver,  rightAngleDeg, pivot);
+  const u = buildLinkLayer(d, tx, ty, whichUnder, rightAngleDeg, pivot, currentMetal);
+  const o = buildLinkLayer(d, tx, ty, whichOver,  rightAngleDeg, pivot, currentMetal);
 
   stackUnder.insertBefore(u, stackUnder.firstChild || null);
   const frontTarget = flipFirst ? stackOverTop : stackOverMasked;
