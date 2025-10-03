@@ -1,62 +1,287 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Chakaroun Jewelry — About</title>
-  <link rel="icon" href="icon/icon-1000.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon/icon-500.png">
-  <style>
-    body{ margin:0; background:linear-gradient(160deg,var(--bg) 0%,var(--bg2) 100%); color:var(--ink); font:15.5px/1.5 system-ui; }
-    .topbar{position:sticky;top:0;z-index:80;background:var(--head-bg);backdrop-filter:saturate(1.25) blur(10px);border-bottom:1px solid var(--border-soft)}
-    .topbar .wrap{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:14px}
-    .nav{margin-left:auto;display:flex;gap:12px}
-    .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600}
-    .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold);background:color-mix(in oklab,var(--gold) 18%,transparent)}
-    main{max-width:1100px;margin:28px auto;padding:0 18px;display:grid;gap:22px}
-    .hero{padding:24px;border:1px solid var(--border-soft);border-radius:18px;background:color-mix(in oklab,var(--bg2) 12%, transparent)}
-    .grid{display:grid;gap:22px}
-    @media (min-width:880px){ .grid{ grid-template-columns: 1fr 1fr; } }
-    .card{border:1px solid var(--border-soft);border-radius:18px;background:var(--card);box-shadow:0 10px 24px rgba(0,0,0,.25);padding:22px}
-    .card h3{margin-top:0}
-  </style>
+<script>
+  // Apply saved theme ASAP (before CSS loads to avoid a flash)
+  (function () {
+    try {
+      var KEY = 'hcj-theme';
+      var saved = localStorage.getItem(KEY) || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      window.__HCJ_THEME_KEY = KEY;
+    } catch (e) {}
+  })();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#17120a">
+<link rel="icon" href="icon/icon-1000.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon/icon-500.png">
+<title>Chakaroun Jewelry — Heritage &amp; Craftsmanship</title>
+<meta name="description" content="Explore the heritage and craftsmanship of Maison Chakaroun."/>
+<style>
+  :root{
+    --radius:14px;
+    --shadow:0 18px 36px rgba(0,0,0,.45);
+    --bar-font:clamp(.98rem,.9rem + .35vw,1.15rem);
+    --bar-pad-y:14px;
+    --bar-pad-x:18px;
+    --bar-gap:12px;
+    --bar-icon:56px;
+    --bar-close:32px;
+    --bar-btn-py:8px;
+    --bar-btn-px:16px;
+  }
+
+  html[data-theme="dark"]{
+    --bg:#17120a;
+    --bg2:#0f0b06;
+    --card:#211a0e;
+    --card-overlay:rgba(48,37,19,.86);
+    --ink:#fff7e6;
+    --muted:#e8d9b3;
+    --gold:#d4af37;
+    --gold2:#b88a1a;
+    --border-soft:rgba(212,175,55,.18);
+    --border-strong:rgba(212,175,55,.35);
+    --control-border:rgba(212,175,55,.22);
+    --control-bg:rgba(23,18,10,.75);
+    --control-focus-bg:rgba(33,26,14,.85);
+    --control-focus-shadow:rgba(212,175,55,.18);
+    --head-bg:rgba(15,11,6,.45);
+    --summary-bg:rgba(23,18,10,.85);
+    --preview-glow:rgba(212,175,55,.12);
+    --tab-bg:rgba(23,18,10,.75);
+    --tab-active-bg:rgba(33,26,14,.85);
+    --hud-bg:rgba(21,15,8,.72);
+    --hud-border:rgba(212,175,55,.2);
+    --hud-text:#fff7e6;
+    --button-top:rgba(212,175,55,.16);
+    --button-bottom:rgba(184,138,26,.16);
+    --button-hover-top:rgba(212,175,55,.28);
+    --button-hover-bottom:rgba(184,138,26,.2);
+  }
+
+  html:not([data-theme]),
+  html[data-theme="light"]{
+    --bg:#f6f2ea;
+    --bg2:#e4e9f3;
+    --card:#ffffff;
+    --card-overlay:rgba(255,255,255,.9);
+    --ink:#2b261c;
+    --muted:#706b60;
+    --gold:#c8892c;
+    --gold2:#a56a18;
+    --border-soft:rgba(200,137,44,.28);
+    --border-strong:rgba(200,137,44,.45);
+    --control-border:rgba(200,137,44,.34);
+    --control-bg:rgba(250,244,234,.92);
+    --control-focus-bg:rgba(255,250,243,.97);
+    --control-focus-shadow:rgba(200,137,44,.3);
+    --head-bg:rgba(242,234,220,.76);
+    --summary-bg:rgba(255,250,243,.92);
+    --preview-glow:rgba(200,137,44,.2);
+    --tab-bg:rgba(250,244,234,.88);
+    --tab-active-bg:rgba(255,250,243,.96);
+    --hud-bg:rgba(255,250,243,.96);
+    --hud-border:rgba(200,137,44,.38);
+    --hud-text:#2b261c;
+    --button-top:rgba(200,137,44,.22);
+    --button-bottom:rgba(165,106,24,.18);
+    --button-hover-top:rgba(200,137,44,.32);
+    --button-hover-bottom:rgba(165,106,24,.26);
+  }
+
+  html[data-theme="plum"]{
+    --bg:#160b19;
+    --bg2:#341844;
+    --card:#2b1433;
+    --card-overlay:rgba(73,35,94,.72);
+    --ink:#f8ecff;
+    --muted:#d5c0ec;
+    --gold:#d794ff;
+    --gold2:#b162e4;
+    --border-soft:rgba(215,148,255,.32);
+    --border-strong:rgba(215,148,255,.48);
+    --control-border:rgba(215,148,255,.36);
+    --control-bg:rgba(41,20,51,.78);
+    --control-focus-bg:rgba(55,28,68,.86);
+    --control-focus-shadow:rgba(215,148,255,.26);
+    --head-bg:rgba(39,18,50,.65);
+    --summary-bg:rgba(41,20,51,.82);
+    --preview-glow:rgba(215,148,255,.18);
+    --tab-bg:rgba(41,20,51,.78);
+    --tab-active-bg:rgba(55,28,68,.88);
+  }
+
+  /* A2HS (Install) UI */
+  #a2hsBanner{position:fixed;top:0;left:0;right:0;z-index:9999;transform:translateY(-110%);transition:transform .45s ease;background:color-mix(in oklab,var(--bg) 88%,transparent);color:var(--ink);border-bottom:1px solid var(--border-soft);box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:var(--bar-font);}
+  #a2hsBanner.show{transform:translateY(0);position:sticky;top:0;}
+  #a2hsBanner .wrap{display:flex;align-items:center;gap:var(--bar-gap);padding:var(--bar-pad-y) var(--bar-pad-x);}
+  #a2hsBanner img.icon{width:var(--bar-icon);height:var(--bar-icon);border-radius:6px;flex:0 0 var(--bar-icon)}
+  #a2hsBanner .txt{flex:1;display:flex;flex-direction:column}
+  #a2hsBanner .txt .brand-title{font-weight:800;font-size:1.05em}
+  #a2hsBanner .txt .brand-byline{font-weight:600;font-size:.88em;opacity:.8}
+  #a2hsBanner .txt .banner-copy{font-size:.9em;opacity:.9;margin-top:2px}
+  #a2hsBanner .cta{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2b1f10;border:0;border-radius:999px;padding:var(--bar-btn-py) var(--bar-btn-px);font-weight:800;cursor:pointer;font-size:1em;}
+  #a2hsBanner .close{background:transparent;color:var(--ink);border:0;width:var(--bar-close);height:var(--bar-close);font-size:calc(var(--bar-close) * 0.56);line-height:var(--bar-close);cursor:pointer;flex:0 0 var(--bar-close);}
+
+  #a2hsModal{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:24px 12px;}
+  #a2hsModal.open{display:flex}
+  #a2hsModal::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.6)}
+  #a2hsModal .sheet{position:relative;width:min(560px,92vw);max-height:calc(100vh - 48px);overflow:auto;background:color-mix(in oklab,var(--bg) 86%,transparent);color:var(--ink);border:1px solid var(--border-soft);border-radius:16px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.65);}
+  #a2hsModal .steps{margin-top:6px;font-size:14px;line-height:1.7}
+  #a2hsModal .steps .row{display:flex;gap:10px;margin:6px 0;flex-direction:column}
+  #a2hsModal .stepimg{display:block;width:100%;height:auto;margin-top:8px;border-radius:10px;border:1px solid var(--border-soft);}
+  #a2hsModal .x{position:absolute;top:8px;left:10px;background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);color:var(--ink);font:15.5px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;}
+
+  .topbar{position:sticky;top:0;z-index:80;background:var(--head-bg);backdrop-filter:saturate(1.25) blur(10px);border-bottom:1px solid var(--border-soft);}
+  .topbar .wrap{max-width:1240px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:14px}
+  .topbar .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+  .topbar .brand img{width:40px;height:40px;border-radius:10px;box-shadow:0 8px 18px rgba(0,0,0,.35)}
+  .topbar .brand .brand-stack{display:flex;flex-direction:column;line-height:1.05}
+  .topbar .brand .brand-title{font-weight:800;letter-spacing:.42px;font-size:17px}
+  .topbar .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.6px}
+  .topbar .nav{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .topbar .nav::-webkit-scrollbar{display:none}
+  .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;transition:border .2s,color .2s,background .2s;flex:0 0 auto;white-space:nowrap}
+  .topbar .nav a:hover{border-color:var(--gold);color:var(--ink);background:color-mix(in oklab,var(--gold) 16%,transparent)}
+  .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold);background:color-mix(in oklab,var(--gold) 18%,transparent)}
+
+  main.about-main{max-width:1100px;margin:0 auto;padding:32px 18px 64px;display:grid;gap:28px}
+  .about-hero{padding:36px 24px;border-radius:20px;border:1px solid color-mix(in oklab,var(--border-soft) 60%, transparent);background:color-mix(in oklab,var(--bg2) 12%, transparent);box-shadow:var(--shadow);text-align:center;display:grid;gap:18px}
+  .about-eyebrow{text-transform:uppercase;letter-spacing:.32em;font-size:12px;color:var(--muted)}
+  .about-hero h1{margin:0;font-size:clamp(2rem,1.6vw + 1.8rem,2.8rem);letter-spacing:.02em}
+  .about-hero p{margin:0 auto;max-width:640px;color:color-mix(in oklab,var(--ink) 88%, transparent)}
+
+  .story-block{border:1px solid color-mix(in oklab,var(--border-soft) 70%, transparent);border-radius:22px;padding:26px;background:linear-gradient(160deg,var(--card-overlay),var(--card));box-shadow:var(--shadow);display:grid;gap:18px}
+  .story-block h2{margin:0;font-size:1.6rem}
+  .story-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .story-tile{padding:16px;border-radius:16px;border:1px solid color-mix(in oklab,var(--border-soft) 75%, transparent);background:color-mix(in oklab,var(--control-bg) 82%, transparent);display:grid;gap:8px}
+  .story-tile strong{font-size:1rem}
+  .story-tile p{margin:0;color:color-mix(in oklab,var(--ink) 84%, transparent)}
+
+  @media (max-width:600px){
+    .about-hero{padding:30px 18px}
+    .about-hero p{font-size:0.98rem}
+  }
+  @media (max-width:520px){
+    .topbar .nav a{padding:8px 12px;font-size:12px}
+  }
+  @media (max-width:420px){
+    .about-hero{padding:26px 16px}
+    .about-hero h1{font-size:clamp(1.8rem,5vw + 1.2rem,2.3rem)}
+  }
+  @media (max-width:380px){
+    .topbar .nav a{padding:8px 10px;font-size:11.5px}
+  }
+</style>
 </head>
 <body>
+<!-- A2HS Banner -->
+<div id="a2hsBanner" aria-hidden="true">
+  <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
+    <button class="close" type="button" aria-label="Close">×</button>
+    <img class="icon" src="icon/icon-500.png" alt="Chakaroun Jewelry icon">
+    <div class="txt">
+      <div class="brand-title">Chakaroun Jewelry</div>
+      <div class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</div>
+      <div class="banner-copy">Add it to your Home Screen.</div>
+    </div>
+    <button class="cta" type="button" id="a2hsGet">Install</button>
+  </div>
+</div>
+
+<!-- iOS Guide -->
+<div id="a2hsModal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
+    <button class="x" type="button" aria-label="Close">×</button>
+    <h3 id="a2hsTitle">Add “Chakaroun Jewelry” to Home Screen</h3>
+    <div class="steps">
+      <div class="row">
+        <div><strong>1.</strong> Tap <em>Share</em> in Safari.</div>
+        <img class="stepimg" src="./icon/share.jpg" alt="iPhone Share button screenshot">
+      </div>
+      <div class="row">
+        <div><strong>2.</strong> Choose <em>Add to Home Screen</em>, then <em>Add</em>.</div>
+        <img class="stepimg" src="./icon/save%20to%20home%20screen.jpeg" alt="Add to Home Screen screenshot">
+      </div>
+    </div>
+  </div>
+</div>
+
 <header class="topbar">
   <div class="wrap">
-    <a class="brand" href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)">
-      <img src="icon/icon-500.png" alt="Chakaroun Jewelry logo" width="40" height="40" style="border-radius:10px">
-      <strong>Chakaroun Jewelry</strong>
+    <a class="brand" href="index.html" aria-label="Chakaroun Jewelry — by Hassan Chakaroun &amp; Ali Jouni">
+      <img src="icon/icon-500.png" alt="Chakaroun Jewelry logo">
+      <span class="brand-stack">
+        <span class="brand-title">Chakaroun Jewelry</span>
+        <small class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</small>
+      </span>
     </a>
     <nav class="nav">
-      <a href="index.html">Bracelet Builder</a>
+      <a href="index.html">Builder</a>
       <a href="about.html" aria-current="page">About</a>
       <a href="store.html">Store</a>
     </nav>
   </div>
 </header>
 
-<main>
-  <section class="hero">
-    <h1 style="margin:0 0 6px">Heritage & Craftsmanship</h1>
-    <p style="opacity:.9;margin:0">Maison Chakaroun · Established Beirut 1964</p>
+<main class="about-main">
+  <section class="about-hero">
+    <span class="about-eyebrow">Maison Chakaroun · Established Beirut 1964</span>
+    <h1>Heritage &amp; Craftsmanship</h1>
+    <p>Discover how our Levantine lineage and atelier precision inform every bespoke bracelet we compose.</p>
   </section>
 
-  <section class="grid">
-    <article class="card">
-      <h3>Heritage</h3>
-      <p><strong>Damascus filigree lineage.</strong> Our bracelets reinterpret filigree techniques preserved by Hassan Chakaroun, marrying slender wire twists with modern proportions.</p>
-      <p><strong>Family crest pendants.</strong> Pendants echo the cedar crest carried by generations, ready for engraving initials, verses or bespoke monograms.</p>
-      <p><strong>Curated palettes.</strong> Each theme references a chapter of our maison — Desert Dawn, Midnight Majlis and Plum Soirée — with a custom option for your house codes.</p>
-    </article>
+  <section class="story-block" id="heritage">
+    <h2>Heritage</h2>
+    <div class="story-grid">
+      <article class="story-tile">
+        <strong>Damascus filigree lineage.</strong>
+        <p>Our bracelets reinterpret filigree techniques preserved by Hassan Chakaroun, marrying slender wire twists with modern proportions.</p>
+      </article>
+      <article class="story-tile">
+        <strong>Family crest pendants.</strong>
+        <p>Pendants echo the cedar crest carried by generations, ready for engraving initials, verses or bespoke monograms.</p>
+      </article>
+      <article class="story-tile">
+        <strong>Curated palettes.</strong>
+        <p>Each theme references a chapter of our maison — Desert Dawn, Midnight Majlis and Plum Soirée — with a custom option for your house codes.</p>
+      </article>
+    </div>
+  </section>
 
-    <article class="card">
-      <h3>Craftsmanship</h3>
-      <p><strong>Maison-approved weights.</strong> Real densities for gold, platinum and sterling silver drive the gram estimate so production teams can quote confidently.</p>
-      <p><strong>Showroom lighting presets.</strong> Orbit your 3D jewel through Gallery, Spotlight or Twilight scenes, or bookmark your own camera for export-ready frames.</p>
-      <p><strong>Saved ateliers.</strong> Store favourite builds and palettes locally, then add them to a wishlist for private client previews.</p>
-    </article>
+  <section class="story-block" id="craftsmanship">
+    <h2>Craftsmanship</h2>
+    <div class="story-grid">
+      <article class="story-tile">
+        <strong>Maison-approved weights.</strong>
+        <p>Real densities for gold, platinum and sterling silver drive the gram estimate so production teams can quote confidently.</p>
+      </article>
+      <article class="story-tile">
+        <strong>Showroom lighting presets.</strong>
+        <p>Orbit your 3D jewel through Gallery, Spotlight or Twilight scenes, or bookmark your own camera for export-ready frames.</p>
+      </article>
+      <article class="story-tile">
+        <strong>Saved ateliers.</strong>
+        <p>Store favourite builds and palettes locally, then add them to a wishlist for private client previews.</p>
+      </article>
+    </div>
   </section>
 </main>
+
+<script src="scripts/a2hs.js"></script>
+<script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+</script>
 </body>
 </html>
