@@ -201,7 +201,7 @@
 <script>
 (function () {
   const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk";
-  const SHEET_NAME = "Sheet1";
+  const SHEET_NAME = "Form Responses 1";
   const TQ = encodeURIComponent("select A,B,C,D,E,F,G");
   const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
 
@@ -247,9 +247,12 @@
       const description = escapeHtml(p.description || "");
       const kirat = p.kirat ? `<span>Karat: ${escapeHtml(p.kirat)}</span>` : "";
       const sku = p.sku ? `<span>SKU: ${escapeHtml(p.sku)}</span>` : "";
+      const weight = p.weight ? `<span>Weight: ${escapeHtml(p.weight)} g</span>` : "";
       const badgeClass = (p.in_stock && Number(p.in_stock) > 0) ? "store-item__badge store-item__badge--stock" : "store-item__badge";
       const badgeLabel = (p.in_stock && Number(p.in_stock) > 0) ? "In stock" : "Out of stock";
-      const metaBits = [kirat, sku, `<span class="${badgeClass}">${badgeLabel}</span>`].filter(Boolean).join("\n");
+      const metaBits = [kirat, weight, sku, `<span class="${badgeClass}">${badgeLabel}</span>`]
+        .filter(Boolean)
+        .join("\n");
       return `
         <article class="store-item card">
           <figure class="store-item__thumb">
@@ -275,8 +278,22 @@
       const json = JSON.parse(txt.substring(47, txt.length - 2));
       const rows = (json.table?.rows || []);
       const products = rows.map(r => {
-        const [name, price, kirat, photo, description, sku, in_stock] = r.c.map(c => c ? c.v : "");
-        return { name, price, kirat, photo, description, sku, in_stock };
+        // Keep both the raw value (v) and the formatted value (f) – links often come in .f
+        const cells = (r.c || []).map(c => c ? (c.f || c.v || "") : "");
+
+        // Your Form columns: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo
+        const name = cells[1];
+        const weight = cells[2];
+        const kirat = cells[3];
+        const description = cells[4];
+        const sku = cells[5];
+        const photo = cells[6];
+
+        // You don’t have price or in_stock in the form yet — set sensible defaults
+        const price = "";
+        const in_stock = 1;
+
+        return { name, price, kirat, photo, description, sku, in_stock, weight };
       });
       render(products);
     })
