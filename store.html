@@ -207,6 +207,82 @@
 
   const out = document.getElementById("storeList");
 
+  /* ================== Live gold pricing (every 10s) ================== */
+  // Endpoints (free) – we’ll race them for speed:
+  const GOLDAPI_FREE = [
+    "https://api.gold-api.com/price/XAU",
+    "https://api.gold-api.com/price/XAU/USD",
+    "https://www.gold-api.com/price/XAU",
+    "https://www.gold-api.com/price/XAU/USD"
+  ];
+
+  // Pull the ounce price from whatever shape the API returns
+  function pickOuncePrice(d){
+    const c = [d?.price, d?.usd, d?.usd_ounce, d?.price_ounce, d?.ounce, d?.oz,
+               d?.result?.price, d?.XAU?.USD].map(Number).filter(v => isFinite(v) && v > 0);
+    if (c.length) return c[0];
+    // If only gram(24k) is given, convert to ounce (≈31.1)
+    const g24 = Number(d?.gram_24k || d?.price_gram_24k || d?.g24 || d?.per_gram);
+    return (isFinite(g24) && g24 > 0) ? g24 * 31.1 : NaN;
+  }
+  function timeoutFetch(u,ms){
+    const c = new AbortController(); const id = setTimeout(() => c.abort(), ms);
+    return fetch(u,{signal:c.signal,cache:"no-store"}).finally(() => clearTimeout(id));
+  }
+  async function getSpotFast(){
+    const tries = GOLDAPI_FREE.map(u =>
+      timeoutFetch(u,3500)
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(pickOuncePrice)
+        .then(v => (isFinite(v) && v > 0) ? v : Promise.reject("bad"))
+    );
+    return Promise.any(tries);
+  }
+
+  // === Your per-gram equations (EXACTLY as you requested) ===
+  // 18k: ((oz + 30)*32*750/995) + 10
+  // 21k: ((oz + 30)*32*875/995) + 10
+  // 22k: ((oz + 30)*32*916/995) + 10
+  // 24k: ((oz + 30)/31.1)       + 10
+  function perGramForKirat(oz, kiratStr){
+    const k = String(kiratStr || "").toLowerCase();
+    if (/\b18\b/.test(k) || /18/.test(k)) return ((oz + 30) * 32 * 750 / 995) + 10;
+    if (/\b21\b/.test(k) || /21/.test(k)) return ((oz + 30) * 32 * 875 / 995) + 10;
+    if (/\b22\b/.test(k) || /22/.test(k)) return ((oz + 30) * 32 * 916 / 995) + 10;
+    if (/\b24\b/.test(k) || /24/.test(k)) return ((oz + 30) / 31.1) + 10;
+    return NaN; // leave price blank for non-gold items (e.g., silver)
+  }
+
+  function computeItemPriceUSD(oz, product){
+    const w = Number(product.weight);
+    if (!isFinite(w) || w <= 0) return NaN;
+    const ppg = perGramForKirat(oz, product.kirat);
+    return isFinite(ppg) ? (ppg * w) : NaN;
+  }
+
+  // Start a 10s refresh loop to update prices in-place
+  const REFRESH_MS = 10_000;
+  let _priceTimer = null;
+  function startSpotRefresh(products){
+    async function tick(){
+      try{
+        const oz = await getSpotFast();
+        // Fill/override price for every product based on kirat & weight
+        products.forEach(p => {
+          const calc = computeItemPriceUSD(oz, p);
+          if (isFinite(calc)) p.price = Math.round(calc); // round how you like
+        });
+        render(products);
+      }catch(e){
+        // On failure just keep whatever is rendered now
+      }
+    }
+    // run now + schedule
+    tick();
+    if (_priceTimer) clearInterval(_priceTimer);
+    _priceTimer = setInterval(tick, REFRESH_MS);
+  }
+
   const ESCAPE = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
   function escapeHtml(value){
     return String(value == null ? "" : value).replace(/[&<>"']/g, function(ch){ return ESCAPE[ch] || ch; });
@@ -306,7 +382,7 @@
 
         return { name, price, kirat, photo, description, sku, in_stock, weight };
       });
-      render(products);
+      startSpotRefresh(products);
     })
     .catch(err => {
       console.error(err);
