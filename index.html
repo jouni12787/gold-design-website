@@ -187,8 +187,6 @@
   }
   #a2hsModal .x{position:absolute;top:8px;left:10px;background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
 
-  body.has-topbar{padding-top:84px}
-
   *{box-sizing:border-box}html,body{height:100%}
   body{margin:0;background:
     radial-gradient(1100px 500px at 15% -15%, var(--accent-radial-1) 0%, transparent 60%),
@@ -202,11 +200,12 @@
   .topbar .brand .brand-stack{display:flex;flex-direction:column;line-height:1.05}
   .topbar .brand .brand-title{font-weight:800;letter-spacing:.42px;font-size:17px}
   .topbar .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.6px}
-  .topbar .nav{margin-left:auto;display:flex;gap:12px;align-items:center}
-  .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;transition:border .2s,color .2s,background .2s}
+  .topbar .nav{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .topbar .nav::-webkit-scrollbar{display:none}
+  .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;transition:border .2s,color .2s,background .2s;flex:0 0 auto;white-space:nowrap}
   .topbar .nav a:hover{border-color:var(--gold);color:var(--ink);background:color-mix(in oklab,var(--gold) 16%,transparent)}
   .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold);background:color-mix(in oklab,var(--gold) 18%,transparent)}
-  .story-hero{position:relative;max-width:1240px;margin:0 auto;padding:54px 18px 58px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .story-hero{position:relative;max-width:1240px;margin:0 auto;padding:48px 18px 52px;display:flex;align-items:center;justify-content:center;text-align:center}
   .story-hero::before{content:"";position:absolute;inset:18px;border-radius:24px;background:
     radial-gradient(1200px 600px at 10% 10%, color-mix(in oklab,var(--gold) 18%,transparent) 0%, transparent 65%),
     radial-gradient(1200px 680px at 90% 0%, color-mix(in oklab,var(--gold2) 24%,transparent) 0%, transparent 70%),
@@ -221,12 +220,6 @@
   .hero-btn{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:700;font-size:.98rem;border:1px solid var(--border-strong);color:var(--ink);background:linear-gradient(120deg,var(--button-top),var(--button-bottom));transition:border .2s,transform .2s,background .2s}
   .hero-btn:hover{border-color:var(--gold);transform:translateY(-1px);background:linear-gradient(120deg,var(--button-hover-top),var(--button-hover-bottom))}
   .hero-btn.secondary{background:transparent;border-color:var(--border-soft)}
-  .story-blocks{max-width:1240px;margin:40px auto 0;padding:0 18px;display:grid;gap:32px}
-  .story-block{border:1px solid var(--border-soft);border-radius:24px;padding:28px;background:linear-gradient(160deg,var(--card-overlay),var(--card));box-shadow:var(--shadow);display:grid;gap:18px}
-  .story-block h3{margin:0;font-size:1.4rem}
-  .story-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-  .story-tile{padding:16px;border-radius:16px;border:1px solid color-mix(in oklab,var(--border-soft) 75%, transparent);background:color-mix(in oklab,var(--control-bg) 80%, transparent)}
-  .story-tile strong{display:block;font-size:1rem;margin-bottom:6px}
   .wrap{max-width:1200px;margin:28px auto;padding:0 16px;display:grid;gap:18px;grid-template-columns:1fr 1.35fr}
   @media (max-width:980px){.wrap{grid-template-columns:1fr}}
   .card{background:linear-gradient(160deg,var(--card-overlay),var(--card));
@@ -324,12 +317,30 @@
 
   /* Hero spacing tighter */
   .story-hero{
-    padding: 40px 18px 28px !important;
-    border:1px solid var(--border-soft);
-    border-radius: 18px;
+    padding: 40px 18px 32px !important;
+    border:1px solid color-mix(in oklab,var(--border-soft) 60%, transparent);
+    border-radius: 20px;
     background: color-mix(in oklab,var(--bg2) 12%, transparent);
+    box-shadow: var(--shadow);
   }
-  .story-hero .hero-content{ padding: 18px !important; }
+  .story-hero .hero-content{ padding: 20px !important; gap:20px; }
+
+  /* Responsive hero adjustments */
+  @media (max-width:600px){
+    .story-hero p{ display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+  }
+  @media (max-width:520px){
+    .hero-actions{ gap:18px; }
+    .hero-btn{ width:100%; justify-content:center; }
+  }
+  @media (max-width:420px){
+    .story-hero{ padding:32px 16px 24px !important; }
+    .story-hero .hero-content{ gap:16px !important; }
+    .story-hero .hero-eyebrow{ letter-spacing:.32em; }
+  }
+  @media (max-width:380px){
+    .story-hero h2{ font-size:clamp(1.9rem,5.5vw + 1.1rem,2.3rem); }
+  }
 
   /* Main grid tighter and narrower for a luxe feel */
   .wrap{ max-width: 1100px !important; grid-template-columns: 1.1fr 1fr !important; }
@@ -345,8 +356,14 @@
   }
 
   /* A2HS banner doesn’t bump layout */
-  body.has-topbar{ padding-top: 0 !important; }
   #a2hsBanner.show{ transform: translateY(0) !important; position: sticky; top: 0; }
+
+  @media (max-width:520px){
+    .topbar .nav a{ padding:8px 12px; font-size:12px; }
+  }
+  @media (max-width:380px){
+    .topbar .nav a{ padding:8px 10px; font-size:11.5px; }
+  }
 
   /* Keep 3D canvas proportioned */
   #stlCanvas{ aspect-ratio: 4 / 3; width:100%; height:auto; }
@@ -394,7 +411,7 @@
       </span>
     </a>
     <nav class="nav">
-      <a href="index.html" aria-current="page">Bracelet Builder</a>
+      <a href="index.html" aria-current="page">Builder</a>
       <a href="about.html">About</a>
       <a href="store.html">Store</a>
     </nav>
@@ -406,7 +423,7 @@
     <h2>Bespoke bracelets infused with Levantine poetry and Parisian polish.</h2>
     <p>Craft a signature piece from the same atelier that shapes our haute joaillerie. Every pendant, halo link and clasp follows archival proportions that honour our founders while embracing contemporary luxury.</p>
     <div class="hero-actions">
-      <a class="hero-btn" href="about.html">Discover our craftsmanship</a>
+      <a class="hero-btn" href="about.html#craftsmanship">Discover our craftsmanship</a>
       <a class="hero-btn secondary" href="store.html">Visit the online boutique</a>
     </div>
   </div>
@@ -608,72 +625,7 @@
   </div>
 </div>
 
-<script>
-/* ============ A2HS banner logic (English) ============ */
-(function(){
-  var banner = document.getElementById('a2hsBanner');
-  var getBtn = document.getElementById('a2hsGet');
-  var modal = document.getElementById('a2hsModal');
-  var deferredPrompt = null;
-  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  var firedBIP = false;
-
-  window.addEventListener('beforeinstallprompt', function(e){
-    e.preventDefault();
-    deferredPrompt = e;
-    firedBIP = true;
-    try{
-      if(!isStandalone() && sessionStorage.getItem('a2hs_dismissed') !== '1' && !isIOS){
-        showBanner();
-      }
-    }catch{}
-  });
-
-  function isStandalone(){
-    var mql = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
-    var ios = window.navigator && window.navigator.standalone === true;
-    return !!(mql || ios);
-  }
-  function showBanner(){ banner.classList.add('show'); document.body.classList.add('has-topbar'); }
-  function hideBanner(){ banner.classList.remove('show'); document.body.classList.remove('has-topbar'); }
-  function openGuide(){ hideBanner(); modal.classList.add('open'); }
-  function closeGuide(){ modal.classList.remove('open'); }
-
-  banner.querySelector('.close').addEventListener('click', function(){
-    hideBanner(); try{ sessionStorage.setItem('a2hs_dismissed','1'); }catch(e){}
-  });
-  modal.querySelector('.x').addEventListener('click', closeGuide);
-  modal.addEventListener('click', function(e){ if(e.target === modal) closeGuide(); });
-
-  getBtn.addEventListener('click', async function(){
-    if (deferredPrompt){
-      try{ deferredPrompt.prompt(); await deferredPrompt.userChoice; }catch(e){}
-      deferredPrompt = null; hideBanner();
-    } else if (isIOS){
-      openGuide();
-    } else {
-      alert('In your browser menu, choose “Install app” or “Create shortcut / Add to Home screen”.');
-      hideBanner();
-    }
-  });
-
-  window.addEventListener('load', function(){
-    var dismissed = '0';
-    try{ dismissed = sessionStorage.getItem('a2hs_dismissed') || '0'; }catch(e){}
-    if(isStandalone() || dismissed === '1') return;
-
-    if(isIOS){
-      setTimeout(showBanner, 600);
-    } else {
-      setTimeout(function(){
-        if(!firedBIP && !isStandalone() && (sessionStorage.getItem('a2hs_dismissed') !== '1')){
-          showBanner();
-        }
-      }, 1200);
-    }
-  });
-})();
-</script>
+<script src="scripts/a2hs.js"></script>
 
 <script>
   if('serviceWorker' in navigator){

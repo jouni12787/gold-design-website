@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
 <script>
   // Apply saved theme ASAP (before CSS loads to avoid a flash)
@@ -8,7 +8,6 @@
       var KEY = 'hcj-theme';
       var saved = localStorage.getItem(KEY) || 'light';
       document.documentElement.setAttribute('data-theme', saved);
-      // expose the key so other scripts can use the same one
       window.__HCJ_THEME_KEY = KEY;
     } catch (e) {}
   })();
@@ -16,16 +15,11 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Chakaroun Jewelry — Store</title>
-
-
-<!-- PWA + Icons -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#17120a">
 <link rel="icon" href="icon/icon-1000.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon/icon-500.png">
-
-<!-- Basic SEO/Open Graph -->
-<meta name="description" content="Handcrafted gold jewelry. Live-priced by gold rate soon.">
+<meta name="description" content="Handcrafted gold jewelry from Maison Chakaroun."/>
 <meta name="application-name" content="Chakaroun Jewelry">
 <meta name="apple-mobile-web-app-title" content="Chakaroun Jewelry">
 <meta property="og:title" content="Chakaroun Jewelry — Store">
@@ -34,21 +28,16 @@
 <meta property="og:image" content="icon/icon-500.png">
 <meta property="og:site_name" content="Chakaroun Jewelry">
 <meta name="twitter:title" content="Chakaroun Jewelry — Store">
-
 <style>
-  :root{--radius:14px;--shadow:0 18px 36px rgba(0,0,0,.45)}
-  /* reuse your themes (copied light/dark/plum vars) */
+  :root{--radius:14px;--shadow:0 18px 36px rgba(0,0,0,.45);--bar-font:clamp(.98rem,.9rem + .35vw,1.15rem);--bar-pad-y:14px;--bar-pad-x:18px;--bar-gap:12px;--bar-icon:56px;--bar-close:32px;--bar-btn-py:8px;--bar-btn-px:16px}
+
   html[data-theme="dark"]{
     --bg:#17120a;--bg2:#0f0b06;--card:#211a0e;--card-overlay:rgba(48,37,19,.86);
     --ink:#fff7e6;--muted:#e8d9b3;--gold:#d4af37;--gold2:#b88a1a;
     --border-soft:rgba(212,175,55,.18);--border-strong:rgba(212,175,55,.35);
     --control-border:rgba(212,175,55,.22);--control-bg:rgba(23,18,10,.75);
     --control-focus-bg:rgba(33,26,14,.85);--control-focus-shadow:rgba(212,175,55,.18);
-    --head-bg:rgba(15,11,6,.45);--summary-bg:rgba(23,18,10,.85);
-    --preview-glow:rgba(212,175,55,.12);--tab-bg:rgba(23,18,10,.75);--tab-active-bg:rgba(33,26,14,.85);
-    --hud-bg:rgba(21,15,8,.72);--hud-border:rgba(212,175,55,.2);--hud-text:#fff7e6;
-    --button-top:rgba(212,175,55,.16);--button-bottom:rgba(184,138,26,.16);
-    --button-hover-top:rgba(212,175,55,.28);--button-hover-bottom:rgba(184,138,26,.2)
+    --head-bg:rgba(15,11,6,.45);
   }
   html:not([data-theme]), html[data-theme="light"]{
     --bg:#f6f2ea;--bg2:#e4e9f3;--card:#ffffff;--card-overlay:rgba(255,255,255,.9);
@@ -56,11 +45,7 @@
     --border-soft:rgba(200,137,44,.28);--border-strong:rgba(200,137,44,.45);
     --control-border:rgba(200,137,44,.34);--control-bg:rgba(250,244,234,.92);
     --control-focus-bg:rgba(255,250,243,.97);--control-focus-shadow:rgba(200,137,44,.3);
-    --head-bg:rgba(242,234,220,.76);--summary-bg:rgba(255,250,243,.92);
-    --preview-glow:rgba(200,137,44,.2);--tab-bg:rgba(250,244,234,.88);--tab-active-bg:rgba(255,250,243,.96);
-    --hud-bg:rgba(255,250,243,.96);--hud-border:rgba(200,137,44,.38);--hud-text:#2b261c;
-    --button-top:rgba(200,137,44,.22);--button-bottom:rgba(165,106,24,.18);
-    --button-hover-top:rgba(200,137,44,.32);--button-hover-bottom:rgba(165,106,24,.26)
+    --head-bg:rgba(242,234,220,.76);
   }
   html[data-theme="plum"]{
     --bg:#160b19;--bg2:#341844;--card:#2b1433;--card-overlay:rgba(73,35,94,.72);
@@ -68,87 +53,122 @@
     --border-soft:rgba(215,148,255,.32);--border-strong:rgba(215,148,255,.48);
     --control-border:rgba(215,148,255,.36);--control-bg:rgba(41,20,51,.78);
     --control-focus-bg:rgba(55,28,68,.86);--control-focus-shadow:rgba(215,148,255,.26);
-    --head-bg:rgba(39,18,50,.65);--summary-bg:rgba(41,20,51,.82);
-    --preview-glow:rgba(215,148,255,.18);--tab-bg:rgba(41,20,51,.78);--tab-active-bg:rgba(55,28,68,.88)
+    --head-bg:rgba(39,18,50,.65);
   }
+
+  /* A2HS */
+  #a2hsBanner{position:fixed;top:0;left:0;right:0;z-index:9999;transform:translateY(-110%);transition:transform .45s ease;background:color-mix(in oklab,var(--bg) 88%,transparent);color:var(--ink);border-bottom:1px solid var(--border-soft);box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:var(--bar-font)}
+  #a2hsBanner.show{transform:translateY(0);position:sticky;top:0}
+  #a2hsBanner .wrap{display:flex;align-items:center;gap:var(--bar-gap);padding:var(--bar-pad-y) var(--bar-pad-x)}
+  #a2hsBanner img.icon{width:var(--bar-icon);height:var(--bar-icon);border-radius:6px;flex:0 0 var(--bar-icon)}
+  #a2hsBanner .txt{flex:1;display:flex;flex-direction:column}
+  #a2hsBanner .txt .brand-title{font-weight:800;font-size:1.05em}
+  #a2hsBanner .txt .brand-byline{font-weight:600;font-size:.88em;opacity:.8}
+  #a2hsBanner .txt .banner-copy{font-size:.9em;opacity:.9;margin-top:2px}
+  #a2hsBanner .cta{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2b1f10;border:0;border-radius:999px;padding:var(--bar-btn-py) var(--bar-btn-px);font-weight:800;cursor:pointer;font-size:1em}
+  #a2hsBanner .close{background:transparent;color:var(--ink);border:0;width:var(--bar-close);height:var(--bar-close);font-size:calc(var(--bar-close)*0.56);line-height:var(--bar-close);cursor:pointer;flex:0 0 var(--bar-close)}
+
+  #a2hsModal{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:24px 12px}
+  #a2hsModal.open{display:flex}
+  #a2hsModal::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.6)}
+  #a2hsModal .sheet{position:relative;width:min(560px,92vw);max-height:calc(100vh - 48px);overflow:auto;background:color-mix(in oklab,var(--bg) 86%,transparent);color:var(--ink);border:1px solid var(--border-soft);border-radius:16px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.65)}
+  #a2hsModal .steps{margin-top:6px;font-size:14px;line-height:1.7}
+  #a2hsModal .steps .row{display:flex;gap:10px;margin:6px 0;flex-direction:column}
+  #a2hsModal .stepimg{display:block;width:100%;height:auto;margin-top:8px;border-radius:10px;border:1px solid var(--border-soft)}
+  #a2hsModal .x{position:absolute;top:8px;left:10px;background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
 
   *{box-sizing:border-box}
-  body{
-    margin:0;color:var(--ink);
-    background:
-      radial-gradient(1100px 500px at 15% -15%, rgba(0,0,0,0) 0%, transparent 60%),
-      radial-gradient(900px 600px at 120% 0%, rgba(0,0,0,0) 0%, transparent 70%),
-      linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
-    font:15.5px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial
-  }
+  body{margin:0;color:var(--ink);background:linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);font:15.5px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
 
-  /* top bar */
-  .topbar{
-    position:sticky;top:0;z-index:50;
-    background:var(--head-bg);backdrop-filter:saturate(1.2) blur(6px);
-    border-bottom:1px solid var(--border-soft)
-  }
-  .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
-  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
-  .brand img{width:36px;height:36px;border-radius:8px}
-  .brand .brand-stack{display:flex;flex-direction:column;line-height:1.1}
-  .brand .brand-title{font-weight:800;letter-spacing:.4px;font-size:16px}
-  .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75}
-  .nav{margin-left:auto;display:flex;gap:10px}
-  .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:8px 12px;border-radius:10px}
-  .nav a:hover{border-color:var(--gold)}
-  .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold)}
+  .topbar{position:sticky;top:0;z-index:80;background:var(--head-bg);backdrop-filter:saturate(1.25) blur(10px);border-bottom:1px solid var(--border-soft)}
+  .topbar .wrap{max-width:1240px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:14px}
+  .topbar .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+  .topbar .brand img{width:40px;height:40px;border-radius:10px;box-shadow:0 8px 18px rgba(0,0,0,.35)}
+  .topbar .brand .brand-stack{display:flex;flex-direction:column;line-height:1.05}
+  .topbar .brand .brand-title{font-weight:800;letter-spacing:.42px;font-size:17px}
+  .topbar .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.6px}
+  .topbar .nav{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .topbar .nav::-webkit-scrollbar{display:none}
+  .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;transition:border .2s,color .2s,background .2s;flex:0 0 auto;white-space:nowrap}
+  .topbar .nav a:hover{border-color:var(--gold);color:var(--ink);background:color-mix(in oklab,var(--gold) 16%,transparent)}
+  .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold);background:color-mix(in oklab,var(--gold) 18%,transparent)}
 
-  /* grid */
-  .container{max-width:1200px;margin:22px auto;padding:0 16px}
-  .grid{
-    display:grid;gap:16px;
-    grid-template-columns:repeat( auto-fill, minmax(240px, 1fr) );
-  }
-  .card{
-    background:linear-gradient(160deg,var(--card-overlay),var(--card));
-    border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)
-  }
-  .thumb{
-    position:relative;aspect-ratio:1/1;border-bottom:1px solid var(--border-soft);background:var(--bg2);
-    overflow:hidden
-  }
-  .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .35s ease}
-  .thumb img.alt{opacity:0}
-  .thumb:hover img.alt{opacity:1}
-  .thumb:hover img.main{opacity:0}
-
-  .panel{padding:12px 14px}
-  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft);font-size:12px;color:var(--muted);background:var(--control-bg)}
-  .title{margin:0 0 4px;font-size:16px;font-weight:700}
-  .meta{font-size:12px;color:var(--muted)}
-  .priceBox{
-    margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px
-  }
-  .price{
-    font-size:18px;font-weight:800;color:var(--gold)
-  }
-  .btn{
-    appearance:none;border:1px solid var(--border-strong);background:linear-gradient(180deg,var(--button-top),var(--button-bottom));
-    padding:8px 12px;border-radius:10px;color:var(--ink);cursor:pointer
-  }
-  .btn:hover{border-color:var(--gold)}
-
-  /* comments (local only for now) */
-  .comments{border-top:1px solid var(--border-soft);margin-top:10px;padding-top:10px}
-  .comments h4{margin:0 0 8px;font-size:13px;color:var(--muted)}
-  .comments ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:120px;overflow:auto}
-  .comments li{font-size:13px;background:var(--control-bg);border:1px solid var(--control-border);padding:6px 8px;border-radius:8px}
-  .comments form{display:flex;gap:8px;margin-top:8px}
-  .comments input{flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--control-border);background:var(--control-bg);color:var(--ink)}
-  .comments input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px var(--control-focus-shadow)}
-
-  .head{padding:14px 16px;border-bottom:1px solid var(--border-soft);background:var(--head-bg)}
+  .store-wrap{max-width:1100px;margin:0 auto;padding:32px 18px 64px;display:grid;gap:24px}
+  .card{background:linear-gradient(160deg,var(--card-overlay),var(--card));border:1px solid var(--border-soft);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border-soft);background:color-mix(in oklab,var(--bg) 8%, transparent)}
   .head h1{margin:0;font-size:22px}
-  .panel#storeList{min-height:120px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft);font-size:12px;color:var(--muted);background:var(--control-bg)}
+  .panel{padding:20px}
+
+  #storeList{display:grid;gap:20px;min-height:120px}
+  .store-item{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:20px;align-items:start;padding:20px}
+  .store-item__thumb{position:relative;border-radius:18px;border:1px solid var(--border-soft);overflow:hidden;background:var(--bg2);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+  .store-item__thumb img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+  .store-item__thumb:hover img{transform:scale(1.02)}
+  .store-item__placeholder{width:100%;height:100%;background:linear-gradient(135deg,color-mix(in oklab,var(--bg2) 80%, transparent),color-mix(in oklab,var(--bg) 70%, transparent))}
+  .store-item__body{display:grid;gap:14px}
+  .store-item__header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .store-item__title{margin:0;font-size:1.2rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .store-item__price{font-size:1.15rem;font-weight:800;color:var(--gold);white-space:nowrap}
+  .store-item__currency{font-size:.8em;color:var(--muted);font-weight:600;margin-left:4px}
+  .store-item__description{margin:0;color:color-mix(in oklab,var(--ink) 84%, transparent);font-size:.98rem}
+  .store-item__meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+  .store-item__badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft);background:var(--control-bg);font-weight:600;line-height:1}
+  .store-item__badge--stock{color:var(--gold)}
+
+  @media (max-width:840px){
+    .store-item{grid-template-columns:minmax(0,160px) minmax(0,1fr)}
+  }
+  @media (max-width:720px){
+    .store-item{grid-template-columns:1fr}
+    .store-item__thumb{aspect-ratio:4/3}
+    .store-item__header{flex-direction:column;align-items:flex-start}
+  }
+  @media (max-width:520px){
+    .topbar .nav a{padding:8px 12px;font-size:12px}
+    .panel{padding:18px}
+    .store-item{padding:18px}
+  }
+  @media (max-width:420px){
+    .store-wrap{padding:28px 16px 48px}
+  }
+  @media (max-width:380px){
+    .topbar .nav a{padding:8px 10px;font-size:11.5px}
+  }
 </style>
 </head>
 <body>
+<!-- A2HS Banner -->
+<div id="a2hsBanner" aria-hidden="true">
+  <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
+    <button class="close" type="button" aria-label="Close">×</button>
+    <img class="icon" src="icon/icon-500.png" alt="Chakaroun Jewelry icon">
+    <div class="txt">
+      <div class="brand-title">Chakaroun Jewelry</div>
+      <div class="brand-byline">by Hassan Chakaroun &amp; Ali Jouni</div>
+      <div class="banner-copy">Add it to your Home Screen.</div>
+    </div>
+    <button class="cta" type="button" id="a2hsGet">Install</button>
+  </div>
+</div>
+
+<!-- iOS Guide -->
+<div id="a2hsModal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
+    <button class="x" type="button" aria-label="Close">×</button>
+    <h3 id="a2hsTitle">Add “Chakaroun Jewelry” to Home Screen</h3>
+    <div class="steps">
+      <div class="row">
+        <div><strong>1.</strong> Tap <em>Share</em> in Safari.</div>
+        <img class="stepimg" src="./icon/share.jpg" alt="iPhone Share button screenshot">
+      </div>
+      <div class="row">
+        <div><strong>2.</strong> Choose <em>Add to Home Screen</em>, then <em>Add</em>.</div>
+        <img class="stepimg" src="./icon/save%20to%20home%20screen.jpeg" alt="Add to Home Screen screenshot">
+      </div>
+    </div>
+  </div>
+</div>
 
 <header class="topbar">
   <div class="wrap">
@@ -160,90 +180,118 @@
       </span>
     </a>
     <nav class="nav">
-      <a href="index.html">Bracelet Builder</a>
+      <a href="index.html">Builder</a>
+      <a href="about.html">About</a>
       <a href="store.html" aria-current="page">Store</a>
     </nav>
   </div>
 </header>
 
-<main class="container">
+<main class="store-wrap">
   <section class="card">
-    <div class="head"><h1>Store</h1></div>
-    <div class="panel" id="storeList">Loading…</div>
+    <div class="head">
+      <h1>Store</h1>
+      <span class="badge">Atelier selections</span>
+    </div>
+    <div class="panel" id="storeList" aria-live="polite">Loading…</div>
   </section>
 </main>
 
+<script src="scripts/a2hs.js"></script>
 <script>
 (function () {
-  const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk"; // your sheet
-  const SHEET_NAME = "Sheet1"; // tab name
-  // We’ll use the Google Visualization (gviz) endpoint — no API key required
-  const TQ = encodeURIComponent("select A,B,C,D,E,F,G"); // name,price,kirat,photo,description,sku,in_stock
+  const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk";
+  const SHEET_NAME = "Sheet1";
+  const TQ = encodeURIComponent("select A,B,C,D,E,F,G");
   const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
 
   const out = document.getElementById("storeList");
 
+  const ESCAPE = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
+  function escapeHtml(value){
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function(ch){ return ESCAPE[ch] || ch; });
+  }
+  function sentenceCase(str){
+    const trimmed = String(str == null ? "" : str).trim();
+    if(!trimmed){ return ""; }
+    if(trimmed === trimmed.toUpperCase()){
+      const lower = trimmed.toLowerCase();
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    }
+    if(trimmed === trimmed.toLowerCase()){
+      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    }
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  }
   function driveImage(url) {
-    // Accepts "https://drive.google.com/file/d/<id>/view?usp=..." or "...?id=<id>"
     if (!url) return "";
     const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([^&]+)/);
     const id = m ? m[1] : null;
     return id ? `https://lh3.googleusercontent.com/d/${id}=w800` : url;
   }
-
   function money(n) {
     const v = Number(n);
-    return Number.isFinite(v) ? v.toLocaleString(undefined, {minimumFractionDigits:0}) : n;
+    return Number.isFinite(v) ? v.toLocaleString(undefined, {minimumFractionDigits:0}) : "";
   }
 
   function render(products) {
     if (!products.length) {
-      out.innerHTML = `<div class="badge">No products yet.</div>`;
+      out.innerHTML = `<span class="badge">No products yet.</span>`;
       return;
     }
     const cards = products.map(p => {
-      const img = p.photo ? `<img src="${p.photo}" alt="${p.name}" style="width:120px;height:120px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft)">` : "";
-      const stockBadge = (p.in_stock && Number(p.in_stock) > 0) ? `<span class="badge" style="color:var(--gold)">In stock</span>` : `<span class="badge">Out of stock</span>`;
+      const title = sentenceCase(p.name || "");
+      const safeTitle = escapeHtml(title);
+      const photo = driveImage(p.photo);
+      const price = money(p.price);
+      const description = escapeHtml(p.description || "");
+      const kirat = p.kirat ? `<span>Karat: ${escapeHtml(p.kirat)}</span>` : "";
+      const sku = p.sku ? `<span>SKU: ${escapeHtml(p.sku)}</span>` : "";
+      const badgeClass = (p.in_stock && Number(p.in_stock) > 0) ? "store-item__badge store-item__badge--stock" : "store-item__badge";
+      const badgeLabel = (p.in_stock && Number(p.in_stock) > 0) ? "In stock" : "Out of stock";
+      const metaBits = [kirat, sku, `<span class="${badgeClass}">${badgeLabel}</span>`].filter(Boolean).join("\n");
       return `
-        <div style="display:grid;grid-template-columns:140px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--border-soft)">
-          <div>${img}</div>
-          <div>
-            <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
-              <h3 style="margin:0">${p.name || ""}</h3>
-              <div><strong>${money(p.price)}</strong> <span style="color:var(--muted)">USD</span></div>
+        <article class="store-item card">
+          <figure class="store-item__thumb">
+            ${photo ? `<img src="${escapeHtml(photo)}" alt="${safeTitle || 'Bracelet photo'}" loading="lazy">` : `<div class="store-item__placeholder" aria-hidden="true"></div>`}
+          </figure>
+          <div class="store-item__body">
+            <div class="store-item__header">
+              <h3 class="store-item__title">${safeTitle}</h3>
+              ${price ? `<div class="store-item__price">${price}<span class="store-item__currency">USD</span></div>` : ""}
             </div>
-            <div style="color:var(--muted);margin:6px 0">${p.description || ""}</div>
-            <div style="display:flex;gap:12px;font-size:12px;color:var(--muted)">
-              <span>Kirat: ${p.kirat || "-"}</span>
-              <span>SKU: ${p.sku || "-"}</span>
-              ${stockBadge}
-            </div>
+            ${description ? `<p class="store-item__description">${description}</p>` : ""}
+            <div class="store-item__meta">${metaBits}</div>
           </div>
-        </div>
+        </article>
       `;
-    }).join("");
+    }).join("\n");
     out.innerHTML = cards;
   }
 
   fetch(URL)
     .then(r => r.text())
     .then(txt => {
-      // gviz returns: "/*O_o*/ google.visualization.Query.setResponse({...});"
       const json = JSON.parse(txt.substring(47, txt.length - 2));
       const rows = (json.table?.rows || []);
       const products = rows.map(r => {
         const [name, price, kirat, photo, description, sku, in_stock] = r.c.map(c => c ? c.v : "");
-        return {
-          name, price, kirat, photo: driveImage(photo), description, sku, in_stock
-        };
+        return { name, price, kirat, photo, description, sku, in_stock };
       });
       render(products);
     })
     .catch(err => {
       console.error(err);
-      out.innerHTML = `<div class="badge">Could not load products.</div>`;
+      out.innerHTML = `<span class="badge">Could not load products.</span>`;
     });
 })();
+</script>
+<script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
 </script>
 </body>
 </html>
