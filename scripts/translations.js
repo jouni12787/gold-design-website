@@ -1,16 +1,16 @@
 window.__TRANSLATIONS = {
   en: {
     /* Brand / Nav / A2HS */
-    "brand.title": "Chakaroun Jewelry",
+    "brand.title": "Shakaroun Jewelry",
     "brand.byline": "Shakaroun Jewelry",
-    "brand.logoAlt": "Chakaroun Jewelry logo",
+    "brand.logoAlt": "Shakaroun Jewelry logo",
     "brand.aria": "Shakaroun Jewelry",
     "nav.builder": "Builder",
     "nav.store": "Store",
     "nav.about": "About",
     "a2hs.banner": "Add it to your Home Screen.",
     "a2hs.install": "Install",
-    "a2hs.title": "Add “Chakaroun Jewelry” to Home Screen",
+    "a2hs.title": "Add “Shakaroun Jewelry” to Home Screen",
     "a2hs.step1": "Tap Share in Safari.",
     "a2hs.step2": "Choose Add to Home Screen, then Add.",
 
@@ -27,7 +27,7 @@ window.__TRANSLATIONS = {
     "store.loadFail": "Could not load products.",
 
     /* About */
-    "about.eyebrow": "Maison Chakaroun · Established Beirut 1964",
+    "about.eyebrow": "Maison Shakaroun · Established Beirut 1964",
     "about.title": "Heritage & Craftsmanship",
     "about.lede": "Discover how our Levantine lineage and atelier precision inform every bespoke bracelet we compose.",
     "about.heritage.h": "Heritage",
@@ -46,7 +46,7 @@ window.__TRANSLATIONS = {
     "about.craft.t3.p": "Store favourite builds and palettes locally, then add them to a wishlist for private client previews.",
 
     /* Home (index hero) */
-    "home.eyebrow": "Maison Chakaroun · Established Beirut 1964",
+    "home.eyebrow": "Maison Shakaroun · Established Beirut 1964",
     "home.headline": "Bespoke bracelets infused with Levantine poetry and Parisian polish.",
     "home.copy": "Craft a signature piece from the same atelier that shapes our haute joaillerie. Every pendant, halo link and clasp follows archival proportions that honour our founders while embracing contemporary luxury.",
     "home.cta.primary": "Discover our craftsmanship",
@@ -315,16 +315,16 @@ window.__TRANSLATIONS = {
 
   /* ===== French ===== */
   fr: {
-    "brand.title": "Chakaroun Jewelry",
+    "brand.title": "Shakaroun Jewelry",
     "brand.byline": "Shakaroun Jewelry",
-    "brand.logoAlt": "Logo Chakaroun Jewelry",
+    "brand.logoAlt": "Logo Shakaroun Jewelry",
     "brand.aria": "Shakaroun Jewelry",
     "nav.builder": "Créateur",
     "nav.store": "Boutique",
     "nav.about": "À propos",
     "a2hs.banner": "Ajoutez-la à votre écran d’accueil.",
     "a2hs.install": "Installer",
-    "a2hs.title": "Ajouter « Chakaroun Jewelry » à l’écran d’accueil",
+    "a2hs.title": "Ajouter « Shakaroun Jewelry » à l’écran d’accueil",
     "a2hs.step1": "Touchez Partager dans Safari.",
     "a2hs.step2": "Choisissez Ajouter à l’écran d’accueil, puis Ajouter.",
 
@@ -339,7 +339,7 @@ window.__TRANSLATIONS = {
     "store.empty": "Aucun produit pour l’instant.",
     "store.loadFail": "Impossible de charger les produits.",
 
-    "about.eyebrow": "Maison Chakaroun · Beyrouth 1964",
+    "about.eyebrow": "Maison Shakaroun · Beyrouth 1964",
     "about.title": "Héritage & Savoir-faire",
     "about.lede": "Découvrez comment notre lignée levantine et la précision de l’atelier inspirent chaque bracelet sur-mesure.",
     "about.heritage.h": "Héritage",
@@ -357,7 +357,7 @@ window.__TRANSLATIONS = {
     "about.craft.t3.h": "Ateliers enregistrés.",
     "about.craft.t3.p": "Sauvegardez des compositions et palettes localement, puis créez une liste de souhaits pour vos clients privés.",
 
-    "home.eyebrow": "Maison Chakaroun · Beyrouth 1964",
+    "home.eyebrow": "Maison Shakaroun · Beyrouth 1964",
     "home.headline": "Bracelets sur-mesure, poésie levantine et élégance parisienne.",
     "home.copy": "Composez une pièce signature issue du même atelier que notre haute joaillerie. Chaque pendentif, maillon halo et fermoir suit des proportions d’archives honorant nos fondateurs tout en embrassant le luxe contemporain.",
     "home.cta.primary": "Découvrir notre savoir-faire",
@@ -468,16 +468,16 @@ window.__TRANSLATIONS = {
 
   /* ===== Italian ===== */
   it: {
-    "brand.title": "Chakaroun Jewelry",
+    "brand.title": "Shakaroun Jewelry",
     "brand.byline": "Shakaroun Jewelry",
-    "brand.logoAlt": "Logo Chakaroun Jewelry",
+    "brand.logoAlt": "Logo Shakaroun Jewelry",
     "brand.aria": "Shakaroun Jewelry",
     "nav.builder": "Costruttore",
     "nav.store": "Negozio",
     "nav.about": "Chi siamo",
     "a2hs.banner": "Aggiungila alla schermata Home.",
     "a2hs.install": "Installa",
-    "a2hs.title": "Aggiungi «Chakaroun Jewelry» alla schermata Home",
+    "a2hs.title": "Aggiungi «Shakaroun Jewelry» alla schermata Home",
     "a2hs.step1": "Tocca Condividi in Safari.",
     "a2hs.step2": "Scegli Aggiungi a Home, poi Aggiungi.",
 
@@ -492,7 +492,7 @@ window.__TRANSLATIONS = {
     "store.empty": "Nessun prodotto al momento.",
     "store.loadFail": "Impossibile caricare i prodotti.",
 
-    "about.eyebrow": "Maison Chakaroun · Fondata a Beirut nel 1964",
+    "about.eyebrow": "Maison Shakaroun · Fondata a Beirut nel 1964",
     "about.title": "Eredità & Maestria",
     "about.lede": "Scopri come la nostra linea levantina e la precisione d’atelier informano ogni bracciale su misura.",
     "about.heritage.h": "Eredità",
@@ -510,7 +510,7 @@ window.__TRANSLATIONS = {
     "about.craft.t3.h": "Atelier salvati.",
     "about.craft.t3.p": "Salva composizioni e palette in locale, poi aggiungile a una wishlist per anteprime private.",
 
-    "home.eyebrow": "Maison Chakaroun · Beirut 1964",
+    "home.eyebrow": "Maison Shakaroun · Beirut 1964",
     "home.headline": "Bracciali su misura tra poesia levantina ed eleganza parigina.",
     "home.copy": "Crea una firma dallo stesso atelier che realizza la nostra alta gioielleria. Ogni pendente, maglia halo e chiusura segue proporzioni d’archivio che onorano i fondatori abbracciando il lusso contemporaneo.",
     "home.cta.primary": "Scopri la nostra maestria",
