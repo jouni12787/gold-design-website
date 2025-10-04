@@ -484,6 +484,16 @@
           <select id="pendant"></select>
         </div>
       </div>
+      <div class="grid2" style="margin-top:8px">
+        <div>
+          <label for="pinBias">Pendant pin spread (±%)</label>
+          <input id="pinBias" type="range" min="-40" max="40" step="1" value="0">
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <output id="pinBiasOut">0%</output>
+        </div>
+      </div>
 
       <div class="rows" id="rows"></div>
       <div class="grid2" style="margin-top:10px">
@@ -1031,6 +1041,8 @@ const selThemeInner = document.getElementById("themeSelect");
 const selThemeTop = document.getElementById("themeSelectTop");
 const selTheme = selThemeInner || selThemeTop;
 const selPendant = document.getElementById("pendant");
+const inpPinBias = document.getElementById("pinBias");
+const outPinBias = document.getElementById("pinBiasOut");
 const selLock = document.getElementById("lockSelect");
 const rowsBox = document.getElementById("rows");
 const btnAddRow = document.getElementById("addRow");
@@ -1418,6 +1430,7 @@ function collectSessionState(){
     lock: selLock?.value || '',
     rows: readRows(),
     angle: parseFloat(inpStep?.value ?? 15) || 15,
+    pinBias: parseFloat(inpPinBias?.value ?? 0) || 0,
     metal: selMetal?.value || METAL_PRESETS[0]?.id,
     wrist: parseFloat(inpWrist?.value ?? BASE_WRIST_CM) || BASE_WRIST_CM,
     lighting: selLighting?.value || 'gallery',
@@ -1451,6 +1464,10 @@ function hydrateSession(){
 
   if(selPendant && data.pendant && PENDANTS.includes(data.pendant)) selPendant.value = data.pendant;
   if(selLock && typeof data.lock === 'string') selLock.value = data.lock;
+  if(inpPinBias && typeof data.pinBias === 'number'){
+    inpPinBias.value = String(data.pinBias);
+    if(outPinBias) outPinBias.textContent = `${data.pinBias}%`;
+  }
 
   rowsBox.innerHTML = '';
   if(Array.isArray(data.rows) && data.rows.length){
@@ -1667,6 +1684,14 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     });
   }
 
+  if(inpPinBias){
+    if(outPinBias) outPinBias.textContent = `${inpPinBias.value}%`;
+    inpPinBias.addEventListener("input", () => {
+      if(outPinBias) outPinBias.textContent = `${inpPinBias.value}%`;
+      render();
+    });
+  }
+
   populateMetalOptions();
 
   if(selTheme){
@@ -1701,6 +1726,7 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
       if(selPendant) selPendant.value = PENDANTS[0];
       if(selLock) selLock.value = "";
       if(inpStep){ inpStep.value = "15"; if(outStep) outStep.textContent = "15°"; }
+      if(inpPinBias){ inpPinBias.value = "0"; if(outPinBias) outPinBias.textContent = "0%"; }
       if(selMetal && METAL_PRESETS[0]) selMetal.value = METAL_PRESETS[0].id;
       if(inpWrist) inpWrist.value = BASE_WRIST_CM.toString();
       const canvasSel = document.getElementById('canvasPreset');
@@ -1944,6 +1970,35 @@ function sanitizePackFor3D(pack, type, name){
     }
   };
 }
+
+function adjustPinsProportionally(pack, factor, mode = "horizontal") {
+  if (!pack || !pack.pins || !pack.pins.L || !pack.pins.R) return;
+
+  const pivot = {
+    x: (pack.pins.L.x + pack.pins.R.x) / 2,
+    y: (pack.pins.L.y + pack.pins.R.y) / 2
+  };
+
+  const move = (value, center) => center + factor * (value - center);
+
+  const transformPoint = (point) => {
+    const x = mode === "vertical" ? point.x : move(point.x, pivot.x);
+    const y = mode === "horizontal" ? point.y : move(point.y, pivot.y);
+    return { x, y };
+  };
+
+  const left = transformPoint({ ...pack.pins.L });
+  const right = transformPoint({ ...pack.pins.R });
+
+  pack.pins.L = left;
+  pack.pins.R = right;
+
+  pack.pinRatios = {
+    L: { x: left.x / pack.width, y: left.y / pack.height },
+    R: { x: right.x / pack.width, y: right.y / pack.height }
+  };
+}
+
 // === rotation helpers for 2D layout ===
 const toRad = d => d * Math.PI / 180;
 function rotateAround(x, y, cx, cy, rad){
@@ -1995,6 +2050,9 @@ async function render(){
     pendantPack = await loadScaleRotate("pendant", pendantName, pendantH, 0);
   }catch(e){ console.error(e); pendantPack = {node:document.createElementNS("http://www.w3.org/2000/svg","g"), width:120, height:60, pins:{L:null,R:null}}; }
   if(token!==lastToken) return;
+  const biasPct = inpPinBias ? parseFloat(inpPinBias.value || "0") : 0;
+  const biasFactor = 1 + (biasPct / 100);
+  adjustPinsProportionally(pendantPack, biasFactor, "horizontal");
   const pendantMaskClone = clonePendantForMask(pendantPack.node);
   const pendant3D = sanitizePackFor3D(pendantPack, 'pendant', pendantName);
 
