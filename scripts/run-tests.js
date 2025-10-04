@@ -28,7 +28,7 @@ function assert(condition, message){
 assert(/const\s+PENDANT_MASK_ID\s*=\s*"pendantCutMask"/.test(html), 'Pendant mask ID constant is defined');
 assert(/function\s+clonePendantForMask\s*\(/.test(html), 'clonePendantForMask helper exists');
 assert(/mask\.setAttribute\(\"id\",\s*PENDANT_MASK_ID\)/.test(html), 'Mask definition attaches pendant mask ID');
-assert(/front\.setAttribute\(\"mask\",\s*pendantMaskUrl\)/.test(html), 'Front link clone uses the pendant mask');
+assert(/stackOverMasked\.setAttribute\(\"mask\",\s*pendantMaskUrl\)/.test(html), 'Masked overlay applies the pendant mask');
 assert(html.includes('defs.querySelectorAll(`[data-role="pendant-mask"]`).forEach(n=>n.remove());'), 'Old pendant masks are cleaned before each render');
 
 if(failed){
