@@ -105,6 +105,11 @@
   .store-item{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:20px;align-items:start;padding:20px}
   .store-item__thumb{position:relative;border-radius:18px;border:1px solid var(--border-soft);overflow:hidden;background:var(--bg2);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
   .store-item__thumb img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+  /* small thumbnail strip inside each card */
+  .store-item__thumbs{position:absolute;left:8px;right:8px;bottom:8px;display:flex;gap:6px;justify-content:center;pointer-events:auto}
+  .store-item__thumbs img{width:36px;height:36px;object-fit:cover;border-radius:8px;border:1px solid var(--border-soft);cursor:pointer;opacity:.9;background:var(--bg2)}
+  .store-item__thumbs img.is-active{outline:2px solid var(--gold);opacity:1}
+  .store-item__thumb .count-badge{position:absolute;top:8px;right:8px;font-size:12px;background:color-mix(in oklab,var(--card) 76%,transparent);border:1px solid var(--border-soft);border-radius:999px;padding:3px 8px;color:var(--muted);backdrop-filter:blur(6px)}
   .store-item__thumb:hover img{transform:scale(1.02)}
   .store-item__placeholder{width:100%;height:100%;background:linear-gradient(135deg,color-mix(in oklab,var(--bg2) 80%, transparent),color-mix(in oklab,var(--bg) 70%, transparent))}
   .store-item__body{display:grid;gap:14px}
@@ -364,22 +369,29 @@
     }
     return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
   }
-  function driveImage(value) {
-    if (!value) return "";
-
-    // If GViz gave us an HTML anchor (Sheets link chip), pull out the href
-    const str = String(value);
+  // Split a cell that may contain multiple links (comma, semicolon, or newline)
+  function splitLinks(value){
+    if (!value) return [];
+    // If GViz gave an <a href> chip, pull its href and return as a single-item array
+    const str = String(value).trim();
     const hrefMatch = str.match(/href="([^"]+)"/i);
-    const url = hrefMatch ? hrefMatch[1] : str;
+    if (hrefMatch) return [hrefMatch[1]];
 
-    // Accept both /file/d/ID/... and ...?id=ID forms
-    const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([^&]+)/);
-    const id = m ? m[1] : null;
-    if (!id) return url; // fall back to whatever it is
+    // Otherwise, split on commas/semicolons/newlines and trim
+    return str.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+  }
 
-    // Thumbnail/preview URL (fast & works in <img>)
-    return `https://lh3.googleusercontent.com/d/${id}=w800`;
-    // If you prefer, you can use: return `https://drive.google.com/uc?export=view&id=${id}`;
+  // Convert Drive links (open?id=... or /file/d/ID/...) -> direct image URLs
+  function driveImages(value){
+    const links = Array.isArray(value) ? value : splitLinks(value);
+    return links.map(link => {
+      // accept both /file/d/ID and ...?id=ID
+      const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([^&]+)/);
+      const id = m ? m[1] : null;
+      if (!id) return link; // if it's not Drive, use as-is
+      // fast thumbnail endpoint that works in <img>
+      return `https://lh3.googleusercontent.com/d/${id}=w1200`;
+    });
   }
   function money(n) {
     const v = Number(n);
@@ -411,7 +423,8 @@
     const cards = products.map(p => {
       const title = sentenceCase(p.name || "");
       const safeTitle = escapeHtml(title);
-      const photo = driveImage(p.photo);
+      const photos = driveImages(p.photo);
+      const main   = photos[0] || "";
       const price = money(p.price);
       const description = escapeHtml(p.description || "");
       const kirat = p.kirat ? `<span>${__t('store.karat')} ${escapeHtml(p.kirat)}</span>` : "";
@@ -425,7 +438,16 @@
       return `
         <article class="store-item card">
           <figure class="store-item__thumb">
-            ${photo ? `<img src="${escapeHtml(photo)}" alt="${safeTitle || 'Bracelet photo'}" loading="lazy">` : `<div class="store-item__placeholder" aria-hidden="true"></div>`}
+            ${main ? `<img class="js-main" src="${escapeHtml(main)}" alt="${safeTitle || 'Bracelet photo'}" loading="lazy">`
+                   : `<div class="store-item__placeholder" aria-hidden="true"></div>`}
+            ${photos.length > 1 ? `
+              <div class="count-badge">${photos.length}</div>
+              <div class="store-item__thumbs">
+                ${photos.map((u,i)=>`
+                  <img class="js-thumb ${i===0?'is-active':''}" src="${escapeHtml(u)}" alt="thumb ${i+1}" loading="lazy" />
+                `).join('')}
+              </div>
+            ` : ``}
           </figure>
           <div class="store-item__body">
             <div class="store-item__header">
@@ -439,6 +461,21 @@
       `;
     }).join("\n");
     out.innerHTML = cards;
+
+    // Wire gallery clicks (event delegation)
+    out.querySelectorAll('.store-item').forEach(card => {
+      const mainImg = card.querySelector('.store-item__thumb .js-main');
+      const thumbs = card.querySelectorAll('.store-item__thumbs .js-thumb');
+      if (!mainImg || !thumbs.length) return;
+      thumbs.forEach(t => {
+        t.addEventListener('click', () => {
+          thumbs.forEach(x => x.classList.remove('is-active'));
+          t.classList.add('is-active');
+          const next = t.getAttribute('src');
+          if (next) mainImg.setAttribute('src', next);
+        });
+      });
+    });
   }
 
   fetch(URL)
