@@ -56,8 +56,8 @@ c53 -36 120 -129 135 -188 12 -44 11 -61 -6 -137 -10 -47 -22 -113 -25 -146
 168 10 0 33 -7 52 -16z"/>
 </g>
   <g id="pins" style="display:none">
-  <circle id="pinL" cx="92%" cy="50%" r="3" fill="red" stroke="black"/>
-  <circle id="pinR" cx="8%" cy="50%" r="3" fill="red" stroke="black"/>
+  <circle id="pinR" cx="92%" cy="50%" r="3" fill="red" stroke="black"/>
+  <circle id="pinL" cx="8%" cy="50%" r="3" fill="red" stroke="black"/>
   <!-- etc. -->
 </g>
 
