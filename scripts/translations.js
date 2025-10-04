@@ -2,9 +2,9 @@ window.__TRANSLATIONS = {
   en: {
     /* Brand / Nav / A2HS */
     "brand.title": "Chakaroun Jewelry",
-    "brand.byline": "by Hassan Chakaroun & Ali Jouni",
+    "brand.byline": "Shakaroun Jewelry",
     "brand.logoAlt": "Chakaroun Jewelry logo",
-    "brand.aria": "Chakaroun Jewelry — by Hassan Chakaroun & Ali Jouni",
+    "brand.aria": "Shakaroun Jewelry",
     "nav.builder": "Builder",
     "nav.store": "Store",
     "nav.about": "About",
@@ -163,9 +163,9 @@ window.__TRANSLATIONS = {
   /* ===== Arabic ===== */
   ar: {
     "brand.title": "مجوهرات شكرون",
-    "brand.byline": "بإدارة حسن شكرون وعلي جوني",
+    "brand.byline": "Shakaroun Jewelry",
     "brand.logoAlt": "شعار مجوهرات شكرون",
-    "brand.aria": "مجوهرات شكرون — بإدارة حسن شكرون وعلي جوني",
+    "brand.aria": "Shakaroun Jewelry",
     "nav.builder": "البنّاء",
     "nav.store": "المتجر",
     "nav.about": "معلومات",
@@ -316,9 +316,9 @@ window.__TRANSLATIONS = {
   /* ===== French ===== */
   fr: {
     "brand.title": "Chakaroun Jewelry",
-    "brand.byline": "par Hassan Chakaroun & Ali Jouni",
+    "brand.byline": "Shakaroun Jewelry",
     "brand.logoAlt": "Logo Chakaroun Jewelry",
-    "brand.aria": "Chakaroun Jewelry — par Hassan Chakaroun & Ali Jouni",
+    "brand.aria": "Shakaroun Jewelry",
     "nav.builder": "Créateur",
     "nav.store": "Boutique",
     "nav.about": "À propos",
@@ -469,9 +469,9 @@ window.__TRANSLATIONS = {
   /* ===== Italian ===== */
   it: {
     "brand.title": "Chakaroun Jewelry",
-    "brand.byline": "di Hassan Chakaroun & Ali Jouni",
+    "brand.byline": "Shakaroun Jewelry",
     "brand.logoAlt": "Logo Chakaroun Jewelry",
-    "brand.aria": "Chakaroun Jewelry — di Hassan Chakaroun & Ali Jouni",
+    "brand.aria": "Shakaroun Jewelry",
     "nav.builder": "Costruttore",
     "nav.store": "Negozio",
     "nav.about": "Chi siamo",
