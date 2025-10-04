@@ -237,6 +237,13 @@
   .grid2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
   .rows{display:flex;flex-direction:column;gap:10px;margin-top:10px}
   .row{display:grid;grid-template-columns:1.2fr .7fr auto auto;gap:10px;align-items:end}
+  .stack{display:flex;flex-direction:column;gap:.5rem}
+  .lbl{font-weight:600}
+  .zoombar{display:flex;align-items:center;gap:.5rem}
+  .zoombar button{padding:.35rem .6rem;border-radius:10px}
+  .muted{opacity:.75}
+  .row-len{display:flex;align-items:center;gap:.5rem}
+  .row-len input{width:7rem}
   button{appearance:none;background:linear-gradient(180deg,var(--button-top),var(--button-bottom));color:var(--ink);border:1px solid var(--border-strong);padding:10px 14px;border-radius:12px;cursor:pointer;transition:border .2s,background .2s,color .2s}
   button:hover{border-color:var(--gold);background:linear-gradient(180deg,var(--button-hover-top),var(--button-hover-bottom));color:var(--ink)}
   .summary{margin-top:16px;padding:18px;border-radius:18px;background:var(--summary-bg);border:1px solid var(--border-soft);display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
@@ -255,8 +262,8 @@
   .preview{display:flex;align-items:center;justify-content:center;background:
     radial-gradient(600px 400px at 50% 0%, var(--preview-glow) 0%, transparent 70%),
     var(--bg2);min-height:320px;position:relative;transition:background .3s ease}
-  svg#stage{width:100%;height:100%;max-height:560px}
-  #stage [data-role="background"]{fill:var(--bg2);transition:fill .3s ease}
+  svg#preview{width:100%;height:100%;max-height:560px}
+  #preview [data-role="background"]{fill:var(--bg2);transition:fill .3s ease}
   .materialNarrative{margin-top:10px;font-size:.9rem;color:var(--muted);line-height:1.5}
   .themeDesigner{margin-top:12px;padding:14px;border-radius:14px;border:1px dashed var(--border-soft);background:color-mix(in oklab,var(--control-bg) 85%, transparent);display:none;gap:12px}
   .themeDesigner.open{display:grid}
@@ -498,6 +505,41 @@
       </div>
       <div style="margin-top:8px"><button id="addRow" data-i18n="builder.addRow">+ Add link type</button></div>
 
+      <!-- Canvas / Zoom -->
+      <div class="stack" style="margin-top:16px">
+        <label class="lbl" for="canvasPreset">Canvas size</label>
+        <select id="canvasPreset">
+          <option value="1080x320">Bracelet (1080×320)</option>
+          <option value="1280x420">Keychain (1280×420)</option>
+          <option value="1920x520">Necklace (1920×520)</option>
+        </select>
+        <div class="zoombar">
+          <button type="button" id="zoomFit">Fit</button>
+          <button type="button" id="zoomOut">–</button>
+          <button type="button" id="zoomIn">+</button>
+          <span id="zoomLabel">100%</span>
+        </div>
+      </div>
+
+      <!-- Real-world length parameters -->
+      <div class="stack" style="margin-top:16px">
+        <label class="lbl" for="lenPendantMm">Pendant length (mm)</label>
+        <input id="lenPendantMm" type="number" min="0" step="0.1" value="50">
+        <label class="lbl" for="lenLockMm">Lock length (mm)</label>
+        <input id="lenLockMm" type="number" min="0" step="0.1" value="5">
+      </div>
+
+      <!-- Per-row link length (mm) -->
+      <div class="stack" id="rowLenContainer" style="margin-top:16px"></div>
+
+      <!-- Target length + auto-fill -->
+      <div class="stack" style="margin-top:16px">
+        <label class="lbl" for="targetLenCm">Target total length (cm)</label>
+        <input id="targetLenCm" type="number" min="0" step="0.1" placeholder="e.g., 18.0">
+        <button type="button" id="btnAutofill">Auto-fill qty</button>
+        <div id="lenReadout" class="muted"></div>
+      </div>
+
       <div class="grid2" style="margin-top:16px">
         <div>
           <label for="metalPreset" data-i18n="builder.metal">Metal &amp; purity</label>
@@ -513,6 +555,7 @@
           <div><strong data-i18n="builder.summary.h">Estimated Weight</strong></div>
           <span class="w" id="totalWeight">0.00 g</span>
           <div class="badge" id="materialDetails" data-i18n="builder.summary.details">Select a metal profile to view density, price &amp; narrative.</div>
+          <div id="summary-length">Length: <span id="summaryLenVal">—</span></div>
         </div>
         <div class="summary-stats">
           <div class="stat">
@@ -549,7 +592,7 @@
 
     <!-- 2D -->
     <div class="preview" id="preview2d">
-      <svg id="stage" viewBox="0 0 1080 320" role="img" aria-label="Bracelet preview">
+      <svg id="preview" width="100%" height="100%" viewBox="0 0 1080 320" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Bracelet preview">
         <defs id="defs">
           <!-- 18K: warm classic gold -->
           <linearGradient id="gold18" x1="0" y1="0" x2="1" y2="1">
@@ -581,8 +624,10 @@
             <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity=".35"/>
           </filter>
         </defs>
-        <rect x="0" y="0" width="1080" height="320" fill="#0f0b06" data-role="background"/>
-        <g id="bracelet"></g>
+        <g id="viewport" transform="matrix(1 0 0 1 0 0)">
+          <rect x="0" y="0" width="1080" height="320" fill="#0f0b06" data-role="background"/>
+          <g id="bracelet"></g>
+        </g>
       </svg>
     </div>
 
@@ -673,8 +718,8 @@ window.addEventListener('hcj:lang', onLanguageChange);
 const THEMES = ["light", "dark", "plum", "custom"];
 const THEME_KEY = window.__HCJ_THEME_KEY || "hcj-theme";
 const DEFAULT_THEME = document.documentElement.dataset.theme || "light";
-const STAGE_W = 1080;
-const STAGE_H = 320; // compact height
+let STAGE_W = 1080;
+let STAGE_H = 320; // compact height
 const STORAGE_KEYS = {
   session: 'hcj-builder-session',
   wishlist: 'hcj-builder-wishlist',
@@ -683,6 +728,87 @@ const STORAGE_KEYS = {
 };
 const BASE_DENSITY = 15.6; // 18K heritage gold baseline (g/cm^3)
 const BASE_WRIST_CM = 18;
+
+/* ---------- Canvas size presets ---------- */
+const PRESETS = {
+  "1080x320": [1080, 320],
+  "1280x420": [1280, 420],
+  "1920x520": [1920, 520]
+};
+
+function setCanvasSize(w, h){
+  STAGE_W = w; STAGE_H = h;
+  const svg = document.getElementById('preview');
+  if(svg){
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    fitViewport();
+  }
+}
+
+/* ---------- Zoom & Fit ---------- */
+let zoomMode = 'fit';
+let zoomScale = 1;
+let zoomCenter = { x: 0, y: 0 };
+
+function applyViewportTransform(){
+  const vp = document.getElementById('viewport');
+  if(!vp) return;
+  vp.setAttribute('transform', `matrix(${zoomScale} 0 0 ${zoomScale} ${zoomCenter.x} ${zoomCenter.y})`);
+  const label = document.getElementById('zoomLabel');
+  if(label) label.textContent = zoomMode === 'fit' ? 'Fit' : Math.round(zoomScale * 100) + '%';
+}
+
+function fitViewport(pad = 24){
+  const bbGroup = document.getElementById('bracelet');
+  if(!bbGroup) return;
+  const bbox = bbGroup.getBBox?.();
+  if(!bbox || !isFinite(bbox.width) || !isFinite(bbox.height) || bbox.width === 0 || bbox.height === 0){
+    zoomScale = 1;
+    zoomCenter = { x: 0, y: 0 };
+    zoomMode = 'fit';
+    applyViewportTransform();
+    return;
+  }
+
+  const innerW = Math.max(1, STAGE_W - pad * 2);
+  const innerH = Math.max(1, STAGE_H - pad * 2);
+  const sx = innerW / bbox.width;
+  const sy = innerH / bbox.height;
+  zoomScale = Math.min(sx, sy);
+  zoomMode = 'fit';
+
+  const cx = (STAGE_W - bbox.width * zoomScale) / 2 - bbox.x * zoomScale;
+  const cy = (STAGE_H - bbox.height * zoomScale) / 2 - bbox.y * zoomScale;
+  zoomCenter = { x: cx, y: cy };
+  applyViewportTransform();
+}
+
+function zoom(delta){
+  if(zoomMode === 'fit'){
+    zoomMode = 'manual';
+  }
+  const before = zoomScale;
+  zoomScale = Math.min(8, Math.max(0.1, zoomScale * (delta > 0 ? 1.2 : 1 / 1.2)));
+  const stageCx = STAGE_W / 2;
+  const stageCy = STAGE_H / 2;
+  zoomCenter.x = stageCx - (stageCx - zoomCenter.x) * (zoomScale / before);
+  zoomCenter.y = stageCy - (stageCy - zoomCenter.y) * (zoomScale / before);
+  applyViewportTransform();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const presetSel = document.getElementById('canvasPreset');
+  if(presetSel){
+    presetSel.addEventListener('change', e => {
+      const [w, h] = PRESETS[e.target.value] || [STAGE_W, STAGE_H];
+      setCanvasSize(w, h);
+      render();
+    });
+  }
+  document.getElementById('zoomFit')?.addEventListener('click', () => fitViewport());
+  document.getElementById('zoomIn')?.addEventListener('click', () => zoom(+1));
+  document.getElementById('zoomOut')?.addEventListener('click', () => zoom(-1));
+});
 
 const METAL_PRESETS = [
   { id: 'gold-18', labelKey: 'builder.metal.gold18.label', density: 15.6, pricePerGram: 62, narrativeKey: 'builder.metal.gold18.narrative' },
@@ -891,7 +1017,7 @@ const WEIGHTS = {
 
 
 /* DOM refs */
-const stage = document.getElementById("stage");
+const stage = document.getElementById("preview");
 const defs = document.getElementById("defs");
 const bracelet = document.getElementById("bracelet");
 const selThemeInner = document.getElementById("themeSelect");
@@ -933,6 +1059,120 @@ const btnApplyCustomTheme = document.getElementById("applyCustomTheme");
 const wishlistCTA = document.getElementById("wishlistCTA");
 const selLighting = document.getElementById("lightingPreset");
 const cameraButtons = Array.from(document.querySelectorAll('.cameraControls button'));
+
+/* ---------- Lengths (mm) ---------- */
+let LEN_PENDANT_MM = 50;
+let LEN_LOCK_MM = 5;
+let perRowLenMm = [];
+let currentRows = [];
+
+function ensureRowLenInputs(){
+  const box = document.getElementById('rowLenContainer');
+  if(!box) return;
+  box.innerHTML = '';
+  perRowLenMm = perRowLenMm.slice(0, currentRows.length);
+  currentRows.forEach((row, i) => {
+    if(perRowLenMm[i] == null) perRowLenMm[i] = 10;
+    const wrap = document.createElement('div');
+    wrap.className = 'row-len';
+    wrap.innerHTML = `<span>Row ${i + 1}</span><input data-row="${i}" class="lenLinkMm" type="number" min="0" step="0.1" value="${perRowLenMm[i]}">`;
+    box.appendChild(wrap);
+  });
+  box.querySelectorAll('.lenLinkMm').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const idx = Number(e.target.dataset.row);
+      perRowLenMm[idx] = parseFloat(e.target.value || '0') || 0;
+      updateLengthReadout();
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const p = document.getElementById('lenPendantMm');
+  const l = document.getElementById('lenLockMm');
+  if(p){
+    p.value = LEN_PENDANT_MM;
+    p.addEventListener('input', () => {
+      LEN_PENDANT_MM = parseFloat(p.value || '0') || 0;
+      updateLengthReadout();
+    });
+  }
+  if(l){
+    l.value = LEN_LOCK_MM;
+    l.addEventListener('input', () => {
+      LEN_LOCK_MM = parseFloat(l.value || '0') || 0;
+      updateLengthReadout();
+    });
+  }
+
+  const btn = document.getElementById('btnAutofill');
+  const tgt = document.getElementById('targetLenCm');
+  if(btn){
+    btn.addEventListener('click', () => {
+      const targetCm = parseFloat(tgt?.value || '0') || 0;
+      if(targetCm <= 0) return;
+      autofillQuantities(targetCm * 10);
+      render();
+    });
+  }
+  tgt?.addEventListener('input', () => updateLengthReadout());
+});
+
+function computeTotalLengthMm(){
+  let mm = 0;
+  currentRows.forEach((row, i) => {
+    const perLink = perRowLenMm[i] ?? 0;
+    mm += ((row.qty || 0) * 2) * perLink;
+  });
+  mm += LEN_PENDANT_MM;
+  if((selLock?.value || '').trim()) mm += LEN_LOCK_MM;
+  return mm;
+}
+
+function updateLengthReadout(){
+  const el = document.getElementById('lenReadout');
+  const totalMm = computeTotalLengthMm();
+  const totalCm = totalMm / 10;
+  const tgtEl = document.getElementById('targetLenCm');
+  const tgtCm = parseFloat(tgtEl?.value || '0') || 0;
+  let txt = `Total length: ${totalCm.toFixed(1)} cm`;
+  if(tgtCm > 0){
+    const diff = totalCm - tgtCm;
+    const sign = diff > 0 ? '+' : '';
+    txt += ` (Target ${tgtCm.toFixed(1)} → ${sign}${diff.toFixed(1)} cm)`;
+  }
+  if(el) el.textContent = txt;
+  const summaryEl = document.getElementById('summaryLenVal');
+  if(summaryEl) summaryEl.textContent = `${totalCm.toFixed(1)} cm`;
+}
+
+function autofillQuantities(targetMm){
+  let current = computeTotalLengthMm();
+  if(current >= targetMm) return;
+  let deficit = targetMm - current;
+  const rowEls = Array.from(rowsBox.querySelectorAll('.row'));
+  const candidates = currentRows.map((row, i) => ({ i, per: Math.max(0.1, perRowLenMm[i] || 10) }))
+    .filter(c => rowEls[c.i]);
+  candidates.sort((a, b) => b.per - a.per);
+
+  while(deficit > 0 && candidates.length){
+    let progressed = false;
+    for(const c of candidates){
+      const rowData = currentRows[c.i];
+      const input = rowEls[c.i]?.querySelector('input[type="number"]');
+      if(!rowData || !input) continue;
+      const newQty = (rowData.qty || 0) + 1;
+      rowData.qty = newQty;
+      input.value = String(newQty);
+      deficit -= 2 * c.per;
+      progressed = true;
+      if(deficit <= 0) break;
+    }
+    if(!progressed) break;
+  }
+  currentRows = readRows();
+  updateLengthReadout();
+}
 
 let lastToken = 0;
 let lastMaterialSnapshot = null;
@@ -1456,6 +1696,23 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
       if(inpStep){ inpStep.value = "15"; if(outStep) outStep.textContent = "15°"; }
       if(selMetal && METAL_PRESETS[0]) selMetal.value = METAL_PRESETS[0].id;
       if(inpWrist) inpWrist.value = BASE_WRIST_CM.toString();
+      const canvasSel = document.getElementById('canvasPreset');
+      if(canvasSel) canvasSel.value = '1080x320';
+      setCanvasSize(1080, 320);
+      LEN_PENDANT_MM = 50;
+      LEN_LOCK_MM = 5;
+      perRowLenMm = [];
+      currentRows = [];
+      const lenPendantInput = document.getElementById('lenPendantMm');
+      if(lenPendantInput) lenPendantInput.value = String(LEN_PENDANT_MM);
+      const lenLockInput = document.getElementById('lenLockMm');
+      if(lenLockInput) lenLockInput.value = String(LEN_LOCK_MM);
+      const targetInput = document.getElementById('targetLenCm');
+      if(targetInput) targetInput.value = '';
+      zoomMode = 'fit';
+      zoomScale = 1;
+      zoomCenter = { x: 0, y: 0 };
+      applyViewportTransform();
       saveSession(true);
       showToast(t('builder.toast.reset'));
       render();
@@ -1703,6 +1960,7 @@ async function render(){
   const stageBg = stage.querySelector('[data-role="background"]');
   if(stageBg) stageBg.setAttribute("fill", bg2);
   const rows = readRows();
+  currentRows = rows.map(r => ({...r}));
   const pendantName = selPendant.value;
   const pendantH = 160;           // fixed pendant height
   const lockName = (selLock?.value || "").trim();
@@ -2007,6 +2265,12 @@ for (let i = 0; i < rightSeq.length; i++) {
     catch(err){ console.error('3D update failed', err); }
   }
   saveSession(true);
+  currentRows = rows.map(r => ({...r}));
+  ensureRowLenInputs();
+  updateLengthReadout();
+  if(zoomMode === 'fit'){
+    requestAnimationFrame(() => fitViewport());
+  }
 }
 
 /* Export */
