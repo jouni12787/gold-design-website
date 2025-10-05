@@ -38,6 +38,7 @@
     --control-border:rgba(212,175,55,.22);--control-bg:rgba(23,18,10,.75);
     --control-focus-bg:rgba(33,26,14,.85);--control-focus-shadow:rgba(212,175,55,.18);
     --head-bg:rgba(15,11,6,.45);
+    --button-top:rgba(212,175,55,.16);--button-bottom:rgba(184,138,26,.16);
   }
   html:not([data-theme]), html[data-theme="light"]{
     --bg:#f6f2ea;--bg2:#e4e9f3;--card:#ffffff;--card-overlay:rgba(255,255,255,.9);
@@ -46,6 +47,7 @@
     --control-border:rgba(200,137,44,.34);--control-bg:rgba(250,244,234,.92);
     --control-focus-bg:rgba(255,250,243,.97);--control-focus-shadow:rgba(200,137,44,.3);
     --head-bg:rgba(242,234,220,.76);
+    --button-top:rgba(200,137,44,.22);--button-bottom:rgba(165,106,24,.18);
   }
   html[data-theme="plum"]{
     --bg:#160b19;--bg2:#341844;--card:#2b1433;--card-overlay:rgba(73,35,94,.72);
@@ -54,6 +56,7 @@
     --control-border:rgba(215,148,255,.36);--control-bg:rgba(41,20,51,.78);
     --control-focus-bg:rgba(55,28,68,.86);--control-focus-shadow:rgba(215,148,255,.26);
     --head-bg:rgba(39,18,50,.65);
+    --button-top:rgba(215,148,255,.2);--button-bottom:rgba(177,98,228,.18);
   }
 
   /* A2HS */
@@ -141,6 +144,70 @@
   @media (max-width:380px){
     .topbar .nav a{padding:8px 10px;font-size:11.5px}
   }
+
+  /* ===== Categories, Quick View, Cart – elegant & on-brand ===== */
+  .hcj-cat-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+  .hcj-cat{position:relative;display:grid;place-items:center;padding:14px;border:1px solid var(--border-soft);
+    background:var(--control-bg);border-radius:16px;cursor:pointer;transition:border .2s,transform .2s}
+  .hcj-cat:hover{border-color:var(--gold);transform:translateY(-1px)}
+  .hcj-cat.is-active{border-color:var(--gold);box-shadow:0 8px 18px rgba(0,0,0,.22)}
+  .hcj-cat__icon{width:44px;height:44px;object-fit:contain}
+  .hcj-cat__label{margin-top:8px;text-align:center;font-weight:700;font-size:.92rem;line-height:1.2}
+  .hcj-cat__sub{font-size:.78rem;color:var(--muted)}
+
+  .hcj-cat-prices{margin-top:10px;display:grid;gap:10px}
+  .hcj-cat-title{font-weight:800}
+  .hcj-cat-stats{display:flex;gap:10px;align-items:center;color:var(--muted)}
+  .hcj-ppg{display:flex;gap:10px;flex-wrap:wrap}
+  .ppg-chip{display:flex;gap:6px;align-items:center;border:1px solid var(--border-soft);border-radius:999px;
+    padding:6px 10px;background:var(--control-bg);font-weight:700}
+  .ppg-chip span{color:var(--gold)}
+  .hcj-range{font-size:.95rem;color:color-mix(in oklab,var(--ink) 84%, transparent)}
+
+  .store-item{position:relative}
+  .hcj-add{position:absolute;left:14px;bottom:14px;width:44px;height:44px;border-radius:999px;border:1px solid var(--border-strong);
+    background:linear-gradient(120deg,var(--button-top),var(--button-bottom));display:grid;place-items:center;
+    box-shadow:0 8px 16px rgba(0,0,0,.25);cursor:pointer}
+  .hcj-add:hover{border-color:var(--gold)}
+  .hcj-add svg{width:20px;height:20px}
+
+  .hcj-qv{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center}
+  .hcj-qv[aria-hidden="false"]{display:flex}
+  .hcj-qv::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.6)}
+  .hcj-qv__sheet{position:relative;width:min(1000px,94vw);background:var(--card);border:1px solid var(--border-soft);
+    border-radius:18px;box-shadow:var(--shadow);padding:14px}
+  .hcj-qv__close{position:absolute;top:10px;left:12px;background:transparent;border:0;color:var(--ink);font-size:22px;cursor:pointer}
+  .hcj-qv__grid{display:grid;gap:16px;grid-template-columns:1.1fr 1fr}
+  @media (max-width:900px){.hcj-qv__grid{grid-template-columns:1fr}}
+  .hcj-qv__media{display:grid;gap:10px}
+  .hcj-qv__thumbs{display:flex;gap:8px;flex-wrap:wrap}
+  .hcj-qv__thumbs img{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);cursor:pointer}
+  .hcj-qv__meta{display:grid;gap:12px}
+  .hcj-qv__price{font-size:1.5rem;font-weight:900;color:var(--gold)}
+  .hcj-qv__specs{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.95rem}
+  .hcj-btn{border:1px solid var(--border-strong);background:linear-gradient(120deg,var(--button-top),var(--button-bottom));
+    color:var(--ink);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
+  .hcj-btn.ghost{background:transparent}
+  .hcj-btn.block{width:100%}
+
+  .hcj-zoom{position:relative;border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;background:var(--bg2)}
+  .hcj-zoom img{display:block;width:100%;height:auto}
+  .hcj-lens{position:absolute;width:130px;height:130px;border:1px solid var(--border-strong);border-radius:999px;
+    background-repeat:no-repeat;background-position:center;background-size:200%;display:none;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+
+  .hcj-cart{position:fixed;right:0;top:0;bottom:0;width:min(380px,92vw);transform:translateX(110%);transition:transform .35s ease;
+    background:var(--card);border-left:1px solid var(--border-soft);box-shadow:-8px 0 30px rgba(0,0,0,.35);z-index:1001;display:flex;flex-direction:column}
+  .hcj-cart[aria-hidden="false"]{transform:none}
+  .hcj-cart__head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border-soft)}
+  .hcj-cart__close{background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
+  .hcj-cart__body{padding:12px 14px;display:grid;gap:10px;overflow:auto}
+  .hcj-item{display:grid;grid-template-columns:58px 1fr auto;gap:10px;align-items:center;border:1px solid var(--border-soft);border-radius:12px;padding:8px}
+  .hcj-item img{width:58px;height:58px;object-fit:cover;border-radius:10px}
+  .hcj-item .t{font-weight:700}
+  .hcj-item .s{font-size:.85rem;color:var(--muted)}
+  .hcj-item .p{font-weight:800;color:var(--gold)}
+  .hcj-cart__foot{margin-top:auto;border-top:1px solid var(--border-soft);padding:12px 14px;display:grid;gap:10px}
+  .hcj-cart__row{display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
 <body>
@@ -206,6 +273,32 @@
 </header>
 
 <main class="store-wrap">
+  <!-- Categories & Gold board -->
+  <section class="card" id="hcjCatsCard" aria-label="Categories">
+    <div class="head">
+      <h1 style="margin:0;font-size:20px">Categories · الفئات</h1>
+      <span class="badge" id="hcjCatsCount">11</span>
+    </div>
+    <div class="panel">
+      <div class="hcj-cat-grid" id="hcjCatGrid" role="tablist" aria-label="Jewelry Categories"></div>
+
+      <div class="hcj-cat-prices" id="hcjCatPrices" aria-live="polite">
+        <div class="hcj-cat-stats">
+          <span id="hcjCatTitle" class="hcj-cat-title">All items · كل القطع</span>
+          <span class="hcj-dot">•</span>
+          <span id="hcjCatMeta" class="hcj-cat-meta">—</span>
+        </div>
+        <div class="hcj-ppg">
+          <div class="ppg-chip" data-k="18"><strong>18K</strong><span id="ppg18">–</span></div>
+          <div class="ppg-chip" data-k="21"><strong>21K</strong><span id="ppg21">–</span></div>
+          <div class="ppg-chip" data-k="22"><strong>22K</strong><span id="ppg22">–</span></div>
+          <div class="ppg-chip" data-k="24"><strong>24K</strong><span id="ppg24">–</span></div>
+        </div>
+        <div class="hcj-range" id="hcjRange">Select a category to see its live price range.</div>
+      </div>
+    </div>
+  </section>
+
   <section class="card">
     <div class="head">
       <h1 data-i18n="store.title">Store</h1>
@@ -214,6 +307,46 @@
     <div class="panel" id="storeList" data-i18n="store.loading" aria-live="polite">Loading…</div>
   </section>
 </main>
+
+<!-- Quick View (with magnifier) -->
+<div class="hcj-qv" id="hcjQV" aria-hidden="true">
+  <div class="hcj-qv__sheet" role="dialog" aria-modal="true" aria-labelledby="hcjQVTitle">
+    <button class="hcj-qv__close" type="button" aria-label="Close">×</button>
+    <div class="hcj-qv__grid">
+      <div class="hcj-qv__media">
+        <div class="hcj-zoom" id="hcjZoom">
+          <img id="hcjZoomImg" alt="">
+          <div class="hcj-lens" id="hcjLens" aria-hidden="true"></div>
+        </div>
+        <div class="hcj-qv__thumbs" id="hcjQVThumbs"></div>
+      </div>
+      <div class="hcj-qv__meta">
+        <h3 id="hcjQVTitle"></h3>
+        <div class="hcj-qv__price"><span id="hcjQVPrice"></span> <small>USD</small></div>
+        <div class="hcj-qv__specs" id="hcjQVSpecs"></div>
+        <div class="hcj-qv__actions">
+          <button id="hcjAddCartQV" class="hcj-btn">Add to cart</button>
+          <a id="hcjWA" class="hcj-btn ghost" target="_blank" rel="noopener">WhatsApp Cart</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide-in Cart Drawer -->
+<aside class="hcj-cart" id="hcjCart" aria-hidden="true">
+  <div class="hcj-cart__head">
+    <strong>Shopping cart</strong>
+    <button class="hcj-cart__close" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="hcj-cart__body" id="hcjCartBody"></div>
+  <div class="hcj-cart__foot">
+    <div class="hcj-cart__row">
+      <span>Subtotal</span><strong id="hcjSub">$0</strong>
+    </div>
+    <button id="hcjCheckout" class="hcj-btn block">Checkout</button>
+  </div>
+</aside>
 
 <script src="scripts/a2hs.js"></script>
 <script src="scripts/translations.js"></script>
@@ -608,6 +741,301 @@
     langSelect.addEventListener('change', e => setLang(e.target.value));
   }
   window.addEventListener('DOMContentLoaded', translateDOM);
+})();
+</script>
+<script>
+/* ===== Category, Magnifier & Mini-Cart Enhancer (non-destructive) ===== */
+(function(){
+  const out = document.getElementById('storeList');
+  if(!out) return;
+
+  /* ---------- 11 Categories (+ keywords, bilingual labels) ---------- */
+  const CATS = [
+    { id:'ring',       en:'Ring',           ar:'خاتم',          icon:'icon/cat-ring.svg',       k:['ring','خاتم'] },
+    { id:'necklace',   en:'Necklace',       ar:'قلادة',         icon:'icon/cat-necklace.svg',   k:['necklace','قلادة'] },
+    { id:'earrings',   en:'Earrings',       ar:'قرط',           icon:'icon/cat-earrings.svg',   k:['earring','earrings','قرط'] },
+    { id:'pendant',    en:'Pendant',        ar:'تعليقة',        icon:'icon/cat-pendant.svg',    k:['pendant','تعليقة'] },
+    { id:'bangle',     en:'Bangle',         ar:'سوار دائري',    icon:'icon/cat-bangle.svg',     k:['bangle','سوار'] },
+    { id:'anklet',     en:'Anklet',         ar:'خلخال',         icon:'icon/cat-anklet.svg',     k:['anklet','ankle','خلخال','anket'] },
+    { id:'chain',      en:'Chain',          ar:'سلسلة',         icon:'icon/cat-chain.svg',      k:['chain','سلسلة'] },
+    { id:'brooch',     en:'Brooch',         ar:'بروش',          icon:'icon/cat-brooch.svg',     k:['brooch','بروش'] },
+    { id:'set',        en:'Jewelry set',    ar:'طقم مجوهرات',   icon:'icon/cat-set.svg',        k:['set','طقم'] },
+    { id:'kids',       en:'Kids',           ar:'ولادي',         icon:'icon/cat-kids.svg',       k:['kids','ولادي','طفل','أطفال'] },
+    { id:'special',    en:'Special',        ar:'مميز',          icon:'icon/cat-special.svg',    k:['special','مميز'] }
+  ];
+  const iconFallback = 'icon/icon-512.png';
+
+  /* ---------- Build the categories UI ---------- */
+  const catGrid = document.getElementById('hcjCatGrid');
+  const elTitle = document.getElementById('hcjCatTitle');
+  const elMeta  = document.getElementById('hcjCatMeta');
+  const elRange = document.getElementById('hcjRange');
+
+  let ACTIVE_CAT = '';
+  function label(cat){
+    const dir = document.documentElement.dir || 'ltr';
+    return dir === 'ar' ? `${cat.ar} · ${cat.en}` : `${cat.en} · ${cat.ar}`;
+  }
+  function buildCats(){
+    if(!catGrid) return;
+    catGrid.innerHTML = '';
+    const all = document.createElement('button');
+    all.className = 'hcj-cat is-active';
+    all.setAttribute('role','tab');
+    all.innerHTML = `<img class="hcj-cat__icon" src="${iconFallback}" alt="">
+                     <div class="hcj-cat__label">All · الكل</div>
+                     <div class="hcj-cat__sub">(${CATS.length})</div>`;
+    all.addEventListener('click', ()=>{ setActive(''); });
+    catGrid.appendChild(all);
+
+    CATS.forEach(c=>{
+      const b = document.createElement('button');
+      b.className = 'hcj-cat';
+      b.setAttribute('role','tab');
+      b.dataset.id = c.id;
+      b.innerHTML = `
+        <img class="hcj-cat__icon" src="${c.icon}" onerror="this.src='${iconFallback}'" alt="">
+        <div class="hcj-cat__label">${label(c)}</div>
+        <div class="hcj-cat__sub">${c.en}</div>`;
+      b.addEventListener('click', ()=> setActive(c.id));
+      catGrid.appendChild(b);
+    });
+  }
+
+  function setActive(id){
+    ACTIVE_CAT = id || '';
+    document.querySelectorAll('.hcj-cat').forEach(el=> el.classList.toggle('is-active', (el.dataset.id||'')===ACTIVE_CAT || (!el.dataset.id && !ACTIVE_CAT)));
+    filterCards();
+    updateGoldBoard();
+  }
+
+  /* ---------- Light cart (drawer) ---------- */
+  const CART_KEY = 'hcj-mini-cart';
+  function loadCart(){
+    try{ return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); }catch(_){ return []; }
+  }
+  function saveCart(list){ try{ localStorage.setItem(CART_KEY, JSON.stringify(list)); }catch(_){ } }
+  function addToCart(item){
+    const list = loadCart();
+    list.unshift(item);
+    saveCart(list);
+    renderCart();
+    openCart();
+  }
+
+  const cart = document.getElementById('hcjCart');
+  const cartBody = document.getElementById('hcjCartBody');
+  const cartSub = document.getElementById('hcjSub');
+  const btnCloseCart = cart?.querySelector('.hcj-cart__close');
+  btnCloseCart?.addEventListener('click', closeCart);
+  function openCart(){ cart?.setAttribute('aria-hidden','false'); }
+  function closeCart(){ cart?.setAttribute('aria-hidden','true'); }
+  function renderCart(){
+    const list = loadCart();
+    cartBody.innerHTML = list.map((it,i)=>`
+      <div class="hcj-item">
+        <img src="${it.img||iconFallback}" alt="">
+        <div>
+          <div class="t">${escapeHtml(it.title||'Item')}</div>
+          <div class="s">${it.sku||''}</div>
+        </div>
+        <div class="p">$${(Number(it.price)||0).toLocaleString()}</div>
+      </div>`).join('');
+    const sub = list.reduce((s,it)=> s + (Number(it.price)||0), 0);
+    cartSub.textContent = '$' + sub.toLocaleString();
+  }
+  renderCart();
+
+  /* ---------- Quick view (+ magnifier) ---------- */
+  const qv = document.getElementById('hcjQV');
+  const qvClose = qv?.querySelector('.hcj-qv__close');
+  const qvTitle = document.getElementById('hcjQVTitle');
+  const qvPrice = document.getElementById('hcjQVPrice');
+  const qvSpecs = document.getElementById('hcjQVSpecs');
+  const qvThumbs = document.getElementById('hcjQVThumbs');
+  const btnQVAdd = document.getElementById('hcjAddCartQV');
+  const waLink = document.getElementById('hcjWA');
+
+  const zoom = document.getElementById('hcjZoom');
+  const zoomImg = document.getElementById('hcjZoomImg');
+  const lens = document.getElementById('hcjLens');
+
+  qvClose?.addEventListener('click', ()=> qv?.setAttribute('aria-hidden','true'));
+  qv?.addEventListener('click', e=>{ if(e.target===qv) qv.setAttribute('aria-hidden','true'); });
+
+  function openQV(card){
+    const img = card.querySelector('.js-main');
+    const title = (card.querySelector('.store-item__title')?.textContent||'').trim();
+    const priceText = (card.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,'');
+    const sku = [...card.querySelectorAll('.store-item__meta span')].find(s=>/sku/i.test(s.textContent||''))?.textContent || '';
+    const thumbStrip = card.querySelectorAll('.store-item__thumbs img');
+    qvTitle.textContent = title;
+    qvPrice.textContent = Number(priceText||0).toLocaleString();
+    qvSpecs.innerHTML = card.querySelector('.store-item__meta')?.innerHTML || '';
+    zoomImg.src = img?.src || iconFallback;
+    qvThumbs.innerHTML = '';
+    thumbStrip.forEach(t=>{
+      const ii = document.createElement('img'); ii.src = t.src; ii.alt=''; ii.addEventListener('click', ()=>{ zoomImg.src = ii.src; setupLens(); });
+      qvThumbs.appendChild(ii);
+    });
+
+    btnQVAdd.onclick = ()=> addToCart({ title, sku, price: Number(priceText||0), img: zoomImg.src });
+    waLink.href = buildWhatsApp(title, sku, priceText, zoomImg.src);
+
+    qv.setAttribute('aria-hidden','false');
+    setupLens();
+  }
+
+  function setupLens(){
+    if(!zoom || !zoomImg || !lens) return;
+    lens.style.backgroundImage = `url(${zoomImg.src})`;
+    lens.style.display = 'block';
+    let w = lens.offsetWidth, h = lens.offsetHeight;
+
+    function move(e){
+      const rect = zoom.getBoundingClientRect();
+      const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+      const bx = Math.max(w/2, Math.min(rect.width - w/2, x));
+      const by = Math.max(h/2, Math.min(rect.height - h/2, y));
+      lens.style.left = (bx - w/2) + 'px';
+      lens.style.top  = (by - h/2) + 'px';
+      const rx = (bx / rect.width)  * 100;
+      const ry = (by / rect.height) * 100;
+      lens.style.backgroundPosition = `${rx}% ${ry}%`;
+    }
+    zoom.onmousemove = move;
+    zoom.onmouseleave = ()=> lens.style.display = 'none';
+    zoom.onmouseenter = ()=> { lens.style.display = 'block'; move({clientX:zoom.getBoundingClientRect().left+10, clientY:zoom.getBoundingClientRect().top+10}); };
+  }
+
+  function buildWhatsApp(title, sku, price, img){
+    const phone = 'YOUR_WHATSAPP_NUMBER';
+    const text = encodeURIComponent(`Hello, I'm interested in:\n${title}\n${sku}\nPrice: $${price}\n${img}`);
+    return `https://wa.me/${phone}?text=${text}`;
+  }
+
+  /* ---------- Category detection (from title) ---------- */
+  function detectCat(title){
+    const s = String(title||'').toLowerCase();
+    for(const c of CATS){
+      if(c.k.some(k => s.includes(k))) return c.id;
+    }
+    return '';
+  }
+
+  /* ---------- Observe Store render & enhance cards ---------- */
+  let observer = new MutationObserver(()=> enhance());
+  observer.observe(out, {childList:true, subtree:true});
+
+  function enhance(){
+    out.querySelectorAll('.store-item').forEach(card=>{
+      if(card.classList.contains('hcj-up')) return;
+      card.classList.add('hcj-up');
+      const title = (card.querySelector('.store-item__title')?.textContent||'').trim();
+      card.dataset.cat = detectCat(title);
+
+      const add = document.createElement('button');
+      add.className = 'hcj-add'; add.title = 'Add to cart';
+      add.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4a2 2 0 0 0 0-4m10 0a2 2 0 1 0 0 4a2 2 0 0 0 0-4M6.16 14h9.72a2 2 0 0 0 1.92-1.46l1.92-6.54A1 1 0 0 0 18.77 4H6.2L5.64 2.36A1 1 0 0 0 4.7 2H3a1 1 0 0 0 0 2h1.06l2.6 7.46l-1.1 3.3A2 2 0 0 0 7 17h12a1 1 0 0 0 0-2H7.42l.74-2"/></svg>`;
+      add.addEventListener('click', ()=>{
+        const p = Number((card.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,''));
+        const sku = [...card.querySelectorAll('.store-item__meta span')].find(s=>/sku/i.test(s.textContent||''))?.textContent || '';
+        const img = card.querySelector('.js-main')?.src || iconFallback;
+        addToCart({ title, sku, price:p, img });
+      });
+      card.appendChild(add);
+
+      card.querySelector('.store-item__thumb')?.addEventListener('click', ()=> openQV(card));
+      card.querySelector('.store-item__title')?.addEventListener('click', ()=> openQV(card));
+    });
+
+    filterCards();
+    updateGoldBoard();
+  }
+
+  function filterCards(){
+    out.querySelectorAll('.store-item').forEach(card=>{
+      const ok = !ACTIVE_CAT || (card.dataset.cat === ACTIVE_CAT);
+      card.style.display = ok ? '' : 'none';
+    });
+  }
+
+  /* ---------- Live gold board (reuses your logic) ---------- */
+  const GOLDAPI_FREE = [
+    "https://api.gold-api.com/price/XAU",
+    "https://api.gold-api.com/price/XAU/USD",
+    "https://www.gold-api.com/price/XAU",
+    "https://www.gold-api.com/price/XAU/USD"
+  ];
+  function pickOuncePrice(d){
+    const c = [d?.price, d?.usd, d?.usd_ounce, d?.price_ounce, d?.ounce, d?.oz, d?.result?.price, d?.XAU?.USD]
+      .map(Number).filter(v=>isFinite(v)&&v>0);
+    if(c.length) return c[0];
+    const g24 = Number(d?.gram_24k || d?.price_gram_24k || d?.g24 || d?.per_gram);
+    return (isFinite(g24)&&g24>0) ? g24*31.1 : NaN;
+  }
+  function timeoutFetch(u,ms){
+    const c = new AbortController(); const id = setTimeout(()=>c.abort(), ms);
+    return fetch(u,{signal:c.signal,cache:"no-store"}).finally(()=>clearTimeout(id));
+  }
+  async function getSpotFast(){
+    const tries = GOLDAPI_FREE.map(u =>
+      timeoutFetch(u,3500).then(r=>r.ok?r.json():Promise.reject(r.status)).then(pickOuncePrice)
+        .then(v => (isFinite(v)&&v>0) ? v : Promise.reject('bad')));
+    return Promise.any(tries);
+  }
+  function perGramForKirat(oz,k,fee){
+    const add = Number.isFinite(fee) ? fee : 10;
+    k = String(k||'').toLowerCase();
+    if(/\b18\b/.test(k)) return (((oz+30)*32*750/995)/1000)+add;
+    if(/\b21\b/.test(k)) return (((oz+30)*32*875/995)/1000)+add;
+    if(/\b22\b/.test(k)) return (((oz+30)*32*916/995)/1000)+add;
+    if(/\b24\b/.test(k)) return (((oz+30)/31.1)/1000)+add;
+    return NaN;
+  }
+
+  async function updateGoldBoard(){
+    if(!elTitle||!elMeta||!elRange) return;
+    const catObj = CATS.find(c=>c.id===ACTIVE_CAT);
+    elTitle.textContent = ACTIVE_CAT ? (label(catObj)) : 'All items · كل القطع';
+
+    const cards = [...out.querySelectorAll('.store-item')].filter(c => c.style.display !== 'none');
+    const weights = cards.map(c=>{
+      const x = [...c.querySelectorAll('.store-item__meta span')].find(s => /g\b/i.test(s.textContent||''));
+      const n = parseFloat((x?.textContent||'').replace(/[^\d.]/g,''));
+      return isFinite(n)?n:NaN;
+    }).filter(Number.isFinite);
+    const n = weights.length;
+    const total = weights.reduce((s,v)=>s+v,0);
+    const avg = n ? (total/n) : 0;
+    elMeta.textContent = n ? `${n} pieces • avg ${avg.toFixed(2)} g` : '—';
+
+    try{
+      const oz = await getSpotFast();
+      document.getElementById('ppg18').textContent = Math.round(perGramForKirat(oz,18,10)).toLocaleString();
+      document.getElementById('ppg21').textContent = Math.round(perGramForKirat(oz,21,10)).toLocaleString();
+      document.getElementById('ppg22').textContent = Math.round(perGramForKirat(oz,22,10)).toLocaleString();
+      document.getElementById('ppg24').textContent = Math.round(perGramForKirat(oz,24,10)).toLocaleString();
+
+      const prices = cards.map(c => Number((c.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,'')))
+                          .filter(v => isFinite(v)&&v>0)
+                          .sort((a,b)=>a-b);
+      const range = prices.length ? `$${prices[0].toLocaleString()} – $${prices[prices.length-1].toLocaleString()}` : '—';
+      elRange.textContent = prices.length ? `Live price range in this category: ${range}` :
+                                            `Select a category to see its live price range.`;
+    }catch(_){
+    }
+  }
+  setInterval(updateGoldBoard, 10000);
+
+  const ESC = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
+  function escapeHtml(v){ return String(v??'').replace(/[&<>"']/g, ch => ESC[ch]||ch ); }
+
+  buildCats();
+  const catCount = document.getElementById('hcjCatsCount');
+  if(catCount) catCount.textContent = String(CATS.length);
+  setActive('');
+  enhance();
 })();
 </script>
 </body>
