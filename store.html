@@ -1,1139 +1,1042 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/store.html b/store.html
-index 83cb4e5683371a6d3a67b3860292f366150cdded..9e5cc7c8de1ae7a240ef24029e87dd56fb56a76d 100644
---- a/store.html
-+++ b/store.html
-@@ -123,111 +123,119 @@
-   .store-item__description{margin:0;color:color-mix(in oklab,var(--ink) 84%, transparent);font-size:.98rem}
-   .store-item__meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
-   .store-item__badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft);background:var(--control-bg);font-weight:600;line-height:1}
-   .store-item__badge--stock{color:var(--gold)}
- 
-   @media (max-width:840px){
-     .store-item{grid-template-columns:minmax(0,160px) minmax(0,1fr)}
-   }
-   @media (max-width:720px){
-     .store-item{grid-template-columns:1fr}
-     .store-item__thumb{aspect-ratio:4/3}
-     .store-item__header{flex-direction:column;align-items:flex-start}
-   }
-   @media (max-width:520px){
-     .topbar .nav a{padding:8px 12px;font-size:12px}
-     .panel{padding:18px}
-     .store-item{padding:18px}
-   }
-   @media (max-width:420px){
-     .store-wrap{padding:28px 16px 48px}
-   }
-   @media (max-width:380px){
-     .topbar .nav a{padding:8px 10px;font-size:11.5px}
-   }
- 
--  /* ===== Categories, Quick View, Cart – elegant & on-brand ===== */
--  .hcj-cat-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
--  .hcj-cat{position:relative;display:grid;place-items:center;padding:14px;border:1px solid var(--border-soft);
--    background:var(--control-bg);border-radius:16px;cursor:pointer;transition:border .2s,transform .2s}
--  .hcj-cat:hover{border-color:var(--gold);transform:translateY(-1px)}
--  .hcj-cat.is-active{border-color:var(--gold);box-shadow:0 8px 18px rgba(0,0,0,.22)}
--  .hcj-cat__icon{width:44px;height:44px;object-fit:contain}
--  .hcj-cat__label{margin-top:8px;text-align:center;font-weight:700;font-size:.92rem;line-height:1.2}
--  .hcj-cat__sub{font-size:.78rem;color:var(--muted)}
--
--  .hcj-cat-prices{margin-top:10px;display:grid;gap:10px}
--  .hcj-cat-title{font-weight:800}
--  .hcj-cat-stats{display:flex;gap:10px;align-items:center;color:var(--muted)}
--  .hcj-ppg{display:flex;gap:10px;flex-wrap:wrap}
--  .ppg-chip{display:flex;gap:6px;align-items:center;border:1px solid var(--border-soft);border-radius:999px;
--    padding:6px 10px;background:var(--control-bg);font-weight:700}
--  .ppg-chip span{color:var(--gold)}
--  .hcj-range{font-size:.95rem;color:color-mix(in oklab,var(--ink) 84%, transparent)}
--
--  .store-item{position:relative}
--  .hcj-add{position:absolute;left:14px;bottom:14px;width:44px;height:44px;border-radius:999px;border:1px solid var(--border-strong);
--    background:linear-gradient(120deg,var(--button-top),var(--button-bottom));display:grid;place-items:center;
--    box-shadow:0 8px 16px rgba(0,0,0,.25);cursor:pointer}
--  .hcj-add:hover{border-color:var(--gold)}
--  .hcj-add svg{width:20px;height:20px}
-+  /* ===== Category chips, live pricing & mini-cart ===== */
-+  .cat{display:inline-flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:1px solid var(--border-soft);
-+    background:var(--card);cursor:pointer;transition:border .2s,box-shadow .2s,transform .2s;font-weight:700}
-+  .cat:hover{transform:translateY(-1px);border-color:var(--gold)}
-+  .cat.active{border-color:var(--gold);box-shadow:0 4px 12px rgba(0,0,0,.12)}
-+  .cat img{width:40px;height:40px;border-radius:8px;object-fit:cover}
-+  #catBar{display:flex;flex-wrap:wrap;gap:12px}
-+  #catBar.open{display:flex}
-+  .cat-toggle{display:none;margin-bottom:12px;border:1px solid var(--border-soft);background:var(--control-bg);
-+    color:var(--ink);border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer}
-+  .live-badges{display:flex;gap:10px;padding:10px 0;flex-wrap:wrap}
-+  .pill{padding:6px 10px;border-radius:999px;background:var(--control-bg);border:1px solid var(--border-soft);font-weight:700}
-+  .cat-meta{margin-top:8px;font-size:.95rem;color:var(--muted)}
-+  .product-card{position:relative}
-+  .product-card .mini-cart{position:absolute;left:12px;bottom:12px;width:42px;height:42px;border-radius:999px;
-+    display:grid;place-items:center;border:0;background:var(--card);box-shadow:0 6px 16px rgba(0,0,0,.18);cursor:pointer;
-+    transition:background .2s}
-+  .product-card .mini-cart:hover{background:color-mix(in oklab,var(--gold) 18%, var(--card))}
-+  .mag-lens{position:absolute;left:0;top:0;pointer-events:none;border-radius:50%;border:2px solid rgba(255,255,255,.85);
-+    box-shadow:0 6px 18px rgba(0,0,0,.35);display:none;will-change:transform, background-position}
-+  .lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:1200}
-+  .lightbox.open{display:flex}
-+  .lightbox .frame{max-width:min(92vw,900px);max-height:min(92vh,720px);width:100%;height:auto;aspect-ratio:4/3;background:#000;
-+    border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:0}
-+  .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
-+  @media (max-width:740px){
-+    #catBar{display:none}
-+    .cat-toggle{display:inline-flex;align-items:center;gap:8px}
-+  }
- 
-+  /* ===== Quick View & Cart – existing styles ===== */
-   .hcj-qv{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center}
-   .hcj-qv[aria-hidden="false"]{display:flex}
-   .hcj-qv::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.6)}
-   .hcj-qv__sheet{position:relative;width:min(1000px,94vw);background:var(--card);border:1px solid var(--border-soft);
-     border-radius:18px;box-shadow:var(--shadow);padding:14px}
-   .hcj-qv__close{position:absolute;top:10px;left:12px;background:transparent;border:0;color:var(--ink);font-size:22px;cursor:pointer}
-   .hcj-qv__grid{display:grid;gap:16px;grid-template-columns:1.1fr 1fr}
-   @media (max-width:900px){.hcj-qv__grid{grid-template-columns:1fr}}
-   .hcj-qv__media{display:grid;gap:10px}
-   .hcj-qv__thumbs{display:flex;gap:8px;flex-wrap:wrap}
-   .hcj-qv__thumbs img{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);cursor:pointer}
-   .hcj-qv__meta{display:grid;gap:12px}
-   .hcj-qv__price{font-size:1.5rem;font-weight:900;color:var(--gold)}
-   .hcj-qv__specs{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.95rem}
-   .hcj-btn{border:1px solid var(--border-strong);background:linear-gradient(120deg,var(--button-top),var(--button-bottom));
-     color:var(--ink);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
-   .hcj-btn.ghost{background:transparent}
-   .hcj-btn.block{width:100%}
- 
-   .hcj-zoom{position:relative;border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;background:var(--bg2)}
-   .hcj-zoom img{display:block;width:100%;height:auto}
-   .hcj-lens{position:absolute;width:130px;height:130px;border:1px solid var(--border-strong);border-radius:999px;
-     background-repeat:no-repeat;background-position:center;background-size:200%;display:none;box-shadow:0 8px 22px rgba(0,0,0,.35)}
- 
-   .hcj-cart{position:fixed;right:0;top:0;bottom:0;width:min(380px,92vw);transform:translateX(110%);transition:transform .35s ease;
-     background:var(--card);border-left:1px solid var(--border-soft);box-shadow:-8px 0 30px rgba(0,0,0,.35);z-index:1001;display:flex;flex-direction:column}
-   .hcj-cart[aria-hidden="false"]{transform:none}
-   .hcj-cart__head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border-soft)}
-   .hcj-cart__close{background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
-   .hcj-cart__body{padding:12px 14px;display:grid;gap:10px;overflow:auto}
-   .hcj-item{display:grid;grid-template-columns:58px 1fr auto;gap:10px;align-items:center;border:1px solid var(--border-soft);border-radius:12px;padding:8px}
-   .hcj-item img{width:58px;height:58px;object-fit:cover;border-radius:10px}
-   .hcj-item .t{font-weight:700}
-   .hcj-item .s{font-size:.85rem;color:var(--muted)}
-   .hcj-item .p{font-weight:800;color:var(--gold)}
-+  .hcj-qty{display:flex;align-items:center;gap:8px;font-weight:700}
-+  .hcj-qty button{width:28px;height:28px;border-radius:50%;border:1px solid var(--border-soft);background:var(--control-bg);
-+    color:var(--ink);cursor:pointer;font-weight:700}
-   .hcj-cart__foot{margin-top:auto;border-top:1px solid var(--border-soft);padding:12px 14px;display:grid;gap:10px}
-   .hcj-cart__row{display:flex;justify-content:space-between;align-items:center}
- </style>
- </head>
- <body>
- <!-- A2HS Banner -->
- <div id="a2hsBanner" aria-hidden="true">
-   <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
-     <button class="close" type="button" aria-label="Close" data-i18n-attr="aria-label:common.close">×</button>
-    <img class="icon" src="icon/icon-512.png" alt="Shakaroun Jewelry icon" data-i18n-attr="alt:brand.logoAlt">
-     <div class="txt">
-       <div class="brand-title" data-i18n="brand.title">Shakaroun Jewelry</div>
-       <div class="brand-byline" data-i18n="brand.byline">Shakaroun Jewelry</div>
-       <div class="banner-copy" data-i18n="a2hs.banner">Add it to your Home Screen.</div>
-     </div>
-     <button class="cta" type="button" id="a2hsGet" data-i18n="a2hs.install">Install</button>
-   </div>
- </div>
- 
- <!-- iOS Guide -->
- <div id="a2hsModal" aria-hidden="true">
-   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
-     <button class="x" type="button" aria-label="Close" data-i18n-attr="aria-label:common.close">×</button>
-     <h3 id="a2hsTitle" data-i18n="a2hs.title">Add “Shakaroun Jewelry” to Home Screen</h3>
-     <div class="steps">
-diff --git a/store.html b/store.html
-index 83cb4e5683371a6d3a67b3860292f366150cdded..9e5cc7c8de1ae7a240ef24029e87dd56fb56a76d 100644
---- a/store.html
-+++ b/store.html
-@@ -258,66 +266,54 @@
-       <a href="about.html" data-i18n="nav.about">About</a>
-       <select id="themeSelectTop" aria-label="Select theme" data-i18n-attr="aria-label:common.theme.select">
-         <option value="dark" data-i18n="theme.dark">Dark</option>
-         <option value="light" data-i18n="theme.light">Light</option>
-         <option value="plum" data-i18n="theme.plum">Plum</option>
-         <option value="custom" data-i18n="theme.custom">Custom</option>
-       </select>
-       <select id="langSelectTop" aria-label="Select language">
-         <option value="en">English</option>
-         <option value="ar">العربية</option>
-         <option value="fr">Français</option>
-         <option value="it">Italiano</option>
-       </select>
-     </nav>
-   </div>
- </header>
- 
- <main class="store-wrap">
-   <!-- Categories & Gold board -->
-   <section class="card" id="hcjCatsCard" aria-label="Categories">
-     <div class="head">
-       <h1 style="margin:0;font-size:20px">Categories · الفئات</h1>
-       <span class="badge" id="hcjCatsCount">11</span>
-     </div>
-     <div class="panel">
--      <div class="hcj-cat-grid" id="hcjCatGrid" role="tablist" aria-label="Jewelry Categories"></div>
--
--      <div class="hcj-cat-prices" id="hcjCatPrices" aria-live="polite">
--        <div class="hcj-cat-stats">
--          <span id="hcjCatTitle" class="hcj-cat-title">All items · كل القطع</span>
--          <span class="hcj-dot">•</span>
--          <span id="hcjCatMeta" class="hcj-cat-meta">—</span>
--        </div>
--        <div class="hcj-ppg">
--          <div class="ppg-chip" data-k="18"><strong>18K</strong><span id="ppg18">–</span></div>
--          <div class="ppg-chip" data-k="21"><strong>21K</strong><span id="ppg21">–</span></div>
--          <div class="ppg-chip" data-k="22"><strong>22K</strong><span id="ppg22">–</span></div>
--          <div class="ppg-chip" data-k="24"><strong>24K</strong><span id="ppg24">–</span></div>
--        </div>
--        <div class="hcj-range" id="hcjRange">Select a category to see its live price range.</div>
--      </div>
-+      <button id="catToggle" class="cat-toggle" type="button">Categories · الفئات</button>
-+      <div id="catBar" class="cat-bar" role="listbox" aria-label="Jewelry categories"></div>
-+      <div id="liveBadges" class="live-badges" aria-live="polite"></div>
-+      <div id="catMeta" class="cat-meta" aria-live="polite"></div>
-     </div>
-   </section>
- 
-   <section class="card">
-     <div class="head">
-       <h1 data-i18n="store.title">Store</h1>
-       <span class="badge" data-i18n="store.badge">Atelier selections</span>
-     </div>
-     <div class="panel" id="storeList" data-i18n="store.loading" aria-live="polite">Loading…</div>
-   </section>
- </main>
- 
- <!-- Quick View (with magnifier) -->
- <div class="hcj-qv" id="hcjQV" aria-hidden="true">
-   <div class="hcj-qv__sheet" role="dialog" aria-modal="true" aria-labelledby="hcjQVTitle">
-     <button class="hcj-qv__close" type="button" aria-label="Close">×</button>
-     <div class="hcj-qv__grid">
-       <div class="hcj-qv__media">
-         <div class="hcj-zoom" id="hcjZoom">
-           <img id="hcjZoomImg" alt="">
-           <div class="hcj-lens" id="hcjLens" aria-hidden="true"></div>
-         </div>
-         <div class="hcj-qv__thumbs" id="hcjQVThumbs"></div>
-       </div>
-       <div class="hcj-qv__meta">
-diff --git a/store.html b/store.html
-index 83cb4e5683371a6d3a67b3860292f366150cdded..9e5cc7c8de1ae7a240ef24029e87dd56fb56a76d 100644
---- a/store.html
-+++ b/store.html
-@@ -332,55 +328,92 @@
-     </div>
-   </div>
- </div>
- 
- <!-- Slide-in Cart Drawer -->
- <aside class="hcj-cart" id="hcjCart" aria-hidden="true">
-   <div class="hcj-cart__head">
-     <strong>Shopping cart</strong>
-     <button class="hcj-cart__close" type="button" aria-label="Close">×</button>
-   </div>
-   <div class="hcj-cart__body" id="hcjCartBody"></div>
-   <div class="hcj-cart__foot">
-     <div class="hcj-cart__row">
-       <span>Subtotal</span><strong id="hcjSub">$0</strong>
-     </div>
-     <button id="hcjCheckout" class="hcj-btn block">Checkout</button>
-   </div>
- </aside>
- 
- <script src="scripts/a2hs.js"></script>
- <script src="scripts/translations.js"></script>
- <script>
- (function () {
-   const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk";
-   const SHEET_NAME = "Form Responses 1";
--  const TQ = encodeURIComponent("select A,B,C,D,E,F,G,H");
-+  const TQ = encodeURIComponent("select A,B,C,D,E,F,G,H,I");
-   const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
- 
-   const out = document.getElementById("storeList");
- 
-+  const CATS = {
-+    all:      { en:"All",         ar:"الكل",           icon:"all.jpg" },
-+    ring:     { en:"Ring",        ar:"خاتم",           icon:"ring.jpg" },
-+    necklace: { en:"Necklace",    ar:"قلادة",          icon:"necklace.jpg" },
-+    earrings: { en:"Earrings",    ar:"قرط",            icon:"earrings.jpg" },
-+    pendant:  { en:"Pendant",     ar:"تعليقة",         icon:"pendant.jpg" },
-+    bangle:   { en:"Bangle",      ar:"سوار دائري",     icon:"bangle.jpg" },
-+    anklet:   { en:"Anklet",      ar:"خلخال",          icon:"anklet.jpg" },
-+    chain:    { en:"Chain",       ar:"سلسلة",          icon:"chain.jpg" },
-+    brooch:   { en:"Brooch",      ar:"بروش",           icon:"brooch.jpg" },
-+    set:      { en:"Jewelry set", ar:"طقم مجوهرات",    icon:"set.jpg" },
-+    kids:     { en:"Kids",        ar:"ولادي",          icon:"kids.jpg" },
-+    special:  { en:"Special",     ar:"مميز",           icon:"special.jpg" }
-+  };
-+
-+  window.HCJ = window.HCJ || {};
-+  window.HCJ.CATS = CATS;
-+
-+  function catIdFromName(raw){
-+    if(!raw) return "special";
-+    const s = String(raw).toLowerCase();
-+    if(s.includes("earring") || s.includes("قرط")) return "earrings";
-+    if(s.includes("ring") || s.includes("خاتم")) return "ring";
-+    if(s.includes("necklace") || s.includes("قلادة")) return "necklace";
-+    if(s.includes("pendant") || s.includes("تعليقة")) return "pendant";
-+    if(s.includes("bangle") || s.includes("سوار")) return "bangle";
-+    if(s.includes("ankle") || s.includes("خلخال")) return "anklet";
-+    if(s.includes("chain") || s.includes("سلسلة")) return "chain";
-+    if(s.includes("brooch") || s.includes("بروش")) return "brooch";
-+    if(s.includes("jewelry set") || s.includes("طقم")) return "set";
-+    if(s.includes("ولادي") || s.includes("kids")) return "kids";
-+    if(s.includes("special") || s.includes("مميز")) return "special";
-+    return "special";
-+  }
-+
-+  window.HCJ.catIdFromName = catIdFromName;
-+
-   let __t = (key, vars) => {
-     const lang = document.documentElement.lang || 'en';
-     const dict = window.__TRANSLATIONS?.[lang] || {};
-     const fallback = window.__TRANSLATIONS?.en || {};
-     let value = dict[key];
-     if(value == null) value = fallback[key];
-     if(value == null) value = key;
-     if(typeof value === 'string' && vars && typeof vars === 'object'){
-       value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
-     }
-     return value;
-   };
- 
-   function syncTranslator(){
-     const lang = document.documentElement.lang || 'en';
-     __t = (key, vars)=>{
-       const dict = window.__TRANSLATIONS?.[lang] || {};
-       const fallback = window.__TRANSLATIONS?.en || {};
-       let value = dict[key];
-       if(value == null) value = fallback[key];
-       if(value == null) value = key;
-       if(typeof value === 'string' && vars && typeof vars === 'object'){
-         value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
-       }
-       return value;
-diff --git a/store.html b/store.html
-index 83cb4e5683371a6d3a67b3860292f366150cdded..9e5cc7c8de1ae7a240ef24029e87dd56fb56a76d 100644
---- a/store.html
-+++ b/store.html
-@@ -433,50 +466,53 @@
-   }
-   async function getSpotFast(){
-     const tries = GOLDAPI_FREE.map(u =>
-       timeoutFetch(u,3500)
-         .then(r => r.ok ? r.json() : Promise.reject(r.status))
-         .then(pickOuncePrice)
-         .then(v => (isFinite(v) && v > 0) ? v : Promise.reject("bad"))
-     );
-     return Promise.any(tries);
-   }
- 
-   // 18k: ((oz + 30)*32*750/995) + fee
-   // 21k: ((oz + 30)*32*875/995) + fee
-   // 22k: ((oz + 30)*32*916/995) + fee
-   // 24k: ((oz + 30)/31.1)       + fee
-   function perGramForKirat(oz, kiratStr, fee){
-     const k   = String(kiratStr || "").toLowerCase();
-     const add = Number.isFinite(fee) ? fee : 10; // fallback to 10 if the sheet cell is empty
-     if (/\b18\b/.test(k)) return (((oz + 30) * 32 * 750 / 995)/1000) + add;
-     if (/\b21\b/.test(k)) return (((oz + 30) * 32 * 875 / 995)/1000) + add;
-     if (/\b22\b/.test(k)) return (((oz + 30) * 32 * 916 / 995)/1000) + add;
-     if (/\b24\b/.test(k)) return (((oz + 30) / 31.1)/1000) + add;
-     return NaN;
-   }
- 
-+  window.HCJ.getSpotOz = getSpotFast;
-+  window.HCJ.perGramForKirat = perGramForKirat;
-+
-   function computeItemPriceUSD(oz, product){
-     const w   = toNum(product.weight);
-     if (!Number.isFinite(w) || w <= 0) return NaN;
-     const fee = toNum(product.fee);      // ← “أجور + ربح ex.2.5” (per gram) from column H
-     const ppg = perGramForKirat(oz, product.kirat, fee);
-     return Number.isFinite(ppg) ? (ppg * w) : NaN;
-   }
- 
-   // Start a 10s refresh loop to update prices in-place
-   const REFRESH_MS = 10_000;
-   let _priceTimer = null;
-   function startSpotRefresh(products){
-     async function tick(){
-       try{
-         const oz = await getSpotFast();
-         // Fill/override price for every product based on kirat & weight
-         products.forEach(p => {
-           const calc = computeItemPriceUSD(oz, p);
-           if (isFinite(calc)) p.price = Math.round(calc); // round how you like
-         });
-         render(products);
-       }catch(e){
-         // On failure just keep whatever is rendered now
-       }
-     }
-diff --git a/store.html b/store.html
-index 83cb4e5683371a6d3a67b3860292f366150cdded..9e5cc7c8de1ae7a240ef24029e87dd56fb56a76d 100644
---- a/store.html
-+++ b/store.html
-@@ -522,141 +558,153 @@
-       const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([^&]+)/);
-       const id = m ? m[1] : null;
-       if (!id) return link; // if it's not Drive, use as-is
-       // fast thumbnail endpoint that works in <img>
-       return `https://lh3.googleusercontent.com/d/${id}=w1200`;
-     });
-   }
-   function money(n) {
-     const v = Number(n);
-     return Number.isFinite(v) ? v.toLocaleString(undefined, {minimumFractionDigits:0}) : "";
-   }
- 
-   // Parses "2.5" or "2,5" into a Number. Returns NaN if not numeric.
-   function toNum(v){
-     const s = String(v ?? "").trim()
-       // Arabic decimal comma -> dot
-       .replace(",", ".")
-       // strip everything except digits, minus, and dot
-       .replace(/[^\d.-]/g, "");
-     const n = parseFloat(s);
-     return Number.isFinite(n) ? n : NaN;
-   }
- 
-   function render(products) {
-     if(!out) return;
-+    window.PRODUCTS = products;
-     out.removeAttribute('data-i18n');
-     if (!products.length) {
-       lastProducts = products;
-       lastStatus = 'empty';
-       out.innerHTML = `<span class="badge">${__t('store.empty')}</span>`;
-       return;
-     }
-     lastProducts = products;
-     lastStatus = 'products';
-     const cards = products.map(p => {
-       const title = sentenceCase(p.name || "");
-       const safeTitle = escapeHtml(title);
-       const photos = driveImages(p.photo);
-       const main   = photos[0] || "";
-       const price = money(p.price);
-       const description = escapeHtml(p.description || "");
-       const kirat = p.kirat ? `<span>${__t('store.karat')} ${escapeHtml(p.kirat)}</span>` : "";
-       const sku = p.sku ? `<span>${__t('store.sku')} ${escapeHtml(p.sku)}</span>` : "";
-       const weight = p.weight ? `<span>${__t('store.weight')} ${escapeHtml(p.weight)} g</span>` : "";
-       const badgeClass = (p.in_stock && Number(p.in_stock) > 0) ? "store-item__badge store-item__badge--stock" : "store-item__badge";
-       const badgeLabel = (p.in_stock && Number(p.in_stock) > 0) ? __t('store.inStock') : __t('store.outOfStock');
-       const metaBits = [kirat, weight, sku, `<span class="${badgeClass}">${badgeLabel}</span>`]
-         .filter(Boolean)
-         .join("\n");
-+      const catId = p.categoryId || catIdFromName(p.name);
-+      const safeCat = escapeHtml(catId);
-+      const safeSkuAttr = escapeHtml(p.sku || "");
-+      const stockVal = Number.isFinite(p.stock) ? Math.max(0, Math.floor(p.stock)) : '';
-+      const stockAttr = stockVal === '' ? '' : String(stockVal);
-       return `
--        <article class="store-item card">
-+        <article class="store-item card product-card" data-cat="${safeCat}" data-sku="${safeSkuAttr}"${stockAttr!==''?` data-stock="${stockAttr}"`:''}>
-           <figure class="store-item__thumb">
-             ${main ? `<img class="js-main" src="${escapeHtml(main)}" alt="${safeTitle || 'Bracelet photo'}" loading="lazy">`
-                    : `<div class="store-item__placeholder" aria-hidden="true"></div>`}
-             ${photos.length > 1 ? `
-               <div class="count-badge">${photos.length}</div>
-               <div class="store-item__thumbs">
-                 ${photos.map((u,i)=>`
-                   <img class="js-thumb ${i===0?'is-active':''}" src="${escapeHtml(u)}" alt="thumb ${i+1}" loading="lazy" />
-                 `).join('')}
-               </div>
-             ` : ``}
-           </figure>
-           <div class="store-item__body">
-             <div class="store-item__header">
-               <h3 class="store-item__title">${safeTitle}</h3>
-               ${price ? `<div class="store-item__price">${price}<span class="store-item__currency">USD</span></div>` : ""}
-             </div>
-             ${description ? `<p class="store-item__description">${description}</p>` : ""}
-             <div class="store-item__meta">${metaBits}</div>
-           </div>
-+          <button class="mini-cart" type="button" aria-label="Add to cart">🛒</button>
-         </article>
-       `;
-     }).join("\n");
-     out.innerHTML = cards;
- 
-     // Wire gallery clicks (event delegation)
-     out.querySelectorAll('.store-item').forEach(card => {
-       const mainImg = card.querySelector('.store-item__thumb .js-main');
-       const thumbs = card.querySelectorAll('.store-item__thumbs .js-thumb');
-       if (!mainImg || !thumbs.length) return;
-       thumbs.forEach(t => {
-         t.addEventListener('click', () => {
-           thumbs.forEach(x => x.classList.remove('is-active'));
-           t.classList.add('is-active');
-           const next = t.getAttribute('src');
-           if (next) mainImg.setAttribute('src', next);
-         });
-       });
-     });
-+    document.dispatchEvent(new CustomEvent('hcj:products-rendered', { detail: { products } }));
-   }
- 
-   fetch(URL)
-     .then(r => r.text())
-     .then(txt => {
-       const json = JSON.parse(txt.substring(47, txt.length - 2));
-       const rows = (json.table?.rows || []);
-       const products = rows.map(r => {
-         // Keep both the raw value (v) and the formatted value (f)
-         const cells = (r.c || []).map(c => c ? (c.f || c.v || "") : "");
- 
--        // Columns: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo, H fee ("أجور + ربح ex.2.5")
-+        // Columns: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo, H fee ("أجور + ربح ex.2.5"), I stock
-         const name        = cells[1];
-         const weight      = cells[2];
-         const kirat       = cells[3];
-         const description = cells[4];
-         const sku         = cells[5];
-         const photo       = cells[6];
-         const fee         = cells[7];
-+        const stockRaw    = cells[8];
- 
--        // You don’t have price or in_stock in the form yet — set sensible defaults
-         const price = "";
--        const in_stock = 1;
-+        const stockNum = toNum(stockRaw);
-+        const stock = Number.isFinite(stockNum) ? Math.max(0, Math.floor(stockNum)) : 1;
-+        const in_stock = stock;
-+        const categoryId = catIdFromName(name);
- 
--        return { name, price, kirat, photo, description, sku, in_stock, weight, fee };
-+        return { name, price, kirat, photo, description, sku, in_stock, weight, fee, stock, categoryId };
-       });
-+      window.PRODUCTS = products;
-       startSpotRefresh(products);
-     })
-     .catch(err => {
-       console.error(err);
-       if(out){
-         out.removeAttribute('data-i18n');
-         out.innerHTML = `<span class="badge">${__t('store.loadFail')}</span>`;
-       }
-       lastProducts = [];
-       lastStatus = 'error';
-     });
- })();
- </script>
- <script>
- (function(){
-   const KEY = window.__HCJ_THEME_KEY || 'hcj-theme';
-   const THEMES = ['light','dark','plum','custom'];
-   const top = document.getElementById('themeSelectTop');
-   const inner = document.getElementById('themeSelect');
-   function applySharedTheme(t){
-     const next = THEMES.includes(t) ? t : 'light';
-     if(typeof window.applyTheme === 'function'){
-       window.applyTheme(next);
-     }else{
-       document.documentElement.dataset.theme = next;
-diff --git a/store.html b/store.html
-index 83cb4e5683371a6d3a67b3860292f366150cdded..9e5cc7c8de1ae7a240ef24029e87dd56fb56a76d 100644
---- a/store.html
-+++ b/store.html
-@@ -727,316 +775,330 @@
- 
-   function setLang(lang){
-     applyDir(lang);
-     try { localStorage.setItem(LANG_KEY, lang); } catch(e) {}
-     translateDOM();
-     window.dispatchEvent(new CustomEvent('hcj:lang', { detail: { lang } }));
-   }
- 
-   let saved = 'en';
-   try { saved = localStorage.getItem(LANG_KEY) || 'en'; } catch(e) {}
-   applyDir(saved);
- 
-   if(langSelect){
-     langSelect.value = saved;
-     langSelect.addEventListener('change', e => setLang(e.target.value));
-   }
-   window.addEventListener('DOMContentLoaded', translateDOM);
- })();
- </script>
- <script>
- /* ===== Category, Magnifier & Mini-Cart Enhancer (non-destructive) ===== */
- (function(){
-   const out = document.getElementById('storeList');
-   if(!out) return;
- 
--  /* ---------- 11 Categories (+ keywords, bilingual labels) ---------- */
--  const CATS = [
--    { id:'ring',       en:'Ring',           ar:'خاتم',          icon:'icon/cat-ring.svg',       k:['ring','خاتم'] },
--    { id:'necklace',   en:'Necklace',       ar:'قلادة',         icon:'icon/cat-necklace.svg',   k:['necklace','قلادة'] },
--    { id:'earrings',   en:'Earrings',       ar:'قرط',           icon:'icon/cat-earrings.svg',   k:['earring','earrings','قرط'] },
--    { id:'pendant',    en:'Pendant',        ar:'تعليقة',        icon:'icon/cat-pendant.svg',    k:['pendant','تعليقة'] },
--    { id:'bangle',     en:'Bangle',         ar:'سوار دائري',    icon:'icon/cat-bangle.svg',     k:['bangle','سوار'] },
--    { id:'anklet',     en:'Anklet',         ar:'خلخال',         icon:'icon/cat-anklet.svg',     k:['anklet','ankle','خلخال','anket'] },
--    { id:'chain',      en:'Chain',          ar:'سلسلة',         icon:'icon/cat-chain.svg',      k:['chain','سلسلة'] },
--    { id:'brooch',     en:'Brooch',         ar:'بروش',          icon:'icon/cat-brooch.svg',     k:['brooch','بروش'] },
--    { id:'set',        en:'Jewelry set',    ar:'طقم مجوهرات',   icon:'icon/cat-set.svg',        k:['set','طقم'] },
--    { id:'kids',       en:'Kids',           ar:'ولادي',         icon:'icon/cat-kids.svg',       k:['kids','ولادي','طفل','أطفال'] },
--    { id:'special',    en:'Special',        ar:'مميز',          icon:'icon/cat-special.svg',    k:['special','مميز'] }
--  ];
--  const iconFallback = 'icon/icon-512.png';
--
--  /* ---------- Build the categories UI ---------- */
--  const catGrid = document.getElementById('hcjCatGrid');
--  const elTitle = document.getElementById('hcjCatTitle');
--  const elMeta  = document.getElementById('hcjCatMeta');
--  const elRange = document.getElementById('hcjRange');
--
--  let ACTIVE_CAT = '';
--  function label(cat){
--    const dir = document.documentElement.dir || 'ltr';
--    return dir === 'ar' ? `${cat.ar} · ${cat.en}` : `${cat.en} · ${cat.ar}`;
--  }
--  function buildCats(){
--    if(!catGrid) return;
--    catGrid.innerHTML = '';
--    const all = document.createElement('button');
--    all.className = 'hcj-cat is-active';
--    all.setAttribute('role','tab');
--    all.innerHTML = `<img class="hcj-cat__icon" src="${iconFallback}" alt="">
--                     <div class="hcj-cat__label">All · الكل</div>
--                     <div class="hcj-cat__sub">(${CATS.length})</div>`;
--    all.addEventListener('click', ()=>{ setActive(''); });
--    catGrid.appendChild(all);
--
--    CATS.forEach(c=>{
--      const b = document.createElement('button');
--      b.className = 'hcj-cat';
--      b.setAttribute('role','tab');
--      b.dataset.id = c.id;
--      b.innerHTML = `
--        <img class="hcj-cat__icon" src="${c.icon}" onerror="this.src='${iconFallback}'" alt="">
--        <div class="hcj-cat__label">${label(c)}</div>
--        <div class="hcj-cat__sub">${c.en}</div>`;
--      b.addEventListener('click', ()=> setActive(c.id));
--      catGrid.appendChild(b);
-+  const HCJ = window.HCJ || {};
-+  const CATS = HCJ.CATS || {};
-+  const catBar = document.getElementById('catBar');
-+  const catToggle = document.getElementById('catToggle');
-+  const liveBadges = document.getElementById('liveBadges');
-+  const catMeta = document.getElementById('catMeta');
-+  const catCount = document.getElementById('hcjCatsCount');
-+  const cartDrawer = document.getElementById('hcjCart');
-+  const cartBody = document.getElementById('hcjCartBody');
-+  const cartSub = document.getElementById('hcjSub');
-+  const checkoutBtn = document.getElementById('hcjCheckout');
-+  const closeCartBtn = cartDrawer?.querySelector('.hcj-cart__close');
-+
-+  const ESC = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
-+  const escape = value => String(value ?? '').replace(/[&<>"']/g, ch => ESC[ch] || ch);
-+
-+  let activeCat = 'all';
-+  const CART = window.HCJ_CART instanceof Map ? window.HCJ_CART : new Map();
-+  window.HCJ_CART = CART;
-+
-+  function buildCatBar(){
-+    if(!catBar) return;
-+    catBar.innerHTML = '';
-+    Object.entries(CATS).forEach(([id, meta]) => {
-+      const btn = document.createElement('button');
-+      btn.type = 'button';
-+      btn.className = 'cat' + (id === activeCat ? ' active' : '');
-+      btn.dataset.id = id;
-+      btn.innerHTML = `
-+        <img loading="lazy" src="/assets/categories/${meta.icon}" alt="${meta.en}">
-+        <span>${meta.en} · ${meta.ar}</span>
-+      `;
-+      btn.addEventListener('click', () => setActiveCategory(id));
-+      catBar.appendChild(btn);
-     });
-+    if(catCount){
-+      const count = Math.max(0, Object.keys(CATS).length - (CATS.all ? 1 : 0));
-+      catCount.textContent = String(count);
-+    }
-   }
- 
--  function setActive(id){
--    ACTIVE_CAT = id || '';
--    document.querySelectorAll('.hcj-cat').forEach(el=> el.classList.toggle('is-active', (el.dataset.id||'')===ACTIVE_CAT || (!el.dataset.id && !ACTIVE_CAT)));
--    filterCards();
--    updateGoldBoard();
-+  function filterByCategory(catId){
-+    const want = (catId === 'all') ? null : catId;
-+    document.querySelectorAll('.product-card').forEach(card => {
-+      const ok = !want || card.dataset.cat === want;
-+      card.style.display = ok ? '' : 'none';
-+    });
-+    updateCatMeta();
-   }
- 
--  /* ---------- Light cart (drawer) ---------- */
--  const CART_KEY = 'hcj-mini-cart';
--  function loadCart(){
--    try{ return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); }catch(_){ return []; }
-+  function setActiveCategory(id){
-+    activeCat = CATS[id] ? id : 'all';
-+    document.querySelectorAll('#catBar .cat').forEach(btn => {
-+      btn.classList.toggle('active', btn.dataset.id === activeCat);
-+    });
-+    filterByCategory(activeCat);
-+    showLivePricesFor(activeCat);
-   }
--  function saveCart(list){ try{ localStorage.setItem(CART_KEY, JSON.stringify(list)); }catch(_){ } }
--  function addToCart(item){
--    const list = loadCart();
--    list.unshift(item);
--    saveCart(list);
--    renderCart();
--    openCart();
-+
-+  function updateCatMeta(){
-+    if(!catMeta) return;
-+    const meta = CATS[activeCat] || CATS.all || { en:'All', ar:'الكل' };
-+    const label = `${meta.en} · ${meta.ar}`;
-+    const cards = [...document.querySelectorAll('.product-card')].filter(card => card.style.display !== 'none');
-+    const weights = cards.map(card => {
-+      const weightChip = [...card.querySelectorAll('.store-item__meta span')].find(span => /g\b/i.test(span.textContent || ''));
-+      const value = parseFloat((weightChip?.textContent || '').replace(/[^\d.]/g,''));
-+      return Number.isFinite(value) ? value : NaN;
-+    }).filter(Number.isFinite);
-+    const count = cards.length;
-+    const totalWeight = weights.reduce((sum, value) => sum + value, 0);
-+    const avg = weights.length ? (totalWeight / weights.length).toFixed(2) : null;
-+    const piecesText = count === 1 ? '1 piece' : `${count} pieces`;
-+    const weightText = avg ? ` • avg ${avg} g` : '';
-+    catMeta.textContent = count ? `${label} • ${piecesText}${weightText}` : `${label} • No items`;
-   }
- 
--  const cart = document.getElementById('hcjCart');
--  const cartBody = document.getElementById('hcjCartBody');
--  const cartSub = document.getElementById('hcjSub');
--  const btnCloseCart = cart?.querySelector('.hcj-cart__close');
--  btnCloseCart?.addEventListener('click', closeCart);
--  function openCart(){ cart?.setAttribute('aria-hidden','false'); }
--  function closeCart(){ cart?.setAttribute('aria-hidden','true'); }
--  function renderCart(){
--    const list = loadCart();
--    cartBody.innerHTML = list.map((it,i)=>`
--      <div class="hcj-item">
--        <img src="${it.img||iconFallback}" alt="">
--        <div>
--          <div class="t">${escapeHtml(it.title||'Item')}</div>
--          <div class="s">${it.sku||''}</div>
--        </div>
--        <div class="p">$${(Number(it.price)||0).toLocaleString()}</div>
--      </div>`).join('');
--    const sub = list.reduce((s,it)=> s + (Number(it.price)||0), 0);
--    cartSub.textContent = '$' + sub.toLocaleString();
-+  async function showLivePricesFor(catId){
-+    if(!liveBadges) return;
-+    liveBadges.textContent = '';
-+    const getSpot = typeof HCJ.getSpotOz === 'function' ? HCJ.getSpotOz : null;
-+    const perGram = typeof HCJ.perGramForKirat === 'function' ? HCJ.perGramForKirat : null;
-+    if(!getSpot || !perGram) return;
-+    try{
-+      const oz = await getSpot();
-+      ['18','21','22','24'].forEach(k => {
-+        const price = perGram(oz, k, 10);
-+        if(Number.isFinite(price)){
-+          const pill = document.createElement('span');
-+          pill.className = 'pill';
-+          pill.textContent = `${k}K ${Math.round(price)}`;
-+          liveBadges.appendChild(pill);
-+        }
-+      });
-+    }catch(_){
-+      /* ignore transient network errors */
-+    }
-   }
--  renderCart();
--
--  /* ---------- Quick view (+ magnifier) ---------- */
--  const qv = document.getElementById('hcjQV');
--  const qvClose = qv?.querySelector('.hcj-qv__close');
--  const qvTitle = document.getElementById('hcjQVTitle');
--  const qvPrice = document.getElementById('hcjQVPrice');
--  const qvSpecs = document.getElementById('hcjQVSpecs');
--  const qvThumbs = document.getElementById('hcjQVThumbs');
--  const btnQVAdd = document.getElementById('hcjAddCartQV');
--  const waLink = document.getElementById('hcjWA');
--
--  const zoom = document.getElementById('hcjZoom');
--  const zoomImg = document.getElementById('hcjZoomImg');
--  const lens = document.getElementById('hcjLens');
--
--  qvClose?.addEventListener('click', ()=> qv?.setAttribute('aria-hidden','true'));
--  qv?.addEventListener('click', e=>{ if(e.target===qv) qv.setAttribute('aria-hidden','true'); });
--
--  function openQV(card){
--    const img = card.querySelector('.js-main');
--    const title = (card.querySelector('.store-item__title')?.textContent||'').trim();
--    const priceText = (card.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,'');
--    const sku = [...card.querySelectorAll('.store-item__meta span')].find(s=>/sku/i.test(s.textContent||''))?.textContent || '';
--    const thumbStrip = card.querySelectorAll('.store-item__thumbs img');
--    qvTitle.textContent = title;
--    qvPrice.textContent = Number(priceText||0).toLocaleString();
--    qvSpecs.innerHTML = card.querySelector('.store-item__meta')?.innerHTML || '';
--    zoomImg.src = img?.src || iconFallback;
--    qvThumbs.innerHTML = '';
--    thumbStrip.forEach(t=>{
--      const ii = document.createElement('img'); ii.src = t.src; ii.alt=''; ii.addEventListener('click', ()=>{ zoomImg.src = ii.src; setupLens(); });
--      qvThumbs.appendChild(ii);
--    });
- 
--    btnQVAdd.onclick = ()=> addToCart({ title, sku, price: Number(priceText||0), img: zoomImg.src });
--    waLink.href = buildWhatsApp(title, sku, priceText, zoomImg.src);
-+  function openCart(){ cartDrawer?.setAttribute('aria-hidden','false'); }
-+  function closeCart(){ cartDrawer?.setAttribute('aria-hidden','true'); }
-+  closeCartBtn?.addEventListener('click', closeCart);
- 
--    qv.setAttribute('aria-hidden','false');
--    setupLens();
-+  if(checkoutBtn){
-+    checkoutBtn.addEventListener('click', () => {
-+      if(CART.size === 0) return;
-+      window.location.href = '/checkout.html';
-+    });
-   }
- 
--  function setupLens(){
--    if(!zoom || !zoomImg || !lens) return;
--    lens.style.backgroundImage = `url(${zoomImg.src})`;
--    lens.style.display = 'block';
--    let w = lens.offsetWidth, h = lens.offsetHeight;
--
--    function move(e){
--      const rect = zoom.getBoundingClientRect();
--      const x = e.clientX - rect.left; const y = e.clientY - rect.top;
--      const bx = Math.max(w/2, Math.min(rect.width - w/2, x));
--      const by = Math.max(h/2, Math.min(rect.height - h/2, y));
--      lens.style.left = (bx - w/2) + 'px';
--      lens.style.top  = (by - h/2) + 'px';
--      const rx = (bx / rect.width)  * 100;
--      const ry = (by / rect.height) * 100;
--      lens.style.backgroundPosition = `${rx}% ${ry}%`;
-+  function changeQty(sku, delta){
-+    const entry = CART.get(sku);
-+    if(!entry) return;
-+    const product = entry.product || {};
-+    const max = Number.isFinite(product.stock) && product.stock > 0 ? Math.floor(product.stock) : 1;
-+    const next = Math.max(0, Math.min(max, entry.qty + delta));
-+    if(next === 0){
-+      CART.delete(sku);
-+    }else{
-+      entry.qty = next;
-     }
--    zoom.onmousemove = move;
--    zoom.onmouseleave = ()=> lens.style.display = 'none';
--    zoom.onmouseenter = ()=> { lens.style.display = 'block'; move({clientX:zoom.getBoundingClientRect().left+10, clientY:zoom.getBoundingClientRect().top+10}); };
--  }
--
--  function buildWhatsApp(title, sku, price, img){
--    const phone = 'YOUR_WHATSAPP_NUMBER';
--    const text = encodeURIComponent(`Hello, I'm interested in:\n${title}\n${sku}\nPrice: $${price}\n${img}`);
--    return `https://wa.me/${phone}?text=${text}`;
-+    renderCartDrawer();
-   }
- 
--  /* ---------- Category detection (from title) ---------- */
--  function detectCat(title){
--    const s = String(title||'').toLowerCase();
--    for(const c of CATS){
--      if(c.k.some(k => s.includes(k))) return c.id;
-+  function renderCartDrawer(){
-+    if(!cartBody || !cartSub) return;
-+    if(CART.size === 0){
-+      cartBody.innerHTML = '<p class="cat-meta">Your cart is empty.</p>';
-+      cartSub.textContent = '$0';
-+      return;
-     }
--    return '';
-+    let subtotal = 0;
-+    const html = [];
-+    CART.forEach((entry, sku) => {
-+      const product = entry.product || {};
-+      const qty = entry.qty || 0;
-+      const unitPrice = Number(product.price) || 0;
-+      subtotal += unitPrice * qty;
-+      const imgSrc = entry.img || product.photo || 'icon/icon-512.png';
-+      html.push(`
-+        <div class="hcj-item" data-sku="${escape(sku)}">
-+          <img src="${escape(imgSrc)}" alt="">
-+          <div>
-+            <div class="t">${escape(product.name || 'Item')}</div>
-+            <div class="s">${escape(product.sku || sku)}</div>
-+            <div class="p">$${unitPrice.toLocaleString()}</div>
-+          </div>
-+          <div class="hcj-qty">
-+            <button type="button" data-action="dec" aria-label="Decrease quantity">−</button>
-+            <span>${qty}</span>
-+            <button type="button" data-action="inc" aria-label="Increase quantity">+</button>
-+          </div>
-+        </div>`);
-+    });
-+    cartBody.innerHTML = html.join('');
-+    cartSub.textContent = '$' + subtotal.toLocaleString();
-   }
- 
--  /* ---------- Observe Store render & enhance cards ---------- */
--  let observer = new MutationObserver(()=> enhance());
--  observer.observe(out, {childList:true, subtree:true});
--
--  function enhance(){
--    out.querySelectorAll('.store-item').forEach(card=>{
--      if(card.classList.contains('hcj-up')) return;
--      card.classList.add('hcj-up');
--      const title = (card.querySelector('.store-item__title')?.textContent||'').trim();
--      card.dataset.cat = detectCat(title);
--
--      const add = document.createElement('button');
--      add.className = 'hcj-add'; add.title = 'Add to cart';
--      add.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4a2 2 0 0 0 0-4m10 0a2 2 0 1 0 0 4a2 2 0 0 0 0-4M6.16 14h9.72a2 2 0 0 0 1.92-1.46l1.92-6.54A1 1 0 0 0 18.77 4H6.2L5.64 2.36A1 1 0 0 0 4.7 2H3a1 1 0 0 0 0 2h1.06l2.6 7.46l-1.1 3.3A2 2 0 0 0 7 17h12a1 1 0 0 0 0-2H7.42l.74-2"/></svg>`;
--      add.addEventListener('click', ()=>{
--        const p = Number((card.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,''));
--        const sku = [...card.querySelectorAll('.store-item__meta span')].find(s=>/sku/i.test(s.textContent||''))?.textContent || '';
--        const img = card.querySelector('.js-main')?.src || iconFallback;
--        addToCart({ title, sku, price:p, img });
--      });
--      card.appendChild(add);
--
--      card.querySelector('.store-item__thumb')?.addEventListener('click', ()=> openQV(card));
--      card.querySelector('.store-item__title')?.addEventListener('click', ()=> openQV(card));
--    });
-+  cartBody?.addEventListener('click', event => {
-+    const button = event.target.closest('button[data-action]');
-+    if(!button) return;
-+    const sku = button.closest('.hcj-item')?.dataset.sku;
-+    if(!sku) return;
-+    changeQty(sku, button.dataset.action === 'inc' ? 1 : -1);
-+  });
- 
--    filterCards();
--    updateGoldBoard();
-+  function getProductForCard(card){
-+    const sku = card.dataset.sku || '';
-+    const list = Array.isArray(window.PRODUCTS) ? window.PRODUCTS : [];
-+    let product = list.find(p => (p.sku || '') === sku);
-+    if(!product){
-+      const title = (card.querySelector('.store-item__title')?.textContent || '').trim().toLowerCase();
-+      product = list.find(p => String(p.name || '').trim().toLowerCase() === title);
-+    }
-+    if(product){
-+      if(!Number.isFinite(product.stock)){
-+        const ds = Number(card.dataset.stock);
-+        if(Number.isFinite(ds)) product.stock = ds;
-+      }
-+      return product;
-+    }
-+    const fallbackPrice = Number((card.querySelector('.store-item__price')?.textContent || '').replace(/[^\d.]/g,'')) || 0;
-+    return {
-+      name: (card.querySelector('.store-item__title')?.textContent || 'Item').trim(),
-+      sku: sku || (card.querySelector('.store-item__title')?.textContent || 'item').trim(),
-+      price: fallbackPrice,
-+      stock: Number(card.dataset.stock) || 1
-+    };
-   }
- 
--  function filterCards(){
--    out.querySelectorAll('.store-item').forEach(card=>{
--      const ok = !ACTIVE_CAT || (card.dataset.cat === ACTIVE_CAT);
--      card.style.display = ok ? '' : 'none';
--    });
-+  function addToCart(product, imgUrl){
-+    if(!product) return;
-+    const skuKey = (product.sku && product.sku.trim()) || (product.name && product.name.trim()) || 'item';
-+    const existing = CART.get(skuKey);
-+    const currentQty = existing?.qty || 0;
-+    const stockMax = Number.isFinite(product.stock) ? Math.max(0, Math.floor(product.stock)) : 1;
-+    if(stockMax === 0) return;
-+    const nextQty = Math.min(stockMax, currentQty + 1);
-+    const entry = existing || { product, qty: 0, img: imgUrl };
-+    entry.product = product;
-+    entry.qty = nextQty;
-+    if(imgUrl) entry.img = imgUrl;
-+    CART.set(skuKey, entry);
-+    renderCartDrawer();
-+    openCart();
-   }
- 
--  /* ---------- Live gold board (reuses your logic) ---------- */
--  const GOLDAPI_FREE = [
--    "https://api.gold-api.com/price/XAU",
--    "https://api.gold-api.com/price/XAU/USD",
--    "https://www.gold-api.com/price/XAU",
--    "https://www.gold-api.com/price/XAU/USD"
--  ];
--  function pickOuncePrice(d){
--    const c = [d?.price, d?.usd, d?.usd_ounce, d?.price_ounce, d?.ounce, d?.oz, d?.result?.price, d?.XAU?.USD]
--      .map(Number).filter(v=>isFinite(v)&&v>0);
--    if(c.length) return c[0];
--    const g24 = Number(d?.gram_24k || d?.price_gram_24k || d?.g24 || d?.per_gram);
--    return (isFinite(g24)&&g24>0) ? g24*31.1 : NaN;
--  }
--  function timeoutFetch(u,ms){
--    const c = new AbortController(); const id = setTimeout(()=>c.abort(), ms);
--    return fetch(u,{signal:c.signal,cache:"no-store"}).finally(()=>clearTimeout(id));
--  }
--  async function getSpotFast(){
--    const tries = GOLDAPI_FREE.map(u =>
--      timeoutFetch(u,3500).then(r=>r.ok?r.json():Promise.reject(r.status)).then(pickOuncePrice)
--        .then(v => (isFinite(v)&&v>0) ? v : Promise.reject('bad')));
--    return Promise.any(tries);
--  }
--  function perGramForKirat(oz,k,fee){
--    const add = Number.isFinite(fee) ? fee : 10;
--    k = String(k||'').toLowerCase();
--    if(/\b18\b/.test(k)) return (((oz+30)*32*750/995)/1000)+add;
--    if(/\b21\b/.test(k)) return (((oz+30)*32*875/995)/1000)+add;
--    if(/\b22\b/.test(k)) return (((oz+30)*32*916/995)/1000)+add;
--    if(/\b24\b/.test(k)) return (((oz+30)/31.1)/1000)+add;
--    return NaN;
-+  function attachMagnifier(img, {zoom=2.6, lens=140}={}){
-+    if(!img || img.dataset.magAttached) return;
-+    function init(){
-+      if(img.dataset.magAttached) return;
-+      const lensEl = document.createElement('div');
-+      lensEl.className = 'mag-lens';
-+      lensEl.style.width = lens + 'px';
-+      lensEl.style.height = lens + 'px';
-+      const parent = img.parentElement;
-+      if(parent && getComputedStyle(parent).position === 'static'){
-+        parent.style.position = 'relative';
-+      }
-+      parent?.appendChild(lensEl);
-+      let raf = 0, mx = 0, my = 0;
-+      function updateBackground(){
-+        lensEl.style.backgroundImage = `url(${img.src})`;
-+        lensEl.style.backgroundSize = `${img.naturalWidth * zoom}px ${img.naturalHeight * zoom}px`;
-+      }
-+      function render(){
-+        raf = 0;
-+        const rect = img.getBoundingClientRect();
-+        const x = Math.max(0, Math.min(mx - rect.left, rect.width));
-+        const y = Math.max(0, Math.min(my - rect.top, rect.height));
-+        const bx = -((x * zoom) - lens / 2);
-+        const by = -((y * zoom) - lens / 2);
-+        lensEl.style.transform = `translate(${x - lens / 2}px, ${y - lens / 2}px)`;
-+        lensEl.style.backgroundPosition = `${bx}px ${by}px`;
-+      }
-+      function onMove(evt){
-+        const touch = evt.touches?.[0];
-+        mx = touch ? touch.clientX : evt.clientX;
-+        my = touch ? touch.clientY : evt.clientY;
-+        if(!raf) raf = requestAnimationFrame(render);
-+      }
-+      function show(){ lensEl.style.display = 'block'; }
-+      function hide(){ lensEl.style.display = 'none'; }
-+      img.addEventListener('mousemove', onMove, {passive:true});
-+      img.addEventListener('touchmove', onMove, {passive:true});
-+      img.addEventListener('mouseenter', show);
-+      img.addEventListener('mouseleave', hide);
-+      img.addEventListener('touchend', hide);
-+      img.addEventListener('load', updateBackground);
-+      updateBackground();
-+      img.dataset.magAttached = '1';
-+    }
-+    if(img.complete && img.naturalWidth){
-+      init();
-+    }else{
-+      img.addEventListener('load', init, {once:true});
-+    }
-   }
- 
--  async function updateGoldBoard(){
--    if(!elTitle||!elMeta||!elRange) return;
--    const catObj = CATS.find(c=>c.id===ACTIVE_CAT);
--    elTitle.textContent = ACTIVE_CAT ? (label(catObj)) : 'All items · كل القطع';
-+  function decorateCards(){
-+    out.querySelectorAll('.product-card').forEach(card => {
-+      if(card.dataset.enhanced) return;
-+      card.dataset.enhanced = '1';
-+      const img = card.querySelector('.store-item__thumb .js-main');
-+      if(img) attachMagnifier(img, {zoom:2.6, lens:140});
-+    });
-+    filterByCategory(activeCat);
-+  }
- 
--    const cards = [...out.querySelectorAll('.store-item')].filter(c => c.style.display !== 'none');
--    const weights = cards.map(c=>{
--      const x = [...c.querySelectorAll('.store-item__meta span')].find(s => /g\b/i.test(s.textContent||''));
--      const n = parseFloat((x?.textContent||'').replace(/[^\d.]/g,''));
--      return isFinite(n)?n:NaN;
--    }).filter(Number.isFinite);
--    const n = weights.length;
--    const total = weights.reduce((s,v)=>s+v,0);
--    const avg = n ? (total/n) : 0;
--    elMeta.textContent = n ? `${n} pieces • avg ${avg.toFixed(2)} g` : '—';
-+  const observer = new MutationObserver(() => {
-+    decorateCards();
-+    updateCatMeta();
-+  });
-+  observer.observe(out, {childList:true});
-+
-+  document.addEventListener('click', event => {
-+    const btn = event.target.closest('.mini-cart');
-+    if(!btn) return;
-+    const card = btn.closest('.product-card');
-+    if(!card) return;
-+    const product = getProductForCard(card);
-+    const img = card.querySelector('.store-item__thumb .js-main')?.src || '';
-+    addToCart(product, img);
-+  });
- 
--    try{
--      const oz = await getSpotFast();
--      document.getElementById('ppg18').textContent = Math.round(perGramForKirat(oz,18,10)).toLocaleString();
--      document.getElementById('ppg21').textContent = Math.round(perGramForKirat(oz,21,10)).toLocaleString();
--      document.getElementById('ppg22').textContent = Math.round(perGramForKirat(oz,22,10)).toLocaleString();
--      document.getElementById('ppg24').textContent = Math.round(perGramForKirat(oz,24,10)).toLocaleString();
--
--      const prices = cards.map(c => Number((c.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,'')))
--                          .filter(v => isFinite(v)&&v>0)
--                          .sort((a,b)=>a-b);
--      const range = prices.length ? `$${prices[0].toLocaleString()} – $${prices[prices.length-1].toLocaleString()}` : '—';
--      elRange.textContent = prices.length ? `Live price range in this category: ${range}` :
--                                            `Select a category to see its live price range.`;
--    }catch(_){
--    }
--  }
--  setInterval(updateGoldBoard, 10000);
-+  catToggle?.addEventListener('click', () => {
-+    catBar?.classList.toggle('open');
-+  });
- 
--  const ESC = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
--  function escapeHtml(v){ return String(v??'').replace(/[&<>"']/g, ch => ESC[ch]||ch ); }
-+  document.addEventListener('hcj:products-rendered', () => {
-+    decorateCards();
-+    renderCartDrawer();
-+    setActiveCategory(activeCat);
-+  });
- 
--  buildCats();
--  const catCount = document.getElementById('hcjCatsCount');
--  if(catCount) catCount.textContent = String(CATS.length);
--  setActive('');
--  enhance();
-+  buildCatBar();
-+  setActiveCategory(activeCat);
-+  decorateCards();
-+  renderCartDrawer();
-+  showLivePricesFor(activeCat);
- })();
- </script>
-+
- </body>
- </html>
- 
-EOF
-)
+<!doctype html>
+<html lang="en">
+<head>
+<script>
+  // Apply saved theme ASAP (before CSS loads to avoid a flash)
+  (function () {
+    try {
+      var KEY = 'hcj-theme';
+      var saved = localStorage.getItem(KEY) || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      window.__HCJ_THEME_KEY = KEY;
+    } catch (e) {}
+  })();
+</script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Shakaroun Jewelry — Store</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#17120a">
+<link rel="icon" href="icon/icon-1024.png" type="image/png">
+<link rel="apple-touch-icon" href="icon/icon-512.png">
+<meta name="description" content="Handcrafted gold jewelry from Maison Shakaroun."/>
+<meta name="application-name" content="Shakaroun Jewelry">
+<meta name="apple-mobile-web-app-title" content="Shakaroun Jewelry">
+<meta property="og:title" content="Shakaroun Jewelry — Store">
+<meta property="og:description" content="Handcrafted gold jewelry.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icon/icon-1024.png">
+<meta property="og:site_name" content="Shakaroun Jewelry">
+<meta name="twitter:title" content="Shakaroun Jewelry — Store">
+<style>
+  :root{--radius:14px;--shadow:0 18px 36px rgba(0,0,0,.45);--bar-font:clamp(.98rem,.9rem + .35vw,1.15rem);--bar-pad-y:14px;--bar-pad-x:18px;--bar-gap:12px;--bar-icon:56px;--bar-close:32px;--bar-btn-py:8px;--bar-btn-px:16px}
+
+  html[data-theme="dark"]{
+    --bg:#17120a;--bg2:#0f0b06;--card:#211a0e;--card-overlay:rgba(48,37,19,.86);
+    --ink:#fff7e6;--muted:#e8d9b3;--gold:#d4af37;--gold2:#b88a1a;
+    --border-soft:rgba(212,175,55,.18);--border-strong:rgba(212,175,55,.35);
+    --control-border:rgba(212,175,55,.22);--control-bg:rgba(23,18,10,.75);
+    --control-focus-bg:rgba(33,26,14,.85);--control-focus-shadow:rgba(212,175,55,.18);
+    --head-bg:rgba(15,11,6,.45);
+    --button-top:rgba(212,175,55,.16);--button-bottom:rgba(184,138,26,.16);
+  }
+  html:not([data-theme]), html[data-theme="light"]{
+    --bg:#f6f2ea;--bg2:#e4e9f3;--card:#ffffff;--card-overlay:rgba(255,255,255,.9);
+    --ink:#2b261c;--muted:#706b60;--gold:#c8892c;--gold2:#a56a18;
+    --border-soft:rgba(200,137,44,.28);--border-strong:rgba(200,137,44,.45);
+    --control-border:rgba(200,137,44,.34);--control-bg:rgba(250,244,234,.92);
+    --control-focus-bg:rgba(255,250,243,.97);--control-focus-shadow:rgba(200,137,44,.3);
+    --head-bg:rgba(242,234,220,.76);
+    --button-top:rgba(200,137,44,.22);--button-bottom:rgba(165,106,24,.18);
+  }
+  html[data-theme="plum"]{
+    --bg:#160b19;--bg2:#341844;--card:#2b1433;--card-overlay:rgba(73,35,94,.72);
+    --ink:#f8ecff;--muted:#d5c0ec;--gold:#d794ff;--gold2:#b162e4;
+    --border-soft:rgba(215,148,255,.32);--border-strong:rgba(215,148,255,.48);
+    --control-border:rgba(215,148,255,.36);--control-bg:rgba(41,20,51,.78);
+    --control-focus-bg:rgba(55,28,68,.86);--control-focus-shadow:rgba(215,148,255,.26);
+    --head-bg:rgba(39,18,50,.65);
+    --button-top:rgba(215,148,255,.2);--button-bottom:rgba(177,98,228,.18);
+  }
+
+  /* A2HS */
+  #a2hsBanner{position:fixed;top:0;left:0;right:0;z-index:9999;transform:translateY(-110%);transition:transform .45s ease;background:color-mix(in oklab,var(--bg) 88%,transparent);color:var(--ink);border-bottom:1px solid var(--border-soft);box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:var(--bar-font)}
+  #a2hsBanner.show{transform:translateY(0);position:sticky;top:0}
+  #a2hsBanner .wrap{display:flex;align-items:center;gap:var(--bar-gap);padding:var(--bar-pad-y) var(--bar-pad-x)}
+  #a2hsBanner img.icon{width:var(--bar-icon);height:var(--bar-icon);border-radius:6px;flex:0 0 var(--bar-icon)}
+  #a2hsBanner .txt{flex:1;display:flex;flex-direction:column}
+  #a2hsBanner .txt .brand-title{font-weight:800;font-size:1.05em}
+  #a2hsBanner .txt .brand-byline{font-weight:600;font-size:.88em;opacity:.8}
+  #a2hsBanner .txt .banner-copy{font-size:.9em;opacity:.9;margin-top:2px}
+  #a2hsBanner .cta{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2b1f10;border:0;border-radius:999px;padding:var(--bar-btn-py) var(--bar-btn-px);font-weight:800;cursor:pointer;font-size:1em}
+  #a2hsBanner .close{background:transparent;color:var(--ink);border:0;width:var(--bar-close);height:var(--bar-close);font-size:calc(var(--bar-close)*0.56);line-height:var(--bar-close);cursor:pointer;flex:0 0 var(--bar-close)}
+
+  #a2hsModal{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:24px 12px}
+  #a2hsModal.open{display:flex}
+  #a2hsModal::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.6)}
+  #a2hsModal .sheet{position:relative;width:min(560px,92vw);max-height:calc(100vh - 48px);overflow:auto;background:color-mix(in oklab,var(--bg) 86%,transparent);color:var(--ink);border:1px solid var(--border-soft);border-radius:16px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.65)}
+  #a2hsModal .steps{margin-top:6px;font-size:14px;line-height:1.7}
+  #a2hsModal .steps .row{display:flex;gap:10px;margin:6px 0;flex-direction:column}
+  #a2hsModal .stepimg{display:block;width:100%;height:auto;margin-top:8px;border-radius:10px;border:1px solid var(--border-soft)}
+  #a2hsModal .x{position:absolute;top:8px;left:10px;background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
+
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--ink);background:linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);font:15.5px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+
+  .topbar{position:sticky;top:0;z-index:80;background:var(--head-bg);backdrop-filter:saturate(1.25) blur(10px);border-bottom:1px solid var(--border-soft)}
+  .topbar .wrap{max-width:1240px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:14px}
+  .topbar .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+  .topbar .brand img{width:40px;height:40px;border-radius:10px;box-shadow:0 8px 18px rgba(0,0,0,.35)}
+  .topbar .brand .brand-stack{display:flex;flex-direction:column;line-height:1.05}
+  .topbar .brand .brand-title{font-weight:800;letter-spacing:.42px;font-size:17px}
+  .topbar .brand .brand-byline{font-weight:600;font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.6px}
+  .topbar .nav{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .topbar .nav::-webkit-scrollbar{display:none}
+  .topbar .nav a{color:var(--ink);text-decoration:none;border:1px solid var(--border-soft);padding:9px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;transition:border .2s,color .2s,background .2s;flex:0 0 auto;white-space:nowrap}
+  .topbar .nav a:hover{border-color:var(--gold);color:var(--ink);background:color-mix(in oklab,var(--gold) 16%,transparent)}
+  .topbar .nav a[aria-current="page"]{border-color:var(--gold);color:var(--gold);background:color-mix(in oklab,var(--gold) 18%,transparent)}
+  .topbar .nav select{border:1px solid var(--border-soft);background:var(--control-bg);color:var(--ink);padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600}
+
+  .store-wrap{max-width:1100px;margin:0 auto;padding:32px 18px 64px;display:grid;gap:24px}
+  .card{background:linear-gradient(160deg,var(--card-overlay),var(--card));border:1px solid var(--border-soft);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border-soft);background:color-mix(in oklab,var(--bg) 8%, transparent)}
+  .head h1{margin:0;font-size:22px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft);font-size:12px;color:var(--muted);background:var(--control-bg)}
+  .panel{padding:20px}
+
+  #storeList{display:grid;gap:20px;min-height:120px}
+  .store-item{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:20px;align-items:start;padding:20px}
+  .store-item__thumb{position:relative;border-radius:18px;border:1px solid var(--border-soft);overflow:hidden;background:var(--bg2);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+  .store-item__thumb img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+  /* small thumbnail strip inside each card */
+  .store-item__thumbs{position:absolute;left:8px;right:8px;bottom:8px;display:flex;gap:6px;justify-content:center;pointer-events:auto}
+  .store-item__thumbs img{width:36px;height:36px;object-fit:cover;border-radius:8px;border:1px solid var(--border-soft);cursor:pointer;opacity:.9;background:var(--bg2)}
+  .store-item__thumbs img.is-active{outline:2px solid var(--gold);opacity:1}
+  .store-item__thumb .count-badge{position:absolute;top:8px;right:8px;font-size:12px;background:color-mix(in oklab,var(--card) 76%,transparent);border:1px solid var(--border-soft);border-radius:999px;padding:3px 8px;color:var(--muted);backdrop-filter:blur(6px)}
+  .store-item__thumb:hover img{transform:scale(1.02)}
+  .store-item__placeholder{width:100%;height:100%;background:linear-gradient(135deg,color-mix(in oklab,var(--bg2) 80%, transparent),color-mix(in oklab,var(--bg) 70%, transparent))}
+  .store-item__body{display:grid;gap:14px}
+  .store-item__header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .store-item__title{margin:0;font-size:1.2rem;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .store-item__price{font-size:1.15rem;font-weight:800;color:var(--gold);white-space:nowrap}
+  .store-item__currency{font-size:.8em;color:var(--muted);font-weight:600;margin-left:4px}
+  .store-item__description{margin:0;color:color-mix(in oklab,var(--ink) 84%, transparent);font-size:.98rem}
+  .store-item__meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+  .store-item__badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft);background:var(--control-bg);font-weight:600;line-height:1}
+  .store-item__badge--stock{color:var(--gold)}
+
+  @media (max-width:840px){
+    .store-item{grid-template-columns:minmax(0,160px) minmax(0,1fr)}
+  }
+  @media (max-width:720px){
+    .store-item{grid-template-columns:1fr}
+    .store-item__thumb{aspect-ratio:4/3}
+    .store-item__header{flex-direction:column;align-items:flex-start}
+  }
+  @media (max-width:520px){
+    .topbar .nav a{padding:8px 12px;font-size:12px}
+    .panel{padding:18px}
+    .store-item{padding:18px}
+  }
+  @media (max-width:420px){
+    .store-wrap{padding:28px 16px 48px}
+  }
+  @media (max-width:380px){
+    .topbar .nav a{padding:8px 10px;font-size:11.5px}
+  }
+
+  /* ===== Categories, Quick View, Cart – elegant & on-brand ===== */
+  .hcj-cat-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+  .hcj-cat{position:relative;display:grid;place-items:center;padding:14px;border:1px solid var(--border-soft);
+    background:var(--control-bg);border-radius:16px;cursor:pointer;transition:border .2s,transform .2s}
+  .hcj-cat:hover{border-color:var(--gold);transform:translateY(-1px)}
+  .hcj-cat.is-active{border-color:var(--gold);box-shadow:0 8px 18px rgba(0,0,0,.22)}
+  .hcj-cat__icon{width:44px;height:44px;object-fit:contain}
+  .hcj-cat__label{margin-top:8px;text-align:center;font-weight:700;font-size:.92rem;line-height:1.2}
+  .hcj-cat__sub{font-size:.78rem;color:var(--muted)}
+
+  .hcj-cat-prices{margin-top:10px;display:grid;gap:10px}
+  .hcj-cat-title{font-weight:800}
+  .hcj-cat-stats{display:flex;gap:10px;align-items:center;color:var(--muted)}
+  .hcj-ppg{display:flex;gap:10px;flex-wrap:wrap}
+  .ppg-chip{display:flex;gap:6px;align-items:center;border:1px solid var(--border-soft);border-radius:999px;
+    padding:6px 10px;background:var(--control-bg);font-weight:700}
+  .ppg-chip span{color:var(--gold)}
+  .hcj-range{font-size:.95rem;color:color-mix(in oklab,var(--ink) 84%, transparent)}
+
+  .store-item{position:relative}
+  .hcj-add{position:absolute;left:14px;bottom:14px;width:44px;height:44px;border-radius:999px;border:1px solid var(--border-strong);
+    background:linear-gradient(120deg,var(--button-top),var(--button-bottom));display:grid;place-items:center;
+    box-shadow:0 8px 16px rgba(0,0,0,.25);cursor:pointer}
+  .hcj-add:hover{border-color:var(--gold)}
+  .hcj-add svg{width:20px;height:20px}
+
+  .hcj-qv{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center}
+  .hcj-qv[aria-hidden="false"]{display:flex}
+  .hcj-qv::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.6)}
+  .hcj-qv__sheet{position:relative;width:min(1000px,94vw);background:var(--card);border:1px solid var(--border-soft);
+    border-radius:18px;box-shadow:var(--shadow);padding:14px}
+  .hcj-qv__close{position:absolute;top:10px;left:12px;background:transparent;border:0;color:var(--ink);font-size:22px;cursor:pointer}
+  .hcj-qv__grid{display:grid;gap:16px;grid-template-columns:1.1fr 1fr}
+  @media (max-width:900px){.hcj-qv__grid{grid-template-columns:1fr}}
+  .hcj-qv__media{display:grid;gap:10px}
+  .hcj-qv__thumbs{display:flex;gap:8px;flex-wrap:wrap}
+  .hcj-qv__thumbs img{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);cursor:pointer}
+  .hcj-qv__meta{display:grid;gap:12px}
+  .hcj-qv__price{font-size:1.5rem;font-weight:900;color:var(--gold)}
+  .hcj-qv__specs{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.95rem}
+  .hcj-btn{border:1px solid var(--border-strong);background:linear-gradient(120deg,var(--button-top),var(--button-bottom));
+    color:var(--ink);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
+  .hcj-btn.ghost{background:transparent}
+  .hcj-btn.block{width:100%}
+
+  .hcj-zoom{position:relative;border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;background:var(--bg2)}
+  .hcj-zoom img{display:block;width:100%;height:auto}
+  .hcj-lens{position:absolute;width:130px;height:130px;border:1px solid var(--border-strong);border-radius:999px;
+    background-repeat:no-repeat;background-position:center;background-size:200%;display:none;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+
+  .hcj-cart{position:fixed;right:0;top:0;bottom:0;width:min(380px,92vw);transform:translateX(110%);transition:transform .35s ease;
+    background:var(--card);border-left:1px solid var(--border-soft);box-shadow:-8px 0 30px rgba(0,0,0,.35);z-index:1001;display:flex;flex-direction:column}
+  .hcj-cart[aria-hidden="false"]{transform:none}
+  .hcj-cart__head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border-soft)}
+  .hcj-cart__close{background:transparent;border:0;color:var(--ink);font-size:20px;cursor:pointer}
+  .hcj-cart__body{padding:12px 14px;display:grid;gap:10px;overflow:auto}
+  .hcj-item{display:grid;grid-template-columns:58px 1fr auto;gap:10px;align-items:center;border:1px solid var(--border-soft);border-radius:12px;padding:8px}
+  .hcj-item img{width:58px;height:58px;object-fit:cover;border-radius:10px}
+  .hcj-item .t{font-weight:700}
+  .hcj-item .s{font-size:.85rem;color:var(--muted)}
+  .hcj-item .p{font-weight:800;color:var(--gold)}
+  .hcj-cart__foot{margin-top:auto;border-top:1px solid var(--border-soft);padding:12px 14px;display:grid;gap:10px}
+  .hcj-cart__row{display:flex;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<!-- A2HS Banner -->
+<div id="a2hsBanner" aria-hidden="true">
+  <div class="wrap" style="max-width:1100px;margin:0 auto;padding:0 16px;">
+    <button class="close" type="button" aria-label="Close" data-i18n-attr="aria-label:common.close">×</button>
+   <img class="icon" src="icon/icon-512.png" alt="Shakaroun Jewelry icon" data-i18n-attr="alt:brand.logoAlt">
+    <div class="txt">
+      <div class="brand-title" data-i18n="brand.title">Shakaroun Jewelry</div>
+      <div class="brand-byline" data-i18n="brand.byline">Shakaroun Jewelry</div>
+      <div class="banner-copy" data-i18n="a2hs.banner">Add it to your Home Screen.</div>
+    </div>
+    <button class="cta" type="button" id="a2hsGet" data-i18n="a2hs.install">Install</button>
+  </div>
+</div>
+
+<!-- iOS Guide -->
+<div id="a2hsModal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
+    <button class="x" type="button" aria-label="Close" data-i18n-attr="aria-label:common.close">×</button>
+    <h3 id="a2hsTitle" data-i18n="a2hs.title">Add “Shakaroun Jewelry” to Home Screen</h3>
+    <div class="steps">
+      <div class="row">
+        <div><strong>1.</strong> <span data-i18n="a2hs.step1">Tap <em>Share</em> in Safari.</span></div>
+        <img class="stepimg" src="./icon/share.jpg" alt="iPhone Share button screenshot">
+      </div>
+      <div class="row">
+        <div><strong>2.</strong> <span data-i18n="a2hs.step2">Choose <em>Add to Home Screen</em>, then <em>Add</em>.</span></div>
+        <img class="stepimg" src="./icon/save%20to%20home%20screen.jpeg" alt="Add to Home Screen screenshot">
+      </div>
+    </div>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="wrap">
+  <a class="brand" href="index.html" aria-label="Shakaroun Jewelry" data-i18n-attr="aria-label:brand.aria">
+      <img src="icon/icon-512.png" alt="Shakaroun Jewelry logo" data-i18n-attr="alt:brand.logoAlt">
+      <span class="brand-stack">
+        <span class="brand-title" data-i18n="brand.title">Shakaroun Jewelry</span>
+        <small class="brand-byline" data-i18n="brand.byline">Shakaroun Jewelry</small>
+      </span>
+    </a>
+    <nav class="nav">
+      <a href="index.html" data-i18n="nav.builder">Builder</a>
+      <a href="store.html" aria-current="page" data-i18n="nav.store">Store</a>
+      <a href="about.html" data-i18n="nav.about">About</a>
+      <select id="themeSelectTop" aria-label="Select theme" data-i18n-attr="aria-label:common.theme.select">
+        <option value="dark" data-i18n="theme.dark">Dark</option>
+        <option value="light" data-i18n="theme.light">Light</option>
+        <option value="plum" data-i18n="theme.plum">Plum</option>
+        <option value="custom" data-i18n="theme.custom">Custom</option>
+      </select>
+      <select id="langSelectTop" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="it">Italiano</option>
+      </select>
+    </nav>
+  </div>
+</header>
+
+<main class="store-wrap">
+  <!-- Categories & Gold board -->
+  <section class="card" id="hcjCatsCard" aria-label="Categories">
+    <div class="head">
+      <h1 style="margin:0;font-size:20px">Categories · الفئات</h1>
+      <span class="badge" id="hcjCatsCount">11</span>
+    </div>
+    <div class="panel">
+      <div class="hcj-cat-grid" id="hcjCatGrid" role="tablist" aria-label="Jewelry Categories"></div>
+
+      <div class="hcj-cat-prices" id="hcjCatPrices" aria-live="polite">
+        <div class="hcj-cat-stats">
+          <span id="hcjCatTitle" class="hcj-cat-title">All items · كل القطع</span>
+          <span class="hcj-dot">•</span>
+          <span id="hcjCatMeta" class="hcj-cat-meta">—</span>
+        </div>
+        <div class="hcj-ppg">
+          <div class="ppg-chip" data-k="18"><strong>18K</strong><span id="ppg18">–</span></div>
+          <div class="ppg-chip" data-k="21"><strong>21K</strong><span id="ppg21">–</span></div>
+          <div class="ppg-chip" data-k="22"><strong>22K</strong><span id="ppg22">–</span></div>
+          <div class="ppg-chip" data-k="24"><strong>24K</strong><span id="ppg24">–</span></div>
+        </div>
+        <div class="hcj-range" id="hcjRange">Select a category to see its live price range.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="head">
+      <h1 data-i18n="store.title">Store</h1>
+      <span class="badge" data-i18n="store.badge">Atelier selections</span>
+    </div>
+    <div class="panel" id="storeList" data-i18n="store.loading" aria-live="polite">Loading…</div>
+  </section>
+</main>
+
+<!-- Quick View (with magnifier) -->
+<div class="hcj-qv" id="hcjQV" aria-hidden="true">
+  <div class="hcj-qv__sheet" role="dialog" aria-modal="true" aria-labelledby="hcjQVTitle">
+    <button class="hcj-qv__close" type="button" aria-label="Close">×</button>
+    <div class="hcj-qv__grid">
+      <div class="hcj-qv__media">
+        <div class="hcj-zoom" id="hcjZoom">
+          <img id="hcjZoomImg" alt="">
+          <div class="hcj-lens" id="hcjLens" aria-hidden="true"></div>
+        </div>
+        <div class="hcj-qv__thumbs" id="hcjQVThumbs"></div>
+      </div>
+      <div class="hcj-qv__meta">
+        <h3 id="hcjQVTitle"></h3>
+        <div class="hcj-qv__price"><span id="hcjQVPrice"></span> <small>USD</small></div>
+        <div class="hcj-qv__specs" id="hcjQVSpecs"></div>
+        <div class="hcj-qv__actions">
+          <button id="hcjAddCartQV" class="hcj-btn">Add to cart</button>
+          <a id="hcjWA" class="hcj-btn ghost" target="_blank" rel="noopener">WhatsApp Cart</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide-in Cart Drawer -->
+<aside class="hcj-cart" id="hcjCart" aria-hidden="true">
+  <div class="hcj-cart__head">
+    <strong>Shopping cart</strong>
+    <button class="hcj-cart__close" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="hcj-cart__body" id="hcjCartBody"></div>
+  <div class="hcj-cart__foot">
+    <div class="hcj-cart__row">
+      <span>Subtotal</span><strong id="hcjSub">$0</strong>
+    </div>
+    <button id="hcjCheckout" class="hcj-btn block">Checkout</button>
+  </div>
+</aside>
+
+<script src="scripts/a2hs.js"></script>
+<script src="scripts/translations.js"></script>
+<script>
+(function () {
+  const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk";
+  const SHEET_NAME = "Form Responses 1";
+  const TQ = encodeURIComponent("select A,B,C,D,E,F,G,H");
+  const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
+
+  const out = document.getElementById("storeList");
+
+  let __t = (key, vars) => {
+    const lang = document.documentElement.lang || 'en';
+    const dict = window.__TRANSLATIONS?.[lang] || {};
+    const fallback = window.__TRANSLATIONS?.en || {};
+    let value = dict[key];
+    if(value == null) value = fallback[key];
+    if(value == null) value = key;
+    if(typeof value === 'string' && vars && typeof vars === 'object'){
+      value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
+    }
+    return value;
+  };
+
+  function syncTranslator(){
+    const lang = document.documentElement.lang || 'en';
+    __t = (key, vars)=>{
+      const dict = window.__TRANSLATIONS?.[lang] || {};
+      const fallback = window.__TRANSLATIONS?.en || {};
+      let value = dict[key];
+      if(value == null) value = fallback[key];
+      if(value == null) value = key;
+      if(typeof value === 'string' && vars && typeof vars === 'object'){
+        value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
+      }
+      return value;
+    };
+  }
+  let lastProducts = [];
+  let lastStatus = 'loading';
+
+  syncTranslator();
+
+  window.addEventListener('DOMContentLoaded', syncTranslator);
+  window.addEventListener('hcj:lang', ()=>{
+    syncTranslator();
+    if(!out) return;
+    if(lastStatus === 'products'){
+      render(lastProducts);
+    }else if(lastStatus === 'empty'){
+      out.removeAttribute('data-i18n');
+      out.innerHTML = `<span class="badge">${__t('store.empty')}</span>`;
+    }else if(lastStatus === 'error'){
+      out.removeAttribute('data-i18n');
+      out.innerHTML = `<span class="badge">${__t('store.loadFail')}</span>`;
+    }else{
+      out.setAttribute('data-i18n', 'store.loading');
+      out.textContent = __t('store.loading') || out.textContent;
+    }
+  });
+
+  /* ================== Live gold pricing (every 10s) ================== */
+  // Endpoints (free) – we’ll race them for speed:
+  const GOLDAPI_FREE = [
+    "https://api.gold-api.com/price/XAU",
+    "https://api.gold-api.com/price/XAU/USD",
+    "https://www.gold-api.com/price/XAU",
+    "https://www.gold-api.com/price/XAU/USD"
+  ];
+
+  // Pull the ounce price from whatever shape the API returns
+  function pickOuncePrice(d){
+    const c = [d?.price, d?.usd, d?.usd_ounce, d?.price_ounce, d?.ounce, d?.oz,
+               d?.result?.price, d?.XAU?.USD].map(Number).filter(v => isFinite(v) && v > 0);
+    if (c.length) return c[0];
+    // If only gram(24k) is given, convert to ounce (≈31.1)
+    const g24 = Number(d?.gram_24k || d?.price_gram_24k || d?.g24 || d?.per_gram);
+    return (isFinite(g24) && g24 > 0) ? g24 * 31.1 : NaN;
+  }
+  function timeoutFetch(u,ms){
+    const c = new AbortController(); const id = setTimeout(() => c.abort(), ms);
+    return fetch(u,{signal:c.signal,cache:"no-store"}).finally(() => clearTimeout(id));
+  }
+  async function getSpotFast(){
+    const tries = GOLDAPI_FREE.map(u =>
+      timeoutFetch(u,3500)
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(pickOuncePrice)
+        .then(v => (isFinite(v) && v > 0) ? v : Promise.reject("bad"))
+    );
+    return Promise.any(tries);
+  }
+
+  // 18k: ((oz + 30)*32*750/995) + fee
+  // 21k: ((oz + 30)*32*875/995) + fee
+  // 22k: ((oz + 30)*32*916/995) + fee
+  // 24k: ((oz + 30)/31.1)       + fee
+  function perGramForKirat(oz, kiratStr, fee){
+    const k   = String(kiratStr || "").toLowerCase();
+    const add = Number.isFinite(fee) ? fee : 10; // fallback to 10 if the sheet cell is empty
+    if (/\b18\b/.test(k)) return (((oz + 30) * 32 * 750 / 995)/1000) + add;
+    if (/\b21\b/.test(k)) return (((oz + 30) * 32 * 875 / 995)/1000) + add;
+    if (/\b22\b/.test(k)) return (((oz + 30) * 32 * 916 / 995)/1000) + add;
+    if (/\b24\b/.test(k)) return (((oz + 30) / 31.1)/1000) + add;
+    return NaN;
+  }
+
+  function computeItemPriceUSD(oz, product){
+    const w   = toNum(product.weight);
+    if (!Number.isFinite(w) || w <= 0) return NaN;
+    const fee = toNum(product.fee);      // ← “أجور + ربح ex.2.5” (per gram) from column H
+    const ppg = perGramForKirat(oz, product.kirat, fee);
+    return Number.isFinite(ppg) ? (ppg * w) : NaN;
+  }
+
+  // Start a 10s refresh loop to update prices in-place
+  const REFRESH_MS = 10_000;
+  let _priceTimer = null;
+  function startSpotRefresh(products){
+    async function tick(){
+      try{
+        const oz = await getSpotFast();
+        // Fill/override price for every product based on kirat & weight
+        products.forEach(p => {
+          const calc = computeItemPriceUSD(oz, p);
+          if (isFinite(calc)) p.price = Math.round(calc); // round how you like
+        });
+        render(products);
+      }catch(e){
+        // On failure just keep whatever is rendered now
+      }
+    }
+    // run now + schedule
+    tick();
+    if (_priceTimer) clearInterval(_priceTimer);
+    _priceTimer = setInterval(tick, REFRESH_MS);
+  }
+
+  const ESCAPE = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
+  function escapeHtml(value){
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function(ch){ return ESCAPE[ch] || ch; });
+  }
+  function sentenceCase(str){
+    const trimmed = String(str == null ? "" : str).trim();
+    if(!trimmed){ return ""; }
+    if(trimmed === trimmed.toUpperCase()){
+      const lower = trimmed.toLowerCase();
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    }
+    if(trimmed === trimmed.toLowerCase()){
+      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    }
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  }
+  // Split a cell that may contain multiple links (comma, semicolon, or newline)
+  function splitLinks(value){
+    if (!value) return [];
+    // If GViz gave an <a href> chip, pull its href and return as a single-item array
+    const str = String(value).trim();
+    const hrefMatch = str.match(/href="([^"]+)"/i);
+    if (hrefMatch) return [hrefMatch[1]];
+
+    // Otherwise, split on commas/semicolons/newlines and trim
+    return str.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+  }
+
+  // Convert Drive links (open?id=... or /file/d/ID/...) -> direct image URLs
+  function driveImages(value){
+    const links = Array.isArray(value) ? value : splitLinks(value);
+    return links.map(link => {
+      // accept both /file/d/ID and ...?id=ID
+      const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([^&]+)/);
+      const id = m ? m[1] : null;
+      if (!id) return link; // if it's not Drive, use as-is
+      // fast thumbnail endpoint that works in <img>
+      return `https://lh3.googleusercontent.com/d/${id}=w1200`;
+    });
+  }
+  function money(n) {
+    const v = Number(n);
+    return Number.isFinite(v) ? v.toLocaleString(undefined, {minimumFractionDigits:0}) : "";
+  }
+
+  // Parses "2.5" or "2,5" into a Number. Returns NaN if not numeric.
+  function toNum(v){
+    const s = String(v ?? "").trim()
+      // Arabic decimal comma -> dot
+      .replace(",", ".")
+      // strip everything except digits, minus, and dot
+      .replace(/[^\d.-]/g, "");
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function render(products) {
+    if(!out) return;
+    out.removeAttribute('data-i18n');
+    if (!products.length) {
+      lastProducts = products;
+      lastStatus = 'empty';
+      out.innerHTML = `<span class="badge">${__t('store.empty')}</span>`;
+      return;
+    }
+    lastProducts = products;
+    lastStatus = 'products';
+    const cards = products.map(p => {
+      const title = sentenceCase(p.name || "");
+      const safeTitle = escapeHtml(title);
+      const photos = driveImages(p.photo);
+      const main   = photos[0] || "";
+      const price = money(p.price);
+      const description = escapeHtml(p.description || "");
+      const kirat = p.kirat ? `<span>${__t('store.karat')} ${escapeHtml(p.kirat)}</span>` : "";
+      const sku = p.sku ? `<span>${__t('store.sku')} ${escapeHtml(p.sku)}</span>` : "";
+      const weight = p.weight ? `<span>${__t('store.weight')} ${escapeHtml(p.weight)} g</span>` : "";
+      const badgeClass = (p.in_stock && Number(p.in_stock) > 0) ? "store-item__badge store-item__badge--stock" : "store-item__badge";
+      const badgeLabel = (p.in_stock && Number(p.in_stock) > 0) ? __t('store.inStock') : __t('store.outOfStock');
+      const metaBits = [kirat, weight, sku, `<span class="${badgeClass}">${badgeLabel}</span>`]
+        .filter(Boolean)
+        .join("\n");
+      return `
+        <article class="store-item card">
+          <figure class="store-item__thumb">
+            ${main ? `<img class="js-main" src="${escapeHtml(main)}" alt="${safeTitle || 'Bracelet photo'}" loading="lazy">`
+                   : `<div class="store-item__placeholder" aria-hidden="true"></div>`}
+            ${photos.length > 1 ? `
+              <div class="count-badge">${photos.length}</div>
+              <div class="store-item__thumbs">
+                ${photos.map((u,i)=>`
+                  <img class="js-thumb ${i===0?'is-active':''}" src="${escapeHtml(u)}" alt="thumb ${i+1}" loading="lazy" />
+                `).join('')}
+              </div>
+            ` : ``}
+          </figure>
+          <div class="store-item__body">
+            <div class="store-item__header">
+              <h3 class="store-item__title">${safeTitle}</h3>
+              ${price ? `<div class="store-item__price">${price}<span class="store-item__currency">USD</span></div>` : ""}
+            </div>
+            ${description ? `<p class="store-item__description">${description}</p>` : ""}
+            <div class="store-item__meta">${metaBits}</div>
+          </div>
+        </article>
+      `;
+    }).join("\n");
+    out.innerHTML = cards;
+
+    // Wire gallery clicks (event delegation)
+    out.querySelectorAll('.store-item').forEach(card => {
+      const mainImg = card.querySelector('.store-item__thumb .js-main');
+      const thumbs = card.querySelectorAll('.store-item__thumbs .js-thumb');
+      if (!mainImg || !thumbs.length) return;
+      thumbs.forEach(t => {
+        t.addEventListener('click', () => {
+          thumbs.forEach(x => x.classList.remove('is-active'));
+          t.classList.add('is-active');
+          const next = t.getAttribute('src');
+          if (next) mainImg.setAttribute('src', next);
+        });
+      });
+    });
+  }
+
+  fetch(URL)
+    .then(r => r.text())
+    .then(txt => {
+      const json = JSON.parse(txt.substring(47, txt.length - 2));
+      const rows = (json.table?.rows || []);
+      const products = rows.map(r => {
+        // Keep both the raw value (v) and the formatted value (f)
+        const cells = (r.c || []).map(c => c ? (c.f || c.v || "") : "");
+
+        // Columns: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo, H fee ("أجور + ربح ex.2.5")
+        const name        = cells[1];
+        const weight      = cells[2];
+        const kirat       = cells[3];
+        const description = cells[4];
+        const sku         = cells[5];
+        const photo       = cells[6];
+        const fee         = cells[7];
+
+        // You don’t have price or in_stock in the form yet — set sensible defaults
+        const price = "";
+        const in_stock = 1;
+
+        return { name, price, kirat, photo, description, sku, in_stock, weight, fee };
+      });
+      startSpotRefresh(products);
+    })
+    .catch(err => {
+      console.error(err);
+      if(out){
+        out.removeAttribute('data-i18n');
+        out.innerHTML = `<span class="badge">${__t('store.loadFail')}</span>`;
+      }
+      lastProducts = [];
+      lastStatus = 'error';
+    });
+})();
+</script>
+<script>
+(function(){
+  const KEY = window.__HCJ_THEME_KEY || 'hcj-theme';
+  const THEMES = ['light','dark','plum','custom'];
+  const top = document.getElementById('themeSelectTop');
+  const inner = document.getElementById('themeSelect');
+  function applySharedTheme(t){
+    const next = THEMES.includes(t) ? t : 'light';
+    if(typeof window.applyTheme === 'function'){
+      window.applyTheme(next);
+    }else{
+      document.documentElement.dataset.theme = next;
+    }
+    try{ localStorage.setItem(KEY,next);}catch(_){ }
+    if(inner && inner !== top) inner.value = next;
+    return next;
+  }
+  let saved = 'light';
+  try{ saved = localStorage.getItem(KEY) || document.documentElement.dataset.theme || 'light'; }catch(_){ }
+  applySharedTheme(saved);
+  if(top){
+    top.value = saved;
+    top.addEventListener('change', e => applySharedTheme(e.target.value));
+  }
+})();
+</script>
+<script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+</script>
+<script>
+/* ===== Minimal i18n engine (shared) ===== */
+(function () {
+  const LANG_KEY = 'hcj-lang';
+  const langSelect = document.getElementById('langSelectTop');
+
+  function translate(key, vars){
+    const lang = document.documentElement.lang || 'en';
+    const dict = window.__TRANSLATIONS?.[lang] || {};
+    const fallback = window.__TRANSLATIONS?.en || {};
+    let value = dict[key];
+    if(value == null) value = fallback[key];
+    if(value == null) value = '';
+    if(typeof value === 'string' && vars && typeof vars === 'object'){
+      value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
+    }
+    return value;
+  }
+
+  function t(key, vars){
+    return translate(key, vars);
+  }
+
+  function applyDir(lang){
+    document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+  }
+
+  function translateDOM(){
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const txt = t(key);
+      if (txt) el.textContent = txt;
+    });
+    document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+      const map = el.getAttribute('data-i18n-attr').split(';').map(s=>s.trim()).filter(Boolean);
+      map.forEach(pair=>{
+        const [attr, key] = pair.split(':').map(s=>s.trim());
+        const val = t(key);
+        if(attr && val) el.setAttribute(attr, val);
+      });
+    });
+  }
+
+  function setLang(lang){
+    applyDir(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch(e) {}
+    translateDOM();
+    window.dispatchEvent(new CustomEvent('hcj:lang', { detail: { lang } }));
+  }
+
+  let saved = 'en';
+  try { saved = localStorage.getItem(LANG_KEY) || 'en'; } catch(e) {}
+  applyDir(saved);
+
+  if(langSelect){
+    langSelect.value = saved;
+    langSelect.addEventListener('change', e => setLang(e.target.value));
+  }
+  window.addEventListener('DOMContentLoaded', translateDOM);
+})();
+</script>
+<script>
+/* ===== Category, Magnifier & Mini-Cart Enhancer (non-destructive) ===== */
+(function(){
+  const out = document.getElementById('storeList');
+  if(!out) return;
+
+  /* ---------- 11 Categories (+ keywords, bilingual labels) ---------- */
+  const CATS = [
+    { id:'ring',       en:'Ring',           ar:'خاتم',          icon:'icon/cat-ring.svg',       k:['ring','خاتم'] },
+    { id:'necklace',   en:'Necklace',       ar:'قلادة',         icon:'icon/cat-necklace.svg',   k:['necklace','قلادة'] },
+    { id:'earrings',   en:'Earrings',       ar:'قرط',           icon:'icon/cat-earrings.svg',   k:['earring','earrings','قرط'] },
+    { id:'pendant',    en:'Pendant',        ar:'تعليقة',        icon:'icon/cat-pendant.svg',    k:['pendant','تعليقة'] },
+    { id:'bangle',     en:'Bangle',         ar:'سوار دائري',    icon:'icon/cat-bangle.svg',     k:['bangle','سوار'] },
+    { id:'anklet',     en:'Anklet',         ar:'خلخال',         icon:'icon/cat-anklet.svg',     k:['anklet','ankle','خلخال','anket'] },
+    { id:'chain',      en:'Chain',          ar:'سلسلة',         icon:'icon/cat-chain.svg',      k:['chain','سلسلة'] },
+    { id:'brooch',     en:'Brooch',         ar:'بروش',          icon:'icon/cat-brooch.svg',     k:['brooch','بروش'] },
+    { id:'set',        en:'Jewelry set',    ar:'طقم مجوهرات',   icon:'icon/cat-set.svg',        k:['set','طقم'] },
+    { id:'kids',       en:'Kids',           ar:'ولادي',         icon:'icon/cat-kids.svg',       k:['kids','ولادي','طفل','أطفال'] },
+    { id:'special',    en:'Special',        ar:'مميز',          icon:'icon/cat-special.svg',    k:['special','مميز'] }
+  ];
+  const iconFallback = 'icon/icon-512.png';
+
+  /* ---------- Build the categories UI ---------- */
+  const catGrid = document.getElementById('hcjCatGrid');
+  const elTitle = document.getElementById('hcjCatTitle');
+  const elMeta  = document.getElementById('hcjCatMeta');
+  const elRange = document.getElementById('hcjRange');
+
+  let ACTIVE_CAT = '';
+  function label(cat){
+    const dir = document.documentElement.dir || 'ltr';
+    return dir === 'ar' ? `${cat.ar} · ${cat.en}` : `${cat.en} · ${cat.ar}`;
+  }
+  function buildCats(){
+    if(!catGrid) return;
+    catGrid.innerHTML = '';
+    const all = document.createElement('button');
+    all.className = 'hcj-cat is-active';
+    all.setAttribute('role','tab');
+    all.innerHTML = `<img class="hcj-cat__icon" src="${iconFallback}" alt="">
+                     <div class="hcj-cat__label">All · الكل</div>
+                     <div class="hcj-cat__sub">(${CATS.length})</div>`;
+    all.addEventListener('click', ()=>{ setActive(''); });
+    catGrid.appendChild(all);
+
+    CATS.forEach(c=>{
+      const b = document.createElement('button');
+      b.className = 'hcj-cat';
+      b.setAttribute('role','tab');
+      b.dataset.id = c.id;
+      b.innerHTML = `
+        <img class="hcj-cat__icon" src="${c.icon}" onerror="this.src='${iconFallback}'" alt="">
+        <div class="hcj-cat__label">${label(c)}</div>
+        <div class="hcj-cat__sub">${c.en}</div>`;
+      b.addEventListener('click', ()=> setActive(c.id));
+      catGrid.appendChild(b);
+    });
+  }
+
+  function setActive(id){
+    ACTIVE_CAT = id || '';
+    document.querySelectorAll('.hcj-cat').forEach(el=> el.classList.toggle('is-active', (el.dataset.id||'')===ACTIVE_CAT || (!el.dataset.id && !ACTIVE_CAT)));
+    filterCards();
+    updateGoldBoard();
+  }
+
+  /* ---------- Light cart (drawer) ---------- */
+  const CART_KEY = 'hcj-mini-cart';
+  function loadCart(){
+    try{ return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); }catch(_){ return []; }
+  }
+  function saveCart(list){ try{ localStorage.setItem(CART_KEY, JSON.stringify(list)); }catch(_){ } }
+  function addToCart(item){
+    const list = loadCart();
+    list.unshift(item);
+    saveCart(list);
+    renderCart();
+    openCart();
+  }
+
+  const cart = document.getElementById('hcjCart');
+  const cartBody = document.getElementById('hcjCartBody');
+  const cartSub = document.getElementById('hcjSub');
+  const btnCloseCart = cart?.querySelector('.hcj-cart__close');
+  btnCloseCart?.addEventListener('click', closeCart);
+  function openCart(){ cart?.setAttribute('aria-hidden','false'); }
+  function closeCart(){ cart?.setAttribute('aria-hidden','true'); }
+  function renderCart(){
+    const list = loadCart();
+    cartBody.innerHTML = list.map((it,i)=>`
+      <div class="hcj-item">
+        <img src="${it.img||iconFallback}" alt="">
+        <div>
+          <div class="t">${escapeHtml(it.title||'Item')}</div>
+          <div class="s">${it.sku||''}</div>
+        </div>
+        <div class="p">$${(Number(it.price)||0).toLocaleString()}</div>
+      </div>`).join('');
+    const sub = list.reduce((s,it)=> s + (Number(it.price)||0), 0);
+    cartSub.textContent = '$' + sub.toLocaleString();
+  }
+  renderCart();
+
+  /* ---------- Quick view (+ magnifier) ---------- */
+  const qv = document.getElementById('hcjQV');
+  const qvClose = qv?.querySelector('.hcj-qv__close');
+  const qvTitle = document.getElementById('hcjQVTitle');
+  const qvPrice = document.getElementById('hcjQVPrice');
+  const qvSpecs = document.getElementById('hcjQVSpecs');
+  const qvThumbs = document.getElementById('hcjQVThumbs');
+  const btnQVAdd = document.getElementById('hcjAddCartQV');
+  const waLink = document.getElementById('hcjWA');
+
+  const zoom = document.getElementById('hcjZoom');
+  const zoomImg = document.getElementById('hcjZoomImg');
+  const lens = document.getElementById('hcjLens');
+
+  qvClose?.addEventListener('click', ()=> qv?.setAttribute('aria-hidden','true'));
+  qv?.addEventListener('click', e=>{ if(e.target===qv) qv.setAttribute('aria-hidden','true'); });
+
+  function openQV(card){
+    const img = card.querySelector('.js-main');
+    const title = (card.querySelector('.store-item__title')?.textContent||'').trim();
+    const priceText = (card.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,'');
+    const sku = [...card.querySelectorAll('.store-item__meta span')].find(s=>/sku/i.test(s.textContent||''))?.textContent || '';
+    const thumbStrip = card.querySelectorAll('.store-item__thumbs img');
+    qvTitle.textContent = title;
+    qvPrice.textContent = Number(priceText||0).toLocaleString();
+    qvSpecs.innerHTML = card.querySelector('.store-item__meta')?.innerHTML || '';
+    zoomImg.src = img?.src || iconFallback;
+    qvThumbs.innerHTML = '';
+    thumbStrip.forEach(t=>{
+      const ii = document.createElement('img'); ii.src = t.src; ii.alt=''; ii.addEventListener('click', ()=>{ zoomImg.src = ii.src; setupLens(); });
+      qvThumbs.appendChild(ii);
+    });
+
+    btnQVAdd.onclick = ()=> addToCart({ title, sku, price: Number(priceText||0), img: zoomImg.src });
+    waLink.href = buildWhatsApp(title, sku, priceText, zoomImg.src);
+
+    qv.setAttribute('aria-hidden','false');
+    setupLens();
+  }
+
+  function setupLens(){
+    if(!zoom || !zoomImg || !lens) return;
+    lens.style.backgroundImage = `url(${zoomImg.src})`;
+    lens.style.display = 'block';
+    let w = lens.offsetWidth, h = lens.offsetHeight;
+
+    function move(e){
+      const rect = zoom.getBoundingClientRect();
+      const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+      const bx = Math.max(w/2, Math.min(rect.width - w/2, x));
+      const by = Math.max(h/2, Math.min(rect.height - h/2, y));
+      lens.style.left = (bx - w/2) + 'px';
+      lens.style.top  = (by - h/2) + 'px';
+      const rx = (bx / rect.width)  * 100;
+      const ry = (by / rect.height) * 100;
+      lens.style.backgroundPosition = `${rx}% ${ry}%`;
+    }
+    zoom.onmousemove = move;
+    zoom.onmouseleave = ()=> lens.style.display = 'none';
+    zoom.onmouseenter = ()=> { lens.style.display = 'block'; move({clientX:zoom.getBoundingClientRect().left+10, clientY:zoom.getBoundingClientRect().top+10}); };
+  }
+
+  function buildWhatsApp(title, sku, price, img){
+    const phone = 'YOUR_WHATSAPP_NUMBER';
+    const text = encodeURIComponent(`Hello, I'm interested in:\n${title}\n${sku}\nPrice: $${price}\n${img}`);
+    return `https://wa.me/${phone}?text=${text}`;
+  }
+
+  /* ---------- Category detection (from title) ---------- */
+  function detectCat(title){
+    const s = String(title||'').toLowerCase();
+    for(const c of CATS){
+      if(c.k.some(k => s.includes(k))) return c.id;
+    }
+    return '';
+  }
+
+  /* ---------- Observe Store render & enhance cards ---------- */
+  let observer = new MutationObserver(()=> enhance());
+  observer.observe(out, {childList:true, subtree:true});
+
+  function enhance(){
+    out.querySelectorAll('.store-item').forEach(card=>{
+      if(card.classList.contains('hcj-up')) return;
+      card.classList.add('hcj-up');
+      const title = (card.querySelector('.store-item__title')?.textContent||'').trim();
+      card.dataset.cat = detectCat(title);
+
+      const add = document.createElement('button');
+      add.className = 'hcj-add'; add.title = 'Add to cart';
+      add.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4a2 2 0 0 0 0-4m10 0a2 2 0 1 0 0 4a2 2 0 0 0 0-4M6.16 14h9.72a2 2 0 0 0 1.92-1.46l1.92-6.54A1 1 0 0 0 18.77 4H6.2L5.64 2.36A1 1 0 0 0 4.7 2H3a1 1 0 0 0 0 2h1.06l2.6 7.46l-1.1 3.3A2 2 0 0 0 7 17h12a1 1 0 0 0 0-2H7.42l.74-2"/></svg>`;
+      add.addEventListener('click', ()=>{
+        const p = Number((card.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,''));
+        const sku = [...card.querySelectorAll('.store-item__meta span')].find(s=>/sku/i.test(s.textContent||''))?.textContent || '';
+        const img = card.querySelector('.js-main')?.src || iconFallback;
+        addToCart({ title, sku, price:p, img });
+      });
+      card.appendChild(add);
+
+      card.querySelector('.store-item__thumb')?.addEventListener('click', ()=> openQV(card));
+      card.querySelector('.store-item__title')?.addEventListener('click', ()=> openQV(card));
+    });
+
+    filterCards();
+    updateGoldBoard();
+  }
+
+  function filterCards(){
+    out.querySelectorAll('.store-item').forEach(card=>{
+      const ok = !ACTIVE_CAT || (card.dataset.cat === ACTIVE_CAT);
+      card.style.display = ok ? '' : 'none';
+    });
+  }
+
+  /* ---------- Live gold board (reuses your logic) ---------- */
+  const GOLDAPI_FREE = [
+    "https://api.gold-api.com/price/XAU",
+    "https://api.gold-api.com/price/XAU/USD",
+    "https://www.gold-api.com/price/XAU",
+    "https://www.gold-api.com/price/XAU/USD"
+  ];
+  function pickOuncePrice(d){
+    const c = [d?.price, d?.usd, d?.usd_ounce, d?.price_ounce, d?.ounce, d?.oz, d?.result?.price, d?.XAU?.USD]
+      .map(Number).filter(v=>isFinite(v)&&v>0);
+    if(c.length) return c[0];
+    const g24 = Number(d?.gram_24k || d?.price_gram_24k || d?.g24 || d?.per_gram);
+    return (isFinite(g24)&&g24>0) ? g24*31.1 : NaN;
+  }
+  function timeoutFetch(u,ms){
+    const c = new AbortController(); const id = setTimeout(()=>c.abort(), ms);
+    return fetch(u,{signal:c.signal,cache:"no-store"}).finally(()=>clearTimeout(id));
+  }
+  async function getSpotFast(){
+    const tries = GOLDAPI_FREE.map(u =>
+      timeoutFetch(u,3500).then(r=>r.ok?r.json():Promise.reject(r.status)).then(pickOuncePrice)
+        .then(v => (isFinite(v)&&v>0) ? v : Promise.reject('bad')));
+    return Promise.any(tries);
+  }
+  function perGramForKirat(oz,k,fee){
+    const add = Number.isFinite(fee) ? fee : 10;
+    k = String(k||'').toLowerCase();
+    if(/\b18\b/.test(k)) return (((oz+30)*32*750/995)/1000)+add;
+    if(/\b21\b/.test(k)) return (((oz+30)*32*875/995)/1000)+add;
+    if(/\b22\b/.test(k)) return (((oz+30)*32*916/995)/1000)+add;
+    if(/\b24\b/.test(k)) return (((oz+30)/31.1)/1000)+add;
+    return NaN;
+  }
+
+  async function updateGoldBoard(){
+    if(!elTitle||!elMeta||!elRange) return;
+    const catObj = CATS.find(c=>c.id===ACTIVE_CAT);
+    elTitle.textContent = ACTIVE_CAT ? (label(catObj)) : 'All items · كل القطع';
+
+    const cards = [...out.querySelectorAll('.store-item')].filter(c => c.style.display !== 'none');
+    const weights = cards.map(c=>{
+      const x = [...c.querySelectorAll('.store-item__meta span')].find(s => /g\b/i.test(s.textContent||''));
+      const n = parseFloat((x?.textContent||'').replace(/[^\d.]/g,''));
+      return isFinite(n)?n:NaN;
+    }).filter(Number.isFinite);
+    const n = weights.length;
+    const total = weights.reduce((s,v)=>s+v,0);
+    const avg = n ? (total/n) : 0;
+    elMeta.textContent = n ? `${n} pieces • avg ${avg.toFixed(2)} g` : '—';
+
+    try{
+      const oz = await getSpotFast();
+      document.getElementById('ppg18').textContent = Math.round(perGramForKirat(oz,18,10)).toLocaleString();
+      document.getElementById('ppg21').textContent = Math.round(perGramForKirat(oz,21,10)).toLocaleString();
+      document.getElementById('ppg22').textContent = Math.round(perGramForKirat(oz,22,10)).toLocaleString();
+      document.getElementById('ppg24').textContent = Math.round(perGramForKirat(oz,24,10)).toLocaleString();
+
+      const prices = cards.map(c => Number((c.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,'')))
+                          .filter(v => isFinite(v)&&v>0)
+                          .sort((a,b)=>a-b);
+      const range = prices.length ? `$${prices[0].toLocaleString()} – $${prices[prices.length-1].toLocaleString()}` : '—';
+      elRange.textContent = prices.length ? `Live price range in this category: ${range}` :
+                                            `Select a category to see its live price range.`;
+    }catch(_){
+    }
+  }
+  setInterval(updateGoldBoard, 10000);
+
+  const ESC = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
+  function escapeHtml(v){ return String(v??'').replace(/[&<>"']/g, ch => ESC[ch]||ch ); }
+
+  buildCats();
+  const catCount = document.getElementById('hcjCatsCount');
+  if(catCount) catCount.textContent = String(CATS.length);
+  setActive('');
+  enhance();
+})();
+</script>
+</body>
+</html>
