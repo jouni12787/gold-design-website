@@ -371,6 +371,69 @@
 
   /* Keep 3D canvas proportioned */
   #stlCanvas{ aspect-ratio: 4 / 3; width:100%; height:auto; }
+
+  /* ===== Language chooser ===== */
+  #langModal{
+    position:fixed; inset:0; z-index:2100;
+    display:none; align-items:center; justify-content:center;
+    padding:24px 12px;
+  }
+  #langModal.open{ display:flex; }
+  #langModal::before{
+    content:""; position:absolute; inset:0;
+    background:rgba(0,0,0,.55); backdrop-filter:blur(4px);
+  }
+  #langModal .sheet{
+    position:relative; width:min(460px,92vw);
+    background:var(--card); color:var(--ink);
+    border:1px solid var(--border-soft); border-radius:16px;
+    padding:18px; box-shadow:var(--shadow);
+  }
+  #langModal h4{ margin:0 0 10px 0; }
+  .lang-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .lang-grid button{
+    padding:10px 12px; border:1px solid var(--border-strong);
+    border-radius:12px; background:linear-gradient(120deg,var(--button-top),var(--button-bottom));
+    font-weight:800; cursor:pointer; color:var(--ink);
+  }
+  #langModal .remember{
+    display:flex; gap:8px; align-items:center; margin-top:12px;
+    font-size:.92rem; color:var(--muted);
+  }
+
+  /* ===== Pepper spotlight + floating tour card ===== */
+  #tourOverlay{ background:transparent; }
+  #tourSpotlight{
+    border-radius:18px;
+    box-shadow:
+      0 0 0 200vmax color-mix(in oklab, var(--bg) 55%, transparent),
+      0 8px 26px rgba(0,0,0,.35),
+      0 0 0 3px color-mix(in oklab, var(--gold) 60%, transparent);
+    outline:1.5px solid color-mix(in oklab, var(--gold) 70%, transparent);
+    animation: tourPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes tourPulse{
+    0%,100%{ outline-color: color-mix(in oklab, var(--gold) 50%, transparent); }
+    50%    { outline-color: color-mix(in oklab, var(--gold) 90%, transparent); }
+  }
+
+  #tourCard{
+    position:absolute;
+    max-width:360px;
+  }
+  #tourCard .progress{
+    height:3px; width:100%; background:color-mix(in oklab, var(--muted) 40%, transparent);
+    border-radius:999px; overflow:hidden; margin:-6px 0 6px 0;
+  }
+  #tourCard .progress > i{
+    display:block; height:100%; width:0%;
+    background:linear-gradient(90deg, var(--gold), var(--gold2));
+    transition:width .3s ease;
+  }
+
+  @media (max-width:560px){
+    #tourCard{ max-width:92vw; }
+  }
 </style>
 </head>
 <body>
@@ -650,12 +713,30 @@
   <div id="tourSpotlight"></div>
   <div id="tourCard" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
     <h4 id="tourTitle" data-i18n="builder.tour.welcome.title">Welcome to the Atelier</h4>
+    <div class="progress" aria-hidden="true"><i id="tourProgress"></i></div>
     <p id="tourBody" data-i18n="builder.tour.welcome.body">Let us highlight the controls that shape your bracelet.</p>
     <div id="tourControls">
       <button type="button" id="tourPrev" class="ghost" data-i18n="builder.tour.prev">Back</button>
       <button type="button" id="tourNext" data-i18n="builder.tour.next">Next</button>
     </div>
     <button type="button" id="tourSkip" class="ghost" style="margin-top:6px" data-i18n="builder.tour.skip">Skip tour</button>
+  </div>
+</div>
+
+<!-- Language chooser (opens before tour) -->
+<div id="langModal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="langTitle">
+    <h4 id="langTitle">Choose your language</h4>
+    <div class="lang-grid">
+      <button type="button" data-lang="en">English</button>
+      <button type="button" data-lang="fr">Français</button>
+      <button type="button" data-lang="it">Italiano</button>
+      <button type="button" data-lang="ar">العربية</button>
+    </div>
+    <label class="remember">
+      <input type="checkbox" id="langRemember" checked>
+      <span id="langRememberLabel">Remember my choice on this device</span>
+    </label>
   </div>
 </div>
 
@@ -687,9 +768,29 @@ function t(key, vars){
   return value;
 }
 
+function translateDOM(){
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if(!key) return;
+    const txt = t(key);
+    if(txt != null) el.textContent = txt;
+  });
+  document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+    const map = el.getAttribute('data-i18n-attr');
+    if(!map) return;
+    map.split(';').map(s => s.trim()).filter(Boolean).forEach(pair => {
+      const [attr, key] = pair.split(':').map(s => s.trim());
+      if(!attr || !key) return;
+      const val = t(key);
+      if(val != null) el.setAttribute(attr, val);
+    });
+  });
+}
+
 function onLanguageChange(){
   rebuildTourSteps();
   applyDynamicTranslations();
+  applyUIText();
   render();
   if(isTourActive) showTourStep(tourIndex);
 }
@@ -1026,6 +1127,12 @@ const tourBody = document.getElementById("tourBody");
 const tourNext = document.getElementById("tourNext");
 const tourPrev = document.getElementById("tourPrev");
 const tourSkip = document.getElementById("tourSkip");
+const tourProgress = document.getElementById("tourProgress");
+const langModal = document.getElementById("langModal");
+const langRemember = document.getElementById("langRemember");
+const langTitleEl = document.getElementById("langTitle");
+const langRememberLabel = document.getElementById("langRememberLabel");
+const langSelectTop = document.getElementById("langSelectTop");
 const themeDesigner = document.getElementById("themeDesigner");
 const inpCustomAccent = document.getElementById("customAccent");
 const inpCustomBackground = document.getElementById("customBackground");
@@ -1043,6 +1150,7 @@ let toastTimer = null;
 let isRestoringSession = false;
 let tourIndex = 0;
 let isTourActive = false;
+let _autoTimer = null;
 
 /* Utils */
 const enc = s => encodeURIComponent(s); // keep %20 for spaces (GitHub Pages)
@@ -1121,14 +1229,6 @@ function applyDynamicTranslations(){
     if(buttons[0]) buttons[0].textContent = t('builder.row.duplicate');
     if(buttons[1]) buttons[1].textContent = t('builder.row.remove');
   });
-
-  if(tourSkip) tourSkip.textContent = t('builder.tour.skip');
-  if(!isTourActive){
-    if(tourTitle) tourTitle.textContent = t('builder.tour.welcome.title');
-    if(tourBody) tourBody.textContent = t('builder.tour.welcome.body');
-  }
-  if(tourPrev) tourPrev.textContent = t('builder.tour.prev');
-  if(tourNext) tourNext.textContent = t('builder.tour.next');
 
   const stlSelect = document.getElementById('stlSelect');
   if(stlSelect){
@@ -1344,15 +1444,147 @@ function markTourSeen(){
   catch(_){/* ignore */}
 }
 
+const LANG_KEY = 'hcj-lang';
+let currentLang = document.documentElement.lang || 'en';
+
+const I18N = {
+  en: {
+    ui: {
+      next: "Next",
+      back: "Back",
+      finish: "Finish",
+      skip: "Skip tour",
+      introTitle: "Welcome to the Atelier",
+      introBody: "Let me highlight the controls that shape your bracelet.",
+      modalTitle: "Choose your language",
+      remember: "Remember my choice on this device"
+    },
+    steps: [
+      { key: "ambience", title: "Curate your ambience", body: "Swap between maison themes or open the custom palette to match a client’s brand codes." },
+      { key: "pendant", title: "Select a pendant", body: "Pick the pendant silhouette that anchors your bracelet narrative." },
+      { key: "links", title: "Balance your links", body: "Stack link families and quantities; the builder mirrors them on both sides automatically." },
+      { key: "drape", title: "Shape the drape", body: "Adjust the per-link bend to simulate how the chain falls around the wrist." },
+      { key: "specs", title: "Review atelier specs", body: "Real densities and live market pricing generate production-ready gram and price estimates." },
+      { key: "preview3d", title: "Preview in 3D", body: "Orbit the bracelet, change lighting presets and bookmark camera angles for renders." },
+      { key: "export", title: "Export and save", body: "Download files, save the session locally or reset to begin a new composition." }
+    ]
+  },
+  fr: {
+    ui: {
+      next: "Suivant",
+      back: "Retour",
+      finish: "Terminer",
+      skip: "Passer la visite",
+      introTitle: "Bienvenue à l’Atelier",
+      introBody: "Voyons ensemble les contrôles qui façonnent votre bracelet.",
+      modalTitle: "Choisissez votre langue",
+      remember: "Mémoriser mon choix sur cet appareil"
+    },
+    steps: [
+      { key: "ambience", title: "Soignez l’ambiance", body: "Changez de thème maison ou ouvrez la palette personnalisée pour vos codes de marque." },
+      { key: "pendant", title: "Choisissez un pendentif", body: "Sélectionnez la silhouette qui ancre la narration du bracelet." },
+      { key: "links", title: "Équilibrez les maillons", body: "Empilez familles et quantités; le configurateur les reflète automatiquement." },
+      { key: "drape", title: "Ajustez le tombé", body: "Réglez la courbure par maillon pour simuler la chute autour du poignet." },
+      { key: "specs", title: "Spécifications atelier", body: "Densités réelles et prix de marché pour des estimations prêtes production." },
+      { key: "preview3d", title: "Aperçu 3D", body: "Orbitez, changez l’éclairage et sauvegardez des angles caméra pour les rendus." },
+      { key: "export", title: "Exporter et enregistrer", body: "Téléchargez les fichiers ou démarrez une nouvelle composition." }
+    ]
+  },
+  it: {
+    ui: {
+      next: "Avanti",
+      back: "Indietro",
+      finish: "Fine",
+      skip: "Salta tour",
+      introTitle: "Benvenuto in Atelier",
+      introBody: "Ti mostro i controlli che modellano il tuo bracciale.",
+      modalTitle: "Scegli la tua lingua",
+      remember: "Ricorda la mia scelta su questo dispositivo"
+    },
+    steps: [
+      { key: "ambience", title: "Cura l’atmosfera", body: "Cambia tema o usa la palette personalizzata per i codici del brand." },
+      { key: "pendant", title: "Seleziona un pendente", body: "Scegli la silhouette che ancora la narrazione del bracciale." },
+      { key: "links", title: "Bilancia le maglie", body: "Impila famiglie e quantità; il builder le rispecchia automaticamente." },
+      { key: "drape", title: "Modella la caduta", body: "Regola la curvatura per simulare come cade sul polso." },
+      { key: "specs", title: "Specifiche d’atelier", body: "Densità reali e prezzi live per stime pronte alla produzione." },
+      { key: "preview3d", title: "Anteprima 3D", body: "Orbita il bracciale, cambia luci e salva angoli camera." },
+      { key: "export", title: "Esporta e salva", body: "Scarica i file o ricomincia una nuova composizione." }
+    ]
+  },
+  ar: {
+    ui: {
+      next: "التالي",
+      back: "السابق",
+      finish: "إنهاء",
+      skip: "تجاوز الجولة",
+      introTitle: "مرحباً بك في الأتيليه",
+      introBody: "سأرشدك إلى العناصر التي تشكّل سوارك.",
+      modalTitle: "اختر لغتك",
+      remember: "تذكّر اختياري على هذا الجهاز"
+    },
+    steps: [
+      { key: "ambience", title: "اضبط الأجواء", body: "بدّل بين الثيمات أو افتح لوحة الألوان المخصصة لتوافق هوية العلامة." },
+      { key: "pendant", title: "اختر القلادة", body: "اختر الشكل الذي يرسّخ قصة السوار." },
+      { key: "links", title: "وازن الحلقات", body: "راكم العائلات والكميات؛ يتم عكسها تلقائياً على الجانبين." },
+      { key: "drape", title: "شكل الانحناءة", body: "عدّل الانحناء لكل حلقة لمحاكاة كيفية الالتفاف على المعصم." },
+      { key: "specs", title: "مواصفات الأتيليه", body: "كثافات حقيقية وأسعار مباشرة لتقديرات جاهزة للإنتاج." },
+      { key: "preview3d", title: "معاينة ثلاثية الأبعاد", body: "حرّك السوار، بدّل الإضاءة واحفظ زوايا الكاميرا." },
+      { key: "export", title: "تصدير وحفظ", body: "نزّل الملفات أو ابدأ تركيبة جديدة." }
+    ]
+  }
+};
+
+function getSavedLang(){
+  try{ return localStorage?.getItem(LANG_KEY); }
+  catch(_){ return null; }
+}
+
+function applyDir(lang){
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+}
+
+function setLang(lang, remember = true){
+  const next = I18N[lang] ? lang : 'en';
+  currentLang = next;
+  applyDir(next);
+  if(remember){
+    try{ localStorage?.setItem(LANG_KEY, next); }catch(_){ }
+  }else{
+    try{ localStorage?.removeItem(LANG_KEY); }catch(_){ }
+  }
+  if(langSelectTop && langSelectTop.value !== next) langSelectTop.value = next;
+  translateDOM();
+  window.dispatchEvent(new CustomEvent('hcj:lang', { detail: { lang: next } }));
+}
+
+function tTour(path, fallback = ''){
+  const parts = String(path || '').split('.');
+  let ref = I18N[currentLang] || I18N.en;
+  for(const p of parts){
+    if(ref == null) break;
+    ref = ref[p];
+  }
+  if(ref == null){
+    ref = I18N.en;
+    for(const p of parts){
+      if(ref == null) break;
+      ref = ref[p];
+    }
+  }
+  return ref == null ? fallback : ref;
+}
+
 function buildTourSteps(){
+  const S = I18N[currentLang]?.steps || I18N.en.steps;
   return [
-    { selector: '.headActions', title: t('tour.s1.h'), body: t('tour.s1.p') },
-    { selector: '#pendant', title: t('tour.s2.h'), body: t('tour.s2.p') },
-    { selector: '#rows', title: t('tour.s3.h'), body: t('tour.s3.p') },
-    { selector: '#angleStep', title: t('tour.s4.h'), body: t('tour.s4.p') },
-    { selector: '#materialSummary', title: t('tour.s5.h'), body: t('tour.s5.p') },
-    { selector: '#preview3d', title: t('tour.s6.h'), body: t('tour.s6.p') },
-    { selector: '.buttons', title: t('tour.s7.h'), body: t('tour.s7.p') }
+    { selector: '.headActions',     title: S[0]?.title || '', body: S[0]?.body || '' },
+    { selector: '#pendant',         title: S[1]?.title || '', body: S[1]?.body || '' },
+    { selector: '#rows',            title: S[2]?.title || '', body: S[2]?.body || '' },
+    { selector: '#angleStep',       title: S[3]?.title || '', body: S[3]?.body || '' },
+    { selector: '#materialSummary', title: S[4]?.title || '', body: S[4]?.body || '' },
+    { selector: '#preview3d',       title: S[5]?.title || '', body: S[5]?.body || '' },
+    { selector: '.buttons',         title: S[6]?.title || '', body: S[6]?.body || '' }
   ];
 }
 
@@ -1360,6 +1592,106 @@ let TOUR_STEPS = buildTourSteps();
 
 function rebuildTourSteps(){
   TOUR_STEPS = buildTourSteps();
+}
+
+const AUTONEXT_MS = 6500;
+
+function positionCardNear(step){
+  if(!tourCard) return;
+  const target = step?.selector ? document.querySelector(step.selector) : null;
+  if(!target){
+    tourCard.style.top = '50%';
+    tourCard.style.left = '50%';
+    tourCard.style.transform = 'translate(-50%, -50%)';
+    return;
+  }
+  const rect = target.getBoundingClientRect();
+  const cardRect = tourCard.getBoundingClientRect();
+  const cardWidth = cardRect.width || tourCard.offsetWidth || 0;
+  const cardHeight = cardRect.height || tourCard.offsetHeight || 0;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const top = Math.min(Math.max(rect.bottom + 12, 12), vh - cardHeight - 12);
+  const left = Math.min(Math.max(rect.left + (rect.width / 2) - (cardWidth / 2), 12), vw - cardWidth - 12);
+  tourCard.style.transform = 'none';
+  tourCard.style.top = `${top}px`;
+  tourCard.style.left = `${left}px`;
+}
+
+function updateProgress(idx){
+  if(!tourProgress) return;
+  const total = TOUR_STEPS.length;
+  if(total <= 1){
+    tourProgress.style.width = idx >= total - 1 ? '100%' : '0%';
+    return;
+  }
+  const pct = Math.max(0, Math.min(100, (idx / (total - 1)) * 100));
+  tourProgress.style.width = `${pct}%`;
+}
+
+function applyUIText(){
+  if(langTitleEl) langTitleEl.textContent = tTour('ui.modalTitle', 'Choose your language');
+  if(langRememberLabel) langRememberLabel.textContent = tTour('ui.remember', 'Remember my choice on this device');
+  if(tourSkip) tourSkip.textContent = tTour('ui.skip', tourSkip.textContent || 'Skip tour');
+  if(tourPrev) tourPrev.textContent = tTour('ui.back', tourPrev.textContent || 'Back');
+  if(!isTourActive){
+    if(tourTitle) tourTitle.textContent = tTour('ui.introTitle', tourTitle.textContent || '');
+    if(tourBody) tourBody.textContent = tTour('ui.introBody', tourBody.textContent || '');
+    if(tourNext) tourNext.textContent = tTour('ui.next', tourNext.textContent || 'Next');
+    updateProgress(0);
+  }else{
+    updateProgress(tourIndex);
+  }
+}
+
+function openLangModal(){
+  if(!langModal) return;
+  langModal.classList.add('open');
+  langModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeLangModal(){
+  if(!langModal) return;
+  langModal.classList.remove('open');
+  langModal.setAttribute('aria-hidden', 'true');
+}
+
+function bootLanguage(){
+  const saved = getSavedLang();
+  if(saved){
+    setLang(saved, true);
+    return true;
+  }
+  const navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+  if(navLang.startsWith('ar')) setLang('ar', false);
+  else if(navLang.startsWith('fr')) setLang('fr', false);
+  else if(navLang.startsWith('it')) setLang('it', false);
+  else setLang('en', false);
+  openLangModal();
+  return false;
+}
+
+langModal?.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-lang]');
+  if(!btn) return;
+  const picked = btn.dataset.lang;
+  const rememberChoice = langRemember ? !!langRemember.checked : true;
+  setLang(picked, rememberChoice);
+  closeLangModal();
+  if(!hasCompletedTour()) startTour(false);
+});
+
+if(langSelectTop){
+  langSelectTop.addEventListener('change', e => setLang(e.target.value, true));
+}
+
+function restartAutoNext(idx){
+  if(_autoTimer) clearTimeout(_autoTimer);
+  if(!isTourActive) return;
+  _autoTimer = setTimeout(()=>{
+    if(tourIndex >= TOUR_STEPS.length - 1) endTour();
+    else showTourStep(idx + 1);
+  }, AUTONEXT_MS);
 }
 
 function spotlightStep(step){
@@ -1377,6 +1709,10 @@ function spotlightStep(step){
     tourSpotlight.style.width = `${w}px`;
     tourSpotlight.style.height = `${h}px`;
     tourSpotlight.style.transform = `translate(${x}px, ${y}px)`;
+    if(h > 0){
+      const ratio = w / h;
+      tourSpotlight.style.borderRadius = ratio > 1.6 ? '16px' : '999px';
+    }
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }else{
     tourSpotlight.style.width = '0';
@@ -1388,17 +1724,19 @@ function showTourStep(idx){
   const step = TOUR_STEPS[idx];
   if(!step){ endTour(); return; }
   tourIndex = idx;
-  if(tourTitle) tourTitle.textContent = step.title;
-  if(tourBody) tourBody.textContent = step.body;
+  if(tourTitle) tourTitle.textContent = step.title || '';
+  if(tourBody) tourBody.textContent = step.body || '';
   spotlightStep(step);
+  positionCardNear(step);
   if(tourPrev){
     tourPrev.disabled = idx === 0;
-    tourPrev.textContent = t('builder.tour.prev');
+    tourPrev.textContent = tTour('ui.back', 'Back');
   }
   if(tourNext){
-    const key = idx === TOUR_STEPS.length - 1 ? 'builder.tour.finish' : 'builder.tour.next';
-    tourNext.textContent = t(key);
+    tourNext.textContent = idx === TOUR_STEPS.length - 1 ? tTour('ui.finish', 'Finish') : tTour('ui.next', 'Next');
   }
+  updateProgress(idx);
+  restartAutoNext(idx);
 }
 
 function startTour(force = false){
@@ -1407,15 +1745,26 @@ function startTour(force = false){
   isTourActive = true;
   tourOverlay.classList.add('open');
   tourOverlay.setAttribute('aria-hidden', 'false');
+  applyUIText();
   showTourStep(0);
 }
 
 function endTour(markSeen = true){
   if(!tourOverlay) return;
   isTourActive = false;
+  if(_autoTimer) clearTimeout(_autoTimer);
+  _autoTimer = null;
   tourOverlay.classList.remove('open');
   tourOverlay.setAttribute('aria-hidden', 'true');
+  tourIndex = 0;
+  updateProgress(0);
+  if(tourCard){
+    tourCard.style.top = '50%';
+    tourCard.style.left = '50%';
+    tourCard.style.transform = 'translate(-50%, -50%)';
+  }
   if(markSeen) markTourSeen();
+  applyUIText();
 }
 
 function addToWishlist(){
@@ -1648,7 +1997,9 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
 
   refreshPerGramPrice();
   updateThemeDesignerVisibility();
+  const hasLanguage = bootLanguage();
   applyDynamicTranslations();
+  applyUIText();
   render();
 
   if(selLighting && typeof window.__setLightingPreset === 'function'){
@@ -1658,16 +2009,32 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   document.getElementById('tab2d').addEventListener('click', ()=>switchMode('2d'));
   document.getElementById('tab3d').addEventListener('click', ()=>switchMode('3d'));
 
-  if(!hasCompletedTour()){
+  if(hasLanguage && !hasCompletedTour()){
     setTimeout(()=> startTour(false), 900);
   }
 
   window.addEventListener('resize', ()=>{ if(isTourActive) showTourStep(tourIndex); });
-  document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && isTourActive) endTour(false); });
+  document.addEventListener('keydown', e=>{
+    if(!isTourActive) return;
+    if(e.key === 'Escape'){ endTour(false); return; }
+    if(e.key === 'ArrowRight' || e.key === ' '){
+      e.preventDefault();
+      if(tourIndex >= TOUR_STEPS.length - 1) endTour();
+      else showTourStep(tourIndex + 1);
+    }
+    if(e.key === 'ArrowLeft'){
+      e.preventDefault();
+      if(tourIndex > 0) showTourStep(tourIndex - 1);
+    }
+  });
   if(tourOverlay) tourOverlay.addEventListener('click', e=>{ if(e.target === tourOverlay) endTour(false); });
   if(tourNext) tourNext.addEventListener('click', ()=>{ if(tourIndex >= TOUR_STEPS.length - 1) endTour(); else showTourStep(tourIndex + 1); });
   if(tourPrev) tourPrev.addEventListener('click', ()=>{ if(tourIndex > 0) showTourStep(tourIndex - 1); });
   if(tourSkip) tourSkip.addEventListener('click', ()=> endTour());
+  if(tourCard){
+    ['mouseenter','focusin'].forEach(ev => tourCard.addEventListener(ev, ()=>{ if(_autoTimer) clearTimeout(_autoTimer); }));
+    ['mouseleave','focusout'].forEach(ev => tourCard.addEventListener(ev, ()=>{ if(isTourActive) restartAutoNext(tourIndex); }));
+  }
 })();
 
 function addRow(init={type:LINKS[0], qty:6}){
@@ -2813,65 +3180,15 @@ function handleLayoutUpdate(layout){
 })();
 </script>
 <script>
-/* ===== Minimal i18n engine (shared) ===== */
+/* ===== Minimal i18n hook ===== */
 (function () {
-  const LANG_KEY = 'hcj-lang';
-  const langSelect = document.getElementById('langSelectTop');
-
-  function translate(key, vars){
-    const lang = document.documentElement.lang || 'en';
-    const dict = window.__TRANSLATIONS?.[lang] || {};
-    const fallback = window.__TRANSLATIONS?.en || {};
-    let value = dict[key];
-    if(value == null) value = fallback[key];
-    if(value == null) value = '';
-    if(typeof value === 'string' && vars && typeof vars === 'object'){
-      value = value.replace(/\{\{(\w+)\}\}/g, (_, name) => (vars[name] ?? ''));
-    }
-    return value;
+  if(typeof getSavedLang === 'function' && typeof applyDir === 'function'){
+    const saved = getSavedLang() || document.documentElement.lang || 'en';
+    applyDir(saved);
   }
-
-  function t(key, vars){
-    return translate(key, vars);
+  if(typeof translateDOM === 'function'){
+    window.addEventListener('DOMContentLoaded', translateDOM);
   }
-
-  function applyDir(lang){
-    document.documentElement.lang = lang;
-    document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
-  }
-
-  function translateDOM(){
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      const txt = t(key);
-      if (txt) el.textContent = txt;
-    });
-    document.querySelectorAll('[data-i18n-attr]').forEach(el => {
-      const map = el.getAttribute('data-i18n-attr').split(';').map(s=>s.trim()).filter(Boolean);
-      map.forEach(pair=>{
-        const [attr, key] = pair.split(':').map(s=>s.trim());
-        const val = t(key);
-        if(attr && val) el.setAttribute(attr, val);
-      });
-    });
-  }
-
-  function setLang(lang){
-    applyDir(lang);
-    try { localStorage.setItem(LANG_KEY, lang); } catch(e) {}
-    translateDOM();
-    window.dispatchEvent(new CustomEvent('hcj:lang', { detail: { lang } }));
-  }
-
-  let saved = 'en';
-  try { saved = localStorage.getItem(LANG_KEY) || 'en'; } catch(e) {}
-  applyDir(saved);
-
-  if(langSelect){
-    langSelect.value = saved;
-    langSelect.addEventListener('change', e => setLang(e.target.value));
-  }
-  window.addEventListener('DOMContentLoaded', translateDOM);
 })();
 </script>
 </body>
