@@ -845,6 +845,12 @@
 
   let activeCat = 'all';
   const CART = window.HCJ_CART instanceof Map ? window.HCJ_CART : new Map();
+  // Use a stable per-piece key independent of SKU
+  function keyForProduct(p){
+    const id = Number.isFinite(p?.id) ? p.id : Math.floor(Math.random()*1e9);
+    return 'id#' + id;
+  }
+  window.HCJ_SKU_KEY = keyForProduct; // expose for QV
   window.HCJ_CART = CART;
 
   function buildCatBar(){
@@ -888,15 +894,27 @@
   }
 
 
-  // === Price filters & sorting ===
+
+  // === Price filters & sorting (with toggle) ===
+  const filterToggle = document.createElement('button');
+  filterToggle.id = 'priceFilterToggle';
+  filterToggle.className = 'badge';
+  filterToggle.type = 'button';
+  filterToggle.textContent = 'Price filter ▾';
+  catMeta?.after(filterToggle);
+
   const filterWrap = document.createElement('div');
-  filterWrap.style = 'display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px;';
+  filterWrap.style = 'display:none;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px;';
   filterWrap.innerHTML = `
     <label class="badge" style="display:inline-flex;gap:6px;align-items:center;">
-      Min <input id="priceMin" type="number" inputmode="decimal" style="width:100px;background:transparent;border:0;outline:0;color:inherit">
+      Min <input id="priceMin" type="number" inputmode="decimal" min="0" step="1"
+                 placeholder="Min (USD)" aria-label="Minimum price"
+                 style="width:110px;background:transparent;border:0;outline:0;color:inherit">
     </label>
     <label class="badge" style="display:inline-flex;gap:6px;align-items:center;">
-      Max <input id="priceMax" type="number" inputmode="decimal" style="width:100px;background:transparent;border:0;outline:0;color:inherit">
+      Max <input id="priceMax" type="number" inputmode="decimal" min="0" step="1"
+                 placeholder="Max (USD)" aria-label="Maximum price"
+                 style="width:110px;background:transparent;border:0;outline:0;color:inherit">
     </label>
     <label class="badge" style="display:inline-flex;gap:6px;align-items:center;">
       Sort
@@ -908,13 +926,24 @@
     </label>
     <button id="clearFilters" class="hcj-btn ghost" type="button">Reset</button>
   `;
-  catMeta?.after(filterWrap);
+  filterToggle?.after(filterWrap);
+
   const priceMin = filterWrap.querySelector('#priceMin');
   const priceMax = filterWrap.querySelector('#priceMax');
   const sortPrice = filterWrap.querySelector('#sortPrice');
   const clearFilters = filterWrap.querySelector('#clearFilters');
 
-  function parseNum(v){ const n = parseFloat((v||'').toString().replace(/,/g,'.')); return Number.isFinite(n) ? n : null; }
+  filterToggle?.addEventListener('click', ()=>{
+    filterWrap.style.display = (filterWrap.style.display === 'none') ? 'flex' : 'none';
+  });
+
+  function parseNum(v){
+    if(v === '' || v == null) return null;
+    let n = parseFloat((v||'').toString().replace(/,/g,'.'));
+    if(!Number.isFinite(n)) return null;
+    if(n < 0) n = 0;
+    return n;
+  }
 
   function applyFiltersAndSorting(){
     const min = parseNum(priceMin.value); const max = parseNum(priceMax.value);
@@ -937,10 +966,12 @@
   }
   window.HCJ_APPLY_FILTERS = applyFiltersAndSorting;
 
-  priceMin?.addEventListener('input', applyFiltersAndSorting);
-  priceMax?.addEventListener('input', applyFiltersAndSorting);
+  function clampNonNegative(e){ if(e.target.value !== '' && Number(e.target.value) < 0){ e.target.value = 0; } applyFiltersAndSorting(); }
+  priceMin?.addEventListener('input', clampNonNegative);
+  priceMax?.addEventListener('input', clampNonNegative);
   sortPrice?.addEventListener('change', applyFiltersAndSorting);
   clearFilters?.addEventListener('click', () => { priceMin.value=''; priceMax.value=''; sortPrice.value=''; applyFiltersAndSorting(); });
+
 
   function updateCatMeta(){
     if(!catMeta) return;
@@ -1011,9 +1042,7 @@
   function changeQty(sku, delta){
     const entry = CART.get(sku);
     if(!entry) return;
-    const product = entry.product || {};
-    const max = Number.isFinite(product.stock) && product.stock > 0 ? Math.floor(product.stock) : 99;
-    const next = Math.max(0, Math.min(max, entry.qty + delta));
+    const next = Math.max(0, Math.min(1, entry.qty + delta)); // cap at 1
     if(next === 0){
       CART.delete(sku);
     }else{
@@ -1048,7 +1077,7 @@
           <div class="hcj-qty">
             <button type="button" data-action="dec" aria-label="Decrease quantity">−</button>
             <span>${qty}</span>
-            <button type="button" data-action="inc" aria-label="Increase quantity">+</button>
+            <button type="button" data-action="inc" aria-label="Increase quantity" ${qty >= 1 ? 'disabled' : ''}>+</button>
           </div>
         </div>`);
     });
@@ -1098,17 +1127,13 @@
 
   function addToCart(product, imgUrl){
     if(!product) return;
-    const skuKey = (product.sku && product.sku.trim()) || (product.name && product.name.trim()) || 'item';
-    const existing = CART.get(skuKey);
-    const currentQty = existing?.qty || 0;
-    const stockMax = Number.isFinite(product.stock) ? Math.max(0, Math.floor(product.stock)) : 99;
-    if(stockMax === 0) return;
-    const nextQty = Math.min(stockMax, currentQty + 1);
-    const entry = existing || { product, qty: 0, img: imgUrl };
+    const key = keyForProduct(product);
+    // Always cap to 1 per unique piece
+    const entry = CART.get(key) || { product, qty: 0, img: imgUrl };
     entry.product = product;
-    entry.qty = nextQty;
+    entry.qty = 1;
     if(imgUrl) entry.img = imgUrl;
-    CART.set(skuKey, entry);
+    CART.set(key, entry);
     renderCartDrawer();
     openCart();
   }
@@ -1351,11 +1376,10 @@
     addBtn.onclick = () => {
       const imgUrl = first || '';
       if(window.HCJ_CART && typeof window.HCJ_CART.set === 'function'){
-        const sku = ((product?.sku || product?.name || 'item').trim()) + '#' + (Number.isFinite(product?.id) ? product.id : Math.floor(Math.random()*1e9));
-        const existing = window.HCJ_CART.get(sku);
-        const max = Number.isFinite(product?.stock) ? Math.floor(product.stock) : 99;
-        const qty = Math.min(max, (existing?.qty || 0) + 1);
-        window.HCJ_CART.set(sku, { product, qty, img: imgUrl });
+        const keyFn = window.HCJ_SKU_KEY || ((p)=>'id#'+(Number.isFinite(p?.id)?p.id:Math.floor(Math.random()*1e9)));
+        const sku = keyFn(product);
+        // Always cap to 1 per unique item
+        window.HCJ_CART.set(sku, { product, qty: 1, img: imgUrl });
         document.dispatchEvent(new CustomEvent('hcj:cart-updated'));
       }
     };
@@ -1413,8 +1437,20 @@
   const zoom = controls.querySelector('#hcjMagZoom');
   toggle?.addEventListener('change', () => {
     magOn = toggle.checked;
-    if(!magOn && qvLens){
-      qvLens.style.display = 'none';
+    if(qvLens){
+      if(magOn){
+        // Show lens immediately and center it
+        const rect = qvImg.getBoundingClientRect();
+        const cx = rect.width / 2; const cy = rect.height / 2;
+        const bx = -((cx * magZoom) - qvLens.offsetWidth / 2);
+        const by = -((cy * magZoom) - qvLens.offsetHeight / 2);
+        qvLens.style.transform = `translate(${cx - qvLens.offsetWidth / 2}px, ${cy - qvLens.offsetHeight / 2}px)`;
+        qvLens.style.backgroundPosition = `${bx}px ${by}px`;
+        qvLens.style.display = 'block';
+        updateLensBackground();
+      }else{
+        qvLens.style.display = 'none';
+      }
     }
   });
   zoom?.addEventListener('input', () => {
