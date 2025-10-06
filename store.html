@@ -220,6 +220,12 @@
   .view-tiles .store-item__description{ display:none; }
   .view-tiles .store-item__meta{ font-size:.8rem; gap:8px }
 
+  #viewToggleWrap button[aria-pressed="true"]{
+    border-color: var(--gold);
+    color: var(--gold);
+    background: color-mix(in oklab,var(--gold) 15%, transparent);
+  }
+
   /* phone-first safety: never overflow the viewport */
   img, video { max-width: 100%; height: auto; }
 
@@ -1625,6 +1631,8 @@
     document.body.classList.toggle('view-list',  mode === 'list');
     document.body.classList.toggle('view-tiles', mode === 'tiles');
     try{ localStorage.setItem('hcj-view', mode); }catch(_){ }
+    if(listBtn){ listBtn.setAttribute('aria-pressed', mode === 'list' ? 'true' : 'false'); }
+    if(tilesBtn){ tilesBtn.setAttribute('aria-pressed', mode === 'tiles' ? 'true' : 'false'); }
   }
   let saved = 'list';
   try{ saved = localStorage.getItem('hcj-view') || (isPhone?'tiles':'list'); }catch(_){ }
