@@ -124,6 +124,7 @@
   .store-item__meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
   .store-item__badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft);background:var(--control-bg);font-weight:600;line-height:1}
   .store-item__badge--stock{color:var(--gold)}
+  .store-item__actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 
   @media (max-width:840px){
     .store-item{grid-template-columns:minmax(0,160px) minmax(0,1fr)}
@@ -213,6 +214,24 @@
   .hcj-item .p{font-weight:800;color:var(--gold)}
   .hcj-cart__foot{margin-top:auto;border-top:1px solid var(--border-soft);padding:12px 14px;display:grid;gap:10px}
   .hcj-cart__row{display:flex;justify-content:space-between;align-items:center}
+
+  /* === Try-On modal === */
+  #tryon-modal[hidden]{display:none}
+  .tryon-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:9999;padding:16px}
+  .tryon-panel{width:min(960px,96vw);background:#111;color:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5);display:flex;flex-direction:column}
+  .tryon-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1c1c1c}
+  .tryon-head button{font-size:22px;line-height:1;background:none;color:#fff;border:0;cursor:pointer;padding:4px}
+  .tryon-stage{position:relative;width:100%;aspect-ratio:9/16;background:#000;overflow:hidden}
+  #tryon-video,.uploaded-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .ring-overlay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(1) rotate(0deg);touch-action:none;cursor:grab;user-select:none}
+  .ring-overlay:active{cursor:grabbing}
+  .ring-overlay img{display:block;width:280px;height:auto;pointer-events:none}
+  .tryon-controls{display:grid;grid-template-columns:1fr 1fr auto auto;gap:12px;padding:12px;background:#1a1a1a;align-items:center}
+  .tryon-controls label{display:flex;gap:10px;align-items:center;font-weight:600;font-size:.95rem}
+  .tryon-controls input[type="range"]{flex:1}
+  .upload-fallback span{display:inline-block;padding:8px 12px;background:#333;border-radius:8px;cursor:pointer;font-weight:600}
+  .btn.try-on-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border-soft);background:var(--control-bg);color:var(--ink);font-weight:700;cursor:pointer;transition:background .2s,border .2s,transform .2s}
+  .btn.try-on-btn:hover{border-color:var(--gold);background:color-mix(in oklab,var(--gold) 18%, transparent);transform:translateY(-1px)}
 </style>
 </head>
 <body>
@@ -342,16 +361,62 @@
   </div>
 </aside>
 
+<!-- Try-On Modal -->
+<div id="tryon-modal" hidden class="tryon-backdrop">
+  <div class="tryon-panel">
+    <header class="tryon-head">
+      <strong>Virtual Try-On</strong>
+      <button id="tryon-close" aria-label="Close">&times;</button>
+    </header>
+
+    <div class="tryon-stage">
+      <video id="tryon-video" playsinline autoplay muted></video>
+      <div id="ring-overlay" class="ring-overlay" draggable="false">
+        <img id="ring-image" alt="Ring overlay" />
+      </div>
+    </div>
+
+    <div class="tryon-controls">
+      <label>Size
+        <input id="sizeRange" type="range" min="0.2" max="3" step="0.01" value="1">
+      </label>
+      <label>Rotate
+        <input id="rotateRange" type="range" min="-90" max="90" step="1" value="0">
+      </label>
+      <button id="flipCamBtn" type="button">Flip camera</button>
+      <label class="upload-fallback">
+        <input id="photoUpload" type="file" accept="image/*" hidden>
+        <span>Upload photo instead</span>
+      </label>
+    </div>
+  </div>
+</div>
+
 <script src="scripts/a2hs.js"></script>
 <script src="scripts/translations.js"></script>
 <script>
 (function () {
   const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk";
   const SHEET_NAME = "Form Responses 1";
-  const TQ = encodeURIComponent("select A,B,C,D,E,F,G,H,I");
+  const TQ = encodeURIComponent("select A,B,C,D,E,F,G,H,I,J");
   const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
 
   const out = document.getElementById("storeList");
+  const TRY_ON_COL_HEADER = 'jpg FILE FOR online trying';
+
+  function driveShareToDirect(url){
+    if(!url) return '';
+    try {
+      const u = new URL(String(url).trim());
+      const matchPath = u.pathname.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      const matchQuery = u.search.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      const id = (matchPath && matchPath[1]) || (matchQuery && matchQuery[1]);
+      return id ? `https://drive.google.com/uc?export=view&id=${id}` : url;
+    } catch (err) {
+      return url;
+    }
+  }
+  window.driveShareToDirect = driveShareToDirect;
 
   const CATS = {
     all:      { en:"All",         ar:"الكل",           icon:"icon/all.png" },
@@ -637,6 +702,9 @@
             </div>
             ${description ? `<p class="store-item__description">${description}</p>` : ""}
             <div class="store-item__meta">${metaBits}</div>
+            <div class="store-item__actions">
+              <button class="btn try-on-btn" type="button" data-tryon="" hidden>Try on (beta)</button>
+            </div>
           </div>
           <button class="mini-cart" type="button" aria-label="Add to cart">🛒</button>
         </article>
@@ -687,7 +755,15 @@
     .then(r => r.text())
     .then(txt => {
       const json = JSON.parse(txt.substring(47, txt.length - 2));
-      const rows = (json.table?.rows || []);
+      const table = json.table || {};
+      const rows = (table.rows || []);
+      const cols = Array.isArray(table.cols) ? table.cols : [];
+      const colIndex = {};
+      cols.forEach((col, idx) => {
+        const label = (col?.label || '').trim();
+        if(label) colIndex[label] = idx;
+      });
+      const tryOnIndex = colIndex[TRY_ON_COL_HEADER];
       const products = rows.map((r, i) => {
         // Keep both the raw value (v) and the formatted value (f)
         const cells = (r.c || []).map(c => c ? (c.f || c.v || "") : "");
@@ -701,6 +777,7 @@
         const photo       = cells[6];
         const fee         = cells[7];
         const stockRaw    = cells[8];
+        const tryOnRaw    = (Number.isInteger(tryOnIndex) && tryOnIndex >= 0) ? cells[tryOnIndex] : '';
 
         const price = "";
         const stockNum = toNum(stockRaw);
@@ -709,8 +786,13 @@
         const categoryId = catIdFromName(name);
         const images = driveImages(photo);
         const thumb = images[0] || '';
+        let tryOnUrl = '';
+        if(tryOnRaw){
+          const link = splitLinks(tryOnRaw)[0] || tryOnRaw;
+          tryOnUrl = driveShareToDirect(link);
+        }
 
-        return { id:i, name, price, kirat, photo, images, thumb, description, sku, in_stock, weight, fee, stock, categoryId };
+        return { id:i, name, price, kirat, photo, images, thumb, description, sku, in_stock, weight, fee, stock, categoryId, tryOnUrl };
       });
       window.PRODUCTS = products;
       startSpotRefresh(products);
@@ -1476,6 +1558,249 @@
   }, true);
 
   document.addEventListener('hcj:cart-updated', () => {});
+})();
+</script>
+<script>
+(function(){
+  const modal = document.getElementById('tryon-modal');
+  if(!modal) return;
+
+  const closeBtn = document.getElementById('tryon-close');
+  const video = document.getElementById('tryon-video');
+  const ringOverlay = document.getElementById('ring-overlay');
+  const ringImage = document.getElementById('ring-image');
+  const sizeRange = document.getElementById('sizeRange');
+  const rotateRange = document.getElementById('rotateRange');
+  const flipCamBtn = document.getElementById('flipCamBtn');
+  const photoUpload = document.getElementById('photoUpload');
+  const stage = modal.querySelector('.tryon-stage');
+
+  let currentStream = null;
+  let useFront = false;
+  let uploadedUrl = null;
+  const base = { x: 0, y: 0, scale: 1, rot: 0 };
+  const drag = { active: false, startX: 0, startY: 0, startTx: 0, startTy: 0, pointerId: null };
+
+  function clearUploadedBackground(){
+    const img = stage?.querySelector('img.uploaded-photo');
+    if(img){
+      if(uploadedUrl){
+        URL.revokeObjectURL(uploadedUrl);
+        uploadedUrl = null;
+      }
+      img.remove();
+    }
+  }
+
+  function stopCamera(){
+    if(currentStream){
+      currentStream.getTracks().forEach(track => track.stop());
+      currentStream = null;
+    }
+    if(video){
+      video.srcObject = null;
+      video.pause?.();
+    }
+  }
+
+  async function startCamera(){
+    stopCamera();
+    if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
+      if(photoUpload) photoUpload.click();
+      return;
+    }
+    const constraints = {
+      video: {
+        facingMode: useFront ? 'user' : { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 1920 }
+      },
+      audio: false
+    };
+    try {
+      currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+      if(video){
+        video.srcObject = currentStream;
+        await video.play().catch(() => {});
+      }
+      clearUploadedBackground();
+    } catch (err) {
+      console.warn('Camera error', err);
+      if(photoUpload) photoUpload.click();
+    }
+  }
+
+  function applyTransform(){
+    if(!ringOverlay) return;
+    ringOverlay.style.transform = `translate(calc(-50% + ${base.x}px), calc(-50% + ${base.y}px)) scale(${base.scale}) rotate(${base.rot}deg)`;
+  }
+
+  function resetTransform(){
+    base.x = 0;
+    base.y = 0;
+    base.scale = 1;
+    base.rot = 0;
+    if(sizeRange) sizeRange.value = String(base.scale);
+    if(rotateRange) rotateRange.value = String(base.rot);
+    applyTransform();
+  }
+
+  function openTryOn(ringUrl){
+    if(!modal) return;
+    if(ringImage){
+      ringImage.crossOrigin = 'anonymous';
+      ringImage.src = ringUrl || '';
+    }
+    resetTransform();
+    clearUploadedBackground();
+    if(photoUpload) photoUpload.value = '';
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    startCamera();
+  }
+
+  function closeTryOn(){
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    stopCamera();
+    clearUploadedBackground();
+  }
+
+  function attachTryOnButton(cardEl, product){
+    if(!cardEl) return;
+    const btn = cardEl.querySelector('.try-on-btn');
+    if(!btn) return;
+    const url = product?.tryOnUrl ? String(product.tryOnUrl) : '';
+    if(url){
+      btn.dataset.tryon = url;
+      btn.hidden = false;
+    }else{
+      btn.dataset.tryon = '';
+      btn.hidden = true;
+    }
+  }
+
+  function syncButtonsWithProducts(products){
+    const list = Array.isArray(products) ? products : (Array.isArray(window.PRODUCTS) ? window.PRODUCTS : []);
+    list.forEach((product, index) => {
+      const card = document.querySelector(`.product-card[data-idx="${index}"]`);
+      if(card) attachTryOnButton(card, product);
+    });
+  }
+
+  function wireAllTryOnButtons(root=document){
+    root.querySelectorAll('.try-on-btn').forEach(btn => {
+      if(btn.dataset.tryonWired === '1') return;
+      btn.dataset.tryonWired = '1';
+      btn.addEventListener('click', () => {
+        const url = btn.dataset.tryon;
+        if(url) openTryOn(url);
+      });
+    });
+  }
+
+  function onPointerDown(e){
+    drag.active = true;
+    drag.startX = e.clientX;
+    drag.startY = e.clientY;
+    drag.startTx = base.x;
+    drag.startTy = base.y;
+    drag.pointerId = e.pointerId;
+    ringOverlay?.setPointerCapture?.(e.pointerId);
+  }
+
+  function onPointerMove(e){
+    if(!drag.active) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    base.x = drag.startTx + dx;
+    base.y = drag.startTy + dy;
+    applyTransform();
+  }
+
+  function endPointer(e){
+    if(drag.pointerId != null){
+      ringOverlay?.releasePointerCapture?.(drag.pointerId);
+    }
+    drag.active = false;
+    drag.pointerId = null;
+  }
+
+  function onWheel(e){
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.05 : 0.95;
+    const next = Math.min(3, Math.max(0.2, base.scale * factor));
+    base.scale = next;
+    if(sizeRange) sizeRange.value = String(next);
+    applyTransform();
+  }
+
+  closeBtn?.addEventListener('click', closeTryOn);
+  modal.addEventListener('click', evt => {
+    if(evt.target === modal) closeTryOn();
+  });
+  document.addEventListener('keydown', evt => {
+    if(evt.key === 'Escape' && !modal.hidden) closeTryOn();
+  });
+
+  flipCamBtn?.addEventListener('click', () => {
+    useFront = !useFront;
+    startCamera();
+  });
+
+  sizeRange?.addEventListener('input', e => {
+    const value = parseFloat(e.target.value);
+    if(Number.isFinite(value)){
+      base.scale = Math.min(3, Math.max(0.2, value));
+      applyTransform();
+    }
+  });
+
+  rotateRange?.addEventListener('input', e => {
+    const value = parseFloat(e.target.value);
+    if(Number.isFinite(value)){
+      base.rot = Math.max(-180, Math.min(180, value));
+      applyTransform();
+    }
+  });
+
+  ringOverlay?.addEventListener('pointerdown', onPointerDown);
+  ringOverlay?.addEventListener('pointermove', onPointerMove);
+  ringOverlay?.addEventListener('pointerup', endPointer);
+  ringOverlay?.addEventListener('pointercancel', endPointer);
+  ringOverlay?.addEventListener('wheel', onWheel, { passive: false });
+
+  photoUpload?.addEventListener('change', () => {
+    const file = photoUpload.files?.[0];
+    if(!file) return;
+    stopCamera();
+    if(uploadedUrl) URL.revokeObjectURL(uploadedUrl);
+    uploadedUrl = URL.createObjectURL(file);
+    let img = stage?.querySelector('img.uploaded-photo');
+    if(!img && stage){
+      img = document.createElement('img');
+      img.className = 'uploaded-photo';
+      stage.prepend(img);
+    }
+    if(img) img.src = uploadedUrl;
+  });
+
+  document.addEventListener('hcj:products-rendered', event => {
+    syncButtonsWithProducts(event.detail?.products);
+    wireAllTryOnButtons();
+  });
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', () => {
+      syncButtonsWithProducts(window.PRODUCTS);
+      wireAllTryOnButtons();
+    });
+  }else{
+    syncButtonsWithProducts(window.PRODUCTS);
+    wireAllTryOnButtons();
+  }
+
+  window.addEventListener('beforeunload', stopCamera);
 })();
 </script>
 </body>
