@@ -1,7 +1,7 @@
 <svg id="svg-top" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="200" viewBox="0, 0, 400, 200">
   <defs>
     <clipPath id="dol-clip-top">
-      <rect x="0" y="0" width="400" height="101.14"/>
+      <rect x="0" y="0" width="400" height="100.14"/>
     </clipPath>
   </defs>
   <g id="svgg-top" clip-path="url(#dol-clip-top)">
