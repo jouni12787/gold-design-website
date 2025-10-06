@@ -113,7 +113,7 @@
   .store-item__thumbs img{width:36px;height:36px;object-fit:cover;border-radius:8px;border:1px solid var(--border-soft);cursor:pointer;opacity:.9;background:var(--bg2)}
   .store-item__thumbs img.is-active{outline:2px solid var(--gold);opacity:1}
   .store-item__thumb .count-badge{position:absolute;top:8px;right:8px;font-size:12px;background:color-mix(in oklab,var(--card) 76%,transparent);border:1px solid var(--border-soft);border-radius:999px;padding:3px 8px;color:var(--muted);backdrop-filter:blur(6px)}
-  .store-item__thumb:hover img{transform:scale(1.02)}
+  .store-item__thumb:hover img{transform:none}
   .store-item__placeholder{width:100%;height:100%;background:linear-gradient(135deg,color-mix(in oklab,var(--bg2) 80%, transparent),color-mix(in oklab,var(--bg) 70%, transparent))}
   .store-item__body{display:grid;gap:14px}
   .store-item__header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -186,6 +186,7 @@
   .hcj-qv__media{display:grid;gap:10px}
   .hcj-qv__thumbs{display:flex;gap:8px;flex-wrap:wrap}
   .hcj-qv__thumbs img{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--border-soft);cursor:pointer}
+  .hcj-qv__thumbs img.is-active{outline:2px solid var(--gold)}
   .hcj-qv__meta{display:grid;gap:12px}
   .hcj-qv__price{font-size:1.5rem;font-weight:900;color:var(--gold)}
   .hcj-qv__specs{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.95rem}
@@ -352,18 +353,18 @@
   const out = document.getElementById("storeList");
 
   const CATS = {
-    all:      { en:"All",         ar:"الكل",           icon:"all.jpg" },
-    ring:     { en:"Ring",        ar:"خاتم",           icon:"ring.jpg" },
-    necklace: { en:"Necklace",    ar:"قلادة",          icon:"necklace.jpg" },
-    earrings: { en:"Earrings",    ar:"قرط",            icon:"earrings.jpg" },
-    pendant:  { en:"Pendant",     ar:"تعليقة",         icon:"pendant.jpg" },
-    bangle:   { en:"Bangle",      ar:"سوار دائري",     icon:"bangle.jpg" },
-    anklet:   { en:"Anklet",      ar:"خلخال",          icon:"anklet.jpg" },
-    chain:    { en:"Chain",       ar:"سلسلة",          icon:"chain.jpg" },
-    brooch:   { en:"Brooch",      ar:"بروش",           icon:"brooch.jpg" },
-    set:      { en:"Jewelry set", ar:"طقم مجوهرات",    icon:"set.jpg" },
-    kids:     { en:"Kids",        ar:"ولادي",          icon:"kids.jpg" },
-    special:  { en:"Special",     ar:"مميز",           icon:"special.jpg" }
+    all:      { en:"All",         ar:"الكل",           icon:"icon/all.png" },
+    anklet:   { en:"Anklet",      ar:"خلخال",          icon:"icon/anklet.png" },
+    bangle:   { en:"Bangle",      ar:"سوار دائري",     icon:"icon/bangle.png" },
+    brooch:   { en:"Brooch",      ar:"بروش",           icon:"icon/brooch.png" },
+    chain:    { en:"Chain",       ar:"سلسلة",          icon:"icon/chain.png" },
+    earrings: { en:"Earrings",    ar:"قرط",            icon:"icon/earrings.png" },
+    set:      { en:"Jewelry set", ar:"طقم مجوهرات",    icon:"icon/jewelry set.png" },
+    kids:     { en:"Kids",        ar:"ولادي",          icon:"icon/kids.png" },
+    necklace: { en:"Necklace",    ar:"قلادة",          icon:"icon/necklace.png" },
+    pendant:  { en:"Pendant",     ar:"تعليقة",         icon:"icon/pendant.png" },
+    ring:     { en:"Ring",        ar:"خاتم",           icon:"icon/ring.png" },
+    special:  { en:"Special",     ar:"مميز",           icon:"icon/special.png" }
   };
 
   window.HCJ = window.HCJ || {};
@@ -589,8 +590,8 @@
     const cards = products.map(p => {
       const title = sentenceCase(p.name || "");
       const safeTitle = escapeHtml(title);
-      const photos = driveImages(p.photo);
-      const main   = photos[0] || "";
+      const photos = Array.isArray(p.images) && p.images.length ? p.images : driveImages(p.photo);
+      const main   = p.thumb || photos[0] || "";
       const price = money(p.price);
       const description = escapeHtml(p.description || "");
       const kirat = p.kirat ? `<span>${__t('store.karat')} ${escapeHtml(p.kirat)}</span>` : "";
@@ -675,8 +676,10 @@
         const stock = Number.isFinite(stockNum) ? Math.max(0, Math.floor(stockNum)) : 1;
         const in_stock = stock;
         const categoryId = catIdFromName(name);
+        const images = driveImages(photo);
+        const thumb = images[0] || '';
 
-        return { name, price, kirat, photo, description, sku, in_stock, weight, fee, stock, categoryId };
+        return { name, price, kirat, photo, images, thumb, description, sku, in_stock, weight, fee, stock, categoryId };
       });
       window.PRODUCTS = products;
       startSpotRefresh(products);
@@ -822,7 +825,7 @@
       btn.className = 'cat' + (id === activeCat ? ' active' : '');
       btn.dataset.id = id;
       btn.innerHTML = `
-        <img loading="lazy" src="/assets/categories/${meta.icon}" alt="${meta.en}">
+        <img loading="lazy" src="${meta.icon}" alt="${meta.en} · ${meta.ar}">
         <span>${meta.en} · ${meta.ar}</span>
       `;
       btn.addEventListener('click', () => setActiveCategory(id));
@@ -946,7 +949,7 @@
       const qty = entry.qty || 0;
       const unitPrice = Number(product.price) || 0;
       subtotal += unitPrice * qty;
-      const imgSrc = entry.img || product.photo || 'icon/icon-512.png';
+      const imgSrc = entry.img || (Array.isArray(product.images) ? product.images[0] : null) || product.photo || 'icon/icon-512.png';
       html.push(`
         <div class="hcj-item" data-sku="${escape(sku)}">
           <img src="${escape(imgSrc)}" alt="">
@@ -1120,7 +1123,7 @@
   const qvPrice = document.getElementById('hcjQVPrice');
   const qvSpecs = document.getElementById('hcjQVSpecs');
   const qvThumbs = document.getElementById('hcjQVThumbs');
-  const qvZoomBox = document.getElementById('hcjZoom');
+  const zoomWrap = document.getElementById('hcjZoom');
   const qvImg = document.getElementById('hcjZoomImg');
   const qvLens = document.getElementById('hcjLens');
   const addBtn = document.getElementById('hcjAddCartQV');
@@ -1134,81 +1137,156 @@
     return Number(n || 0).toLocaleString();
   }
 
-  function mountMagnifier(img){
-    function updateBG(){
-      qvLens.style.backgroundImage = `url(${img.src})`;
-      qvLens.style.backgroundSize = `${img.naturalWidth * magZoom}px ${img.naturalHeight * magZoom}px`;
+  function updateLensBackground(){
+    if(!qvLens || !qvImg) return;
+    const w = qvImg.naturalWidth;
+    const h = qvImg.naturalHeight;
+    if(w && h){
+      qvLens.style.backgroundImage = `url(${qvImg.src})`;
+      qvLens.style.backgroundSize = `${w * magZoom}px ${h * magZoom}px`;
     }
-    function move(e){
+  }
+
+  function enableQVZoom(){
+    if(!zoomWrap || !qvLens || !qvImg) return;
+    disableQVZoom();
+    qvLens.style.display = 'none';
+    const onMove = (e) => {
       if(!magOn) return;
-      const rect = img.getBoundingClientRect();
-      const x = (e.touches?.[0]?.clientX ?? e.clientX) - rect.left;
-      const y = (e.touches?.[0]?.clientY ?? e.clientY) - rect.top;
+      const point = e.touches?.[0] ?? e;
+      const rect = qvImg.getBoundingClientRect();
+      const x = Math.max(0, Math.min(point.clientX - rect.left, rect.width));
+      const y = Math.max(0, Math.min(point.clientY - rect.top, rect.height));
       const bx = -((x * magZoom) - qvLens.offsetWidth / 2);
       const by = -((y * magZoom) - qvLens.offsetHeight / 2);
       qvLens.style.transform = `translate(${x - qvLens.offsetWidth / 2}px, ${y - qvLens.offsetHeight / 2}px)`;
       qvLens.style.backgroundPosition = `${bx}px ${by}px`;
-    }
-    img.addEventListener('load', updateBG);
-    img.addEventListener('mousemove', move, { passive: true });
-    img.addEventListener('touchmove', move, { passive: true });
-    updateBG();
+    };
+    const onEnter = () => { if(magOn) qvLens.style.display = 'block'; };
+    const onLeave = () => { qvLens.style.display = 'none'; };
+    zoomWrap.addEventListener('mousemove', onMove, { passive: true });
+    zoomWrap.addEventListener('touchmove', onMove, { passive: true });
+    zoomWrap.addEventListener('mouseenter', onEnter);
+    zoomWrap.addEventListener('mouseleave', onLeave);
+    zoomWrap.addEventListener('touchstart', onEnter, { passive: true });
+    zoomWrap.addEventListener('touchend', onLeave);
+    zoomWrap.__zoomHandlers = { onMove, onEnter, onLeave };
   }
 
-  function setQVPhoto(src){
+  function disableQVZoom(){
+    if(!zoomWrap || !zoomWrap.__zoomHandlers) return;
+    const h = zoomWrap.__zoomHandlers;
+    zoomWrap.removeEventListener('mousemove', h.onMove);
+    zoomWrap.removeEventListener('touchmove', h.onMove);
+    zoomWrap.removeEventListener('mouseenter', h.onEnter);
+    zoomWrap.removeEventListener('mouseleave', h.onLeave);
+    zoomWrap.removeEventListener('touchstart', h.onEnter);
+    zoomWrap.removeEventListener('touchend', h.onLeave);
+    qvLens.style.display = 'none';
+    zoomWrap.__zoomHandlers = null;
+  }
+
+  if(qvImg){
+    qvImg.addEventListener('load', updateLensBackground);
+  }
+
+  function setQVPhoto(src, alt){
+    if(!qvImg) return;
     qvImg.src = src;
-    qvLens.style.backgroundImage = `url(${src})`;
+    if(typeof alt === 'string') qvImg.alt = alt;
+    if(qvLens){
+      qvLens.style.backgroundImage = `url(${src})`;
+    }
+    updateLensBackground();
+  }
+
+  function renderThumbs(images, name){
+    if(!qvThumbs) return;
+    qvThumbs.innerHTML = '';
+    images.forEach((src, index) => {
+      const thumb = new Image();
+      thumb.src = src;
+      thumb.alt = `thumb ${index + 1}`;
+      if(index === 0) thumb.classList.add('is-active');
+      thumb.addEventListener('click', () => {
+        qvThumbs.querySelectorAll('img').forEach(x => x.classList.remove('is-active'));
+        thumb.classList.add('is-active');
+        setQVPhoto(src, name);
+      });
+      qvThumbs.appendChild(thumb);
+    });
   }
 
   function openQV(product){
     current = product;
-    const photos = (window.driveImages && window.driveImages(product.photo)) || [];
-    qvTitle.textContent = product.name || 'Item';
-    qvPrice.textContent = money(product.price);
+    const baseImages = Array.isArray(product?.images) ? product.images.filter(Boolean) : [];
+    const imgs = baseImages.length ? [...baseImages] : [];
+    if(!imgs.length){
+      const fallback = String(product?.photo || product?.thumb || '')
+        .split(/[|,]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      fallback.forEach(src => {
+        if(src && !imgs.includes(src)) imgs.push(src);
+      });
+    }
+    const first = imgs[0] || product?.thumb || product?.photo || 'icon/icon-512.png';
+    if(first && !imgs.includes(first)) imgs.unshift(first);
+    const name = product?.name || 'Item';
+    qvTitle.textContent = name;
+    qvPrice.textContent = money(product?.price);
     qvSpecs.innerHTML = [
-      product.kirat ? `<span>Karat: ${product.kirat}</span>` : '',
-      product.weight ? `<span>Weight: ${product.weight} g</span>` : '',
-      product.sku ? `<span>SKU: ${product.sku}</span>` : ''
+      product?.kirat ? `<span>Karat: ${product.kirat}</span>` : '',
+      product?.weight ? `<span>Weight: ${product.weight} g</span>` : '',
+      product?.sku ? `<span>SKU: ${product.sku}</span>` : ''
     ].filter(Boolean).join('');
 
-    qvThumbs.innerHTML = photos.map((u, i) => `
-      <img src="${u}" alt="thumb ${i + 1}" data-big="${u}" ${i === 0 ? 'style="outline:2px solid var(--gold)"' : ''}>
-    `).join('');
-    const first = photos[0] || 'icon/icon-512.png';
-    setQVPhoto(first);
-
-    qvThumbs.querySelectorAll('img').forEach(img => {
-      img.addEventListener('click', () => {
-        qvThumbs.querySelectorAll('img').forEach(x => x.style.outline = '');
-        img.style.outline = '2px solid var(--gold)';
-        setQVPhoto(img.dataset.big);
-      });
-    });
+    if(imgs.length){
+      renderThumbs(imgs, name);
+    }else if(qvThumbs){
+      qvThumbs.innerHTML = '';
+    }
+    setQVPhoto(first || 'icon/icon-512.png', name);
 
     addBtn.onclick = () => {
-      const imgUrl = photos[0] || '';
+      const imgUrl = first || '';
       if(window.HCJ_CART && typeof window.HCJ_CART.set === 'function'){
-        const sku = (product.sku || product.name || 'item').trim();
+        const sku = (product?.sku || product?.name || 'item').trim();
         const existing = window.HCJ_CART.get(sku);
-        const qty = Math.min((product.stock || 1), (existing?.qty || 0) + 1);
+        const qty = Math.min((product?.stock || 1), (existing?.qty || 0) + 1);
         window.HCJ_CART.set(sku, { product, qty, img: imgUrl });
         document.dispatchEvent(new CustomEvent('hcj:cart-updated'));
       }
     };
 
-    const msg = encodeURIComponent(`${product.name} (${product.sku || 'no sku'}) - $${money(product.price)}`);
-    waBtn.href = `https://wa.me/?text=${msg}`;
+    const msg = encodeURIComponent(`${name} (${product?.sku || 'no sku'}) - $${money(product?.price)}`);
+    if(waBtn){
+      waBtn.href = `https://wa.me/?text=${msg}`;
+    }
 
     magOn = false;
-    qvLens.style.display = 'none';
+    if(qvLens){
+      qvLens.style.display = 'none';
+    }
+    if(toggle){
+      toggle.checked = false;
+    }
 
     qv.setAttribute('aria-hidden', 'false');
-    mountMagnifier(qvImg);
+    enableQVZoom();
   }
 
   function closeQV(){
     qv.setAttribute('aria-hidden', 'true');
     current = null;
+    magOn = false;
+    if(toggle){
+      toggle.checked = false;
+    }
+    if(qvLens){
+      qvLens.style.display = 'none';
+    }
+    disableQVZoom();
   }
 
   qvClose?.addEventListener('click', closeQV);
@@ -1225,16 +1303,22 @@
       Zoom <input id="hcjMagZoom" type="range" min="1.5" max="4" step="0.1" value="2.6" style="width:140px">
     </label>
   `;
-  qvZoomBox?.after(controls);
+  if(zoomWrap?.parentNode){
+    zoomWrap.after(controls);
+  }else{
+    qv?.appendChild(controls);
+  }
   const toggle = controls.querySelector('#hcjMagToggle');
   const zoom = controls.querySelector('#hcjMagZoom');
   toggle?.addEventListener('change', () => {
     magOn = toggle.checked;
-    qvLens.style.display = magOn ? 'block' : 'none';
+    if(!magOn && qvLens){
+      qvLens.style.display = 'none';
+    }
   });
   zoom?.addEventListener('input', () => {
     magZoom = Number(zoom.value);
-    qvLens.style.backgroundSize = `${qvImg.naturalWidth * magZoom}px ${qvImg.naturalHeight * magZoom}px`;
+    updateLensBackground();
   });
 
   out?.addEventListener('click', (e) => {
