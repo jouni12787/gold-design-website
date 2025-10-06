@@ -317,6 +317,7 @@
         <h3 id="hcjQVTitle"></h3>
         <div class="hcj-qv__price"><span id="hcjQVPrice"></span> <small>USD</small></div>
         <div class="hcj-qv__specs" id="hcjQVSpecs"></div>
+        <p id="hcjQVDesc" class="store-item__description" style="margin-top:4px;"></p>
         <div class="hcj-qv__actions">
           <button id="hcjAddCartQV" class="hcj-btn">Add to cart</button>
           <a id="hcjWA" class="hcj-btn ghost" target="_blank" rel="noopener">WhatsApp Cart</a>
@@ -508,7 +509,14 @@
           const calc = computeItemPriceUSD(oz, p);
           if (isFinite(calc)) p.price = Math.round(calc); // round how you like
         });
-        render(products);
+        // If first time, render the grid; otherwise, update prices in-place
+        if(!document.querySelector('.product-card')){
+          render(products);
+        }else if(typeof updatePricesInPlace === 'function'){
+          updatePricesInPlace(products);
+          // Notify other modules (filters/sorting) that prices changed
+          document.dispatchEvent(new CustomEvent('hcj:prices-updated', { detail: { products } }));
+        }
       }catch(e){
         // On failure just keep whatever is rendered now
       }
@@ -587,12 +595,13 @@
     }
     lastProducts = products;
     lastStatus = 'products';
-    const cards = products.map(p => {
+    const cards = products.map((p, i) => {
       const title = sentenceCase(p.name || "");
       const safeTitle = escapeHtml(title);
       const photos = Array.isArray(p.images) && p.images.length ? p.images : driveImages(p.photo);
       const main   = p.thumb || photos[0] || "";
       const price = money(p.price);
+      const priceNum = Number(p.price) || 0;
       const description = escapeHtml(p.description || "");
       const kirat = p.kirat ? `<span>${__t('store.karat')} ${escapeHtml(p.kirat)}</span>` : "";
       const sku = p.sku ? `<span>${__t('store.sku')} ${escapeHtml(p.sku)}</span>` : "";
@@ -608,7 +617,7 @@
       const stockVal = Number.isFinite(p.stock) ? Math.max(0, Math.floor(p.stock)) : '';
       const stockAttr = stockVal === '' ? '' : String(stockVal);
       return `
-        <article class="store-item card product-card" data-cat="${safeCat}" data-sku="${safeSkuAttr}"${stockAttr!==''?` data-stock="${stockAttr}"`:''}>
+        <article class="store-item card product-card" data-idx="${i}" data-cat="${safeCat}" data-sku="${safeSkuAttr}" data-price="${priceNum}"${stockAttr!==''?` data-stock="${stockAttr}"`:''}>
           <figure class="store-item__thumb">
             ${main ? `<img class="js-main" src="${escapeHtml(main)}" alt="${safeTitle || 'Bracelet photo'}" loading="lazy">`
                    : `<div class="store-item__placeholder" aria-hidden="true"></div>`}
@@ -652,12 +661,34 @@
     document.dispatchEvent(new CustomEvent('hcj:products-rendered', { detail: { products } }));
   }
 
+  // Update only the DOM price labels & data-price, keep everything else intact
+  function updatePricesInPlace(products){
+    const list = Array.isArray(products) ? products : (window.PRODUCTS || []);
+    const moneyFmt = money;
+    list.forEach((p, i) => {
+      const card = document.querySelector(`.product-card[data-idx="${i}"]`);
+      if(!card) return;
+      const priceEl = card.querySelector('.store-item__price');
+      if(priceEl){
+        const num = Number(p.price) || 0;
+        if(priceEl.childNodes && priceEl.childNodes.length){
+          // first text node holds the number
+          priceEl.childNodes[0].nodeValue = moneyFmt(num);
+        }else{
+          priceEl.textContent = moneyFmt(num);
+          const cur = document.createElement('span'); cur.className = 'store-item__currency'; cur.textContent = 'USD'; priceEl.appendChild(cur);
+        }
+      }
+      card.dataset.price = Number(p.price) || 0;
+    });
+  }
+
   fetch(URL)
     .then(r => r.text())
     .then(txt => {
       const json = JSON.parse(txt.substring(47, txt.length - 2));
       const rows = (json.table?.rows || []);
-      const products = rows.map(r => {
+      const products = rows.map((r, i) => {
         // Keep both the raw value (v) and the formatted value (f)
         const cells = (r.c || []).map(c => c ? (c.f || c.v || "") : "");
 
@@ -673,13 +704,13 @@
 
         const price = "";
         const stockNum = toNum(stockRaw);
-        const stock = Number.isFinite(stockNum) ? Math.max(0, Math.floor(stockNum)) : 1;
+        const stock = Number.isFinite(stockNum) ? Math.max(0, Math.floor(stockNum)) : 99;
         const in_stock = stock;
         const categoryId = catIdFromName(name);
         const images = driveImages(photo);
         const thumb = images[0] || '';
 
-        return { name, price, kirat, photo, images, thumb, description, sku, in_stock, weight, fee, stock, categoryId };
+        return { id:i, name, price, kirat, photo, images, thumb, description, sku, in_stock, weight, fee, stock, categoryId };
       });
       window.PRODUCTS = products;
       startSpotRefresh(products);
@@ -851,9 +882,65 @@
     document.querySelectorAll('#catBar .cat').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.id === activeCat);
     });
-    filterByCategory(activeCat);
+    // Apply combined filters (category + price)
+    if(typeof window.HCJ_APPLY_FILTERS === 'function') window.HCJ_APPLY_FILTERS(); else filterByCategory(activeCat);
     showLivePricesFor(activeCat);
   }
+
+
+  // === Price filters & sorting ===
+  const filterWrap = document.createElement('div');
+  filterWrap.style = 'display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px;';
+  filterWrap.innerHTML = `
+    <label class="badge" style="display:inline-flex;gap:6px;align-items:center;">
+      Min <input id="priceMin" type="number" inputmode="decimal" style="width:100px;background:transparent;border:0;outline:0;color:inherit">
+    </label>
+    <label class="badge" style="display:inline-flex;gap:6px;align-items:center;">
+      Max <input id="priceMax" type="number" inputmode="decimal" style="width:100px;background:transparent;border:0;outline:0;color:inherit">
+    </label>
+    <label class="badge" style="display:inline-flex;gap:6px;align-items:center;">
+      Sort
+      <select id="sortPrice" style="background:transparent;border:0;outline:0;color:inherit">
+        <option value="">—</option>
+        <option value="asc">Price ↑</option>
+        <option value="desc">Price ↓</option>
+      </select>
+    </label>
+    <button id="clearFilters" class="hcj-btn ghost" type="button">Reset</button>
+  `;
+  catMeta?.after(filterWrap);
+  const priceMin = filterWrap.querySelector('#priceMin');
+  const priceMax = filterWrap.querySelector('#priceMax');
+  const sortPrice = filterWrap.querySelector('#sortPrice');
+  const clearFilters = filterWrap.querySelector('#clearFilters');
+
+  function parseNum(v){ const n = parseFloat((v||'').toString().replace(/,/g,'.')); return Number.isFinite(n) ? n : null; }
+
+  function applyFiltersAndSorting(){
+    const min = parseNum(priceMin.value); const max = parseNum(priceMax.value);
+    const cards = Array.from(out.querySelectorAll('.product-card'));
+    cards.forEach(card => {
+      const price = parseFloat(card.dataset.price || '0');
+      const inCat = (activeCat === 'all') || (card.dataset.cat === activeCat);
+      const inPrice = (min==null || price >= min) && (max==null || price <= max);
+      const show = inCat && inPrice;
+      card.style.display = show ? '' : 'none';
+    });
+    // sort visible ones if needed
+    if(sortPrice.value){
+      const dir = sortPrice.value === 'desc' ? -1 : 1;
+      const visible = cards.filter(c => c.style.display !== 'none');
+      visible.sort((a,b) => (parseFloat(a.dataset.price||'0') - parseFloat(b.dataset.price||'0')) * dir);
+      visible.forEach(card => out.appendChild(card));
+    }
+    updateCatMeta();
+  }
+  window.HCJ_APPLY_FILTERS = applyFiltersAndSorting;
+
+  priceMin?.addEventListener('input', applyFiltersAndSorting);
+  priceMax?.addEventListener('input', applyFiltersAndSorting);
+  sortPrice?.addEventListener('change', applyFiltersAndSorting);
+  clearFilters?.addEventListener('click', () => { priceMin.value=''; priceMax.value=''; sortPrice.value=''; applyFiltersAndSorting(); });
 
   function updateCatMeta(){
     if(!catMeta) return;
@@ -925,7 +1012,7 @@
     const entry = CART.get(sku);
     if(!entry) return;
     const product = entry.product || {};
-    const max = Number.isFinite(product.stock) && product.stock > 0 ? Math.floor(product.stock) : 1;
+    const max = Number.isFinite(product.stock) && product.stock > 0 ? Math.floor(product.stock) : 99;
     const next = Math.max(0, Math.min(max, entry.qty + delta));
     if(next === 0){
       CART.delete(sku);
@@ -969,6 +1056,10 @@
     cartSub.textContent = '$' + subtotal.toLocaleString();
   }
 
+  document.addEventListener('hcj:prices-updated', () => {
+    if(typeof window.HCJ_APPLY_FILTERS === 'function') window.HCJ_APPLY_FILTERS();
+  });
+
   cartBody?.addEventListener('click', event => {
     const button = event.target.closest('button[data-action]');
     if(!button) return;
@@ -978,9 +1069,13 @@
   });
 
   function getProductForCard(card){
-    const sku = card.dataset.sku || '';
+    const idx = Number(card.dataset.idx);
     const list = Array.isArray(window.PRODUCTS) ? window.PRODUCTS : [];
-    let product = list.find(p => (p.sku || '') === sku);
+    let product = Number.isFinite(idx) ? list[idx] : null;
+    if(!product){
+      const sku = card.dataset.sku || '';
+      product = list.find(p => (p.sku || '') === sku);
+    }
     if(!product){
       const title = (card.querySelector('.store-item__title')?.textContent || '').trim().toLowerCase();
       product = list.find(p => String(p.name || '').trim().toLowerCase() === title);
@@ -995,9 +1090,9 @@
     const fallbackPrice = Number((card.querySelector('.store-item__price')?.textContent || '').replace(/[^\d.]/g,'')) || 0;
     return {
       name: (card.querySelector('.store-item__title')?.textContent || 'Item').trim(),
-      sku: sku || (card.querySelector('.store-item__title')?.textContent || 'item').trim(),
+      sku: (card.querySelector('.store-item__title')?.textContent || 'item').trim(),
       price: fallbackPrice,
-      stock: Number(card.dataset.stock) || 1
+      stock: Number(card.dataset.stock) || 99
     };
   }
 
@@ -1006,7 +1101,7 @@
     const skuKey = (product.sku && product.sku.trim()) || (product.name && product.name.trim()) || 'item';
     const existing = CART.get(skuKey);
     const currentQty = existing?.qty || 0;
-    const stockMax = Number.isFinite(product.stock) ? Math.max(0, Math.floor(product.stock)) : 1;
+    const stockMax = Number.isFinite(product.stock) ? Math.max(0, Math.floor(product.stock)) : 99;
     if(stockMax === 0) return;
     const nextQty = Math.min(stockMax, currentQty + 1);
     const entry = existing || { product, qty: 0, img: imgUrl };
@@ -1075,7 +1170,8 @@
       if(card.dataset.enhanced) return;
       card.dataset.enhanced = '1';
       const img = card.querySelector('.store-item__thumb .js-main');
-      if(img) attachMagnifier(img, {zoom:3.0, lens:160});
+      // Removed: no magnifier on listing
+      // if(img) attachMagnifier(img, {zoom:3.0, lens:160});
     });
     filterByCategory(activeCat);
   }
@@ -1104,6 +1200,7 @@
     decorateCards();
     renderCartDrawer();
     setActiveCategory(activeCat);
+    if(typeof window.HCJ_APPLY_FILTERS === 'function') window.HCJ_APPLY_FILTERS();
   });
 
   buildCatBar();
@@ -1111,6 +1208,7 @@
   decorateCards();
   renderCartDrawer();
   showLivePricesFor(activeCat);
+  if(typeof window.HCJ_APPLY_FILTERS === 'function') window.HCJ_APPLY_FILTERS();
 })();
 </script>
 <script>
@@ -1240,6 +1338,8 @@
       product?.weight ? `<span>Weight: ${product.weight} g</span>` : '',
       product?.sku ? `<span>SKU: ${product.sku}</span>` : ''
     ].filter(Boolean).join('');
+    const qvDesc = document.getElementById('hcjQVDesc');
+    if(qvDesc){ qvDesc.textContent = (product?.description || '').toString(); }
 
     if(imgs.length){
       renderThumbs(imgs, name);
@@ -1251,9 +1351,10 @@
     addBtn.onclick = () => {
       const imgUrl = first || '';
       if(window.HCJ_CART && typeof window.HCJ_CART.set === 'function'){
-        const sku = (product?.sku || product?.name || 'item').trim();
+        const sku = ((product?.sku || product?.name || 'item').trim()) + '#' + (Number.isFinite(product?.id) ? product.id : Math.floor(Math.random()*1e9));
         const existing = window.HCJ_CART.get(sku);
-        const qty = Math.min((product?.stock || 1), (existing?.qty || 0) + 1);
+        const max = Number.isFinite(product?.stock) ? Math.floor(product.stock) : 99;
+        const qty = Math.min(max, (existing?.qty || 0) + 1);
         window.HCJ_CART.set(sku, { product, qty, img: imgUrl });
         document.dispatchEvent(new CustomEvent('hcj:cart-updated'));
       }
@@ -1326,10 +1427,11 @@
     if(btn) return;
     const card = e.target.closest('.product-card');
     if(!card) return;
-    const sku = card.dataset.sku || '';
     const list = window.PRODUCTS || [];
+    const idx = Number(card.dataset.idx);
+    const sku = card.dataset.sku || '';
     const title = (card.querySelector('.store-item__title')?.textContent || '').trim().toLowerCase();
-    const product = list.find(p => (p.sku || '') === sku) || list.find(p => String(p.name || '').trim().toLowerCase() === title);
+    const product = (Number.isFinite(idx) ? list[idx] : null) || list.find(p => (p.sku || '') === sku) || list.find(p => String(p.name || '').trim().toLowerCase() === title);
     if(product){
       openQV(product);
     }
