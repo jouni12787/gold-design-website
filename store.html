@@ -1440,14 +1440,16 @@
     if(qvLens){
       if(magOn){
         // Show lens immediately and center it
-        const rect = qvImg.getBoundingClientRect();
-        const cx = rect.width / 2; const cy = rect.height / 2;
-        const bx = -((cx * magZoom) - qvLens.offsetWidth / 2);
-        const by = -((cy * magZoom) - qvLens.offsetHeight / 2);
-        qvLens.style.transform = `translate(${cx - qvLens.offsetWidth / 2}px, ${cy - qvLens.offsetHeight / 2}px)`;
-        qvLens.style.backgroundPosition = `${bx}px ${by}px`;
         qvLens.style.display = 'block';
         updateLensBackground();
+        const rect = qvImg.getBoundingClientRect();
+        const lensW = qvLens.offsetWidth || 0;
+        const lensH = qvLens.offsetHeight || 0;
+        const cx = rect.width / 2; const cy = rect.height / 2;
+        const bx = -((cx * magZoom) - lensW / 2);
+        const by = -((cy * magZoom) - lensH / 2);
+        qvLens.style.transform = `translate(${cx - lensW / 2}px, ${cy - lensH / 2}px)`;
+        qvLens.style.backgroundPosition = `${bx}px ${by}px`;
       }else{
         qvLens.style.display = 'none';
       }
