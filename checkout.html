@@ -1,0 +1,72 @@
+<!doctype html>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Checkout</title>
+<style>
+  body{font:16px/1.5 system-ui;margin:0;padding:24px;color:#222;background:#f6f6f6}
+  .wrap{max-width:900px;margin:0 auto;display:grid;gap:20px}
+  .card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:18px}
+  h2{margin:0 0 10px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+  .grid{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+  .grid label{display:grid;gap:6px}
+  button{padding:10px 14px;border-radius:10px;border:0;background:#6a4df5;color:#fff;font-weight:800;cursor:pointer}
+</style>
+<div class="wrap">
+  <div class="card">
+    <h2>1) Billing details</h2>
+    <form id="coForm" class="grid">
+      <label>First name<input name="firstName" required></label>
+      <label>Last name<input name="lastName" required></label>
+      <label>Country<input name="country" value="Lebanon" required></label>
+      <label>City<input name="city" required></label>
+      <label>Street address<input name="address" required></label>
+      <label>Phone<input name="phone" required></label>
+      <label style="grid-column:1/-1">Order notes<textarea name="notes" rows="3"></textarea></label>
+      <button style="grid-column:1/-1">Place order</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>2) Your order</h2>
+    <table id="coTable"><thead><tr><th>Product</th><th>Qty</th><th>Unit</th><th>Subtotal</th></tr></thead><tbody></tbody></table>
+    <p><strong>Total: </strong><span id="coTotal">$0</span></p>
+  </div>
+</div>
+
+<script>
+  const APP_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
+
+  const items = JSON.parse(localStorage.getItem('hcj-cart') || '[]');
+  const tbody = document.querySelector('#coTable tbody');
+  const totalEl = document.getElementById('coTotal');
+  let total = 0;
+  tbody.innerHTML = items.map(it => {
+    const sub = (it.price || 0) * (it.qty || 1);
+    total += sub;
+    return `<tr><td>${it.name}</td><td>${it.qty}</td><td>$${(it.price || 0).toLocaleString()}</td><td>$${sub.toLocaleString()}</td></tr>`;
+  }).join('');
+  totalEl.textContent = '$' + total.toLocaleString();
+
+  document.getElementById('coForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const payload = Object.fromEntries(fd.entries());
+    payload.items = items;
+    payload.total = total;
+    try{
+      const r = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const ok = await r.json();
+      if(ok && ok.ok){
+        alert('Order placed! We will contact you soon.');
+        localStorage.removeItem('hcj-cart');
+        window.location.href = 'store.html';
+      }else{
+        alert('Could not place order. Please try again.');
+      }
+    }catch(err){
+      alert('Network error. Please try again.');
+    }
+  });
+</script>
