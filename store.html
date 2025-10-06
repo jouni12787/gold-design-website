@@ -201,6 +201,44 @@
   .hcj-lens{position:absolute;width:130px;height:130px;border:1px solid var(--border-strong);border-radius:999px;
     background-repeat:no-repeat;background-position:center;background-size:200%;display:none;box-shadow:0 8px 22px rgba(0,0,0,.35)}
 
+  /* ==== VIEW MODES ==== */
+  .view-list #storeList{ grid-template-columns: 1fr; }
+  .view-tiles #storeList{
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 14px;
+  }
+
+  /* make each card act like a small tile in tiles mode */
+  .view-tiles .store-item{
+    display: block;
+    padding: 12px;
+  }
+  .view-tiles .store-item__thumb{ aspect-ratio: 1/1; }
+  .view-tiles .store-item__body{ display: grid; gap: 8px; }
+  .view-tiles .store-item__title{ font-size: 1rem; -webkit-line-clamp: 1; }
+  .view-tiles .store-item__price{ font-size: 1rem; }
+  .view-tiles .store-item__description{ display:none; }
+  .view-tiles .store-item__meta{ font-size:.8rem; gap:8px }
+
+  /* phone-first safety: never overflow the viewport */
+  img, video { max-width: 100%; height: auto; }
+
+  /* ==== Quick View: keep inside phone frame ==== */
+  .hcj-qv__sheet{ width:min(680px,96vw); max-height:92vh; overflow:auto; }
+  @media (max-width: 720px){
+    .hcj-qv__grid{ grid-template-columns: 1fr; }
+    .hcj-zoom{ max-height: 52vh; }
+  }
+
+  /* ensure the big image in Quick View never exceeds frame */
+  .hcj-zoom{ max-height: 60vh; overflow:hidden; }
+  .hcj-zoom img{ width:100%; height:auto; object-fit:contain; }
+
+  @media (max-width:720px){
+    .store-item{ padding:14px }
+    .store-item__thumb{ border-radius:14px }
+  }
+
   .hcj-cart{position:fixed;right:0;top:0;bottom:0;width:min(380px,92vw);transform:translateX(110%);transition:transform .35s ease;
     background:var(--card);border-left:1px solid var(--border-soft);box-shadow:-8px 0 30px rgba(0,0,0,.35);z-index:1001;display:flex;flex-direction:column}
   .hcj-cart[aria-hidden="false"]{transform:none}
@@ -315,6 +353,13 @@
     <div class="head">
       <h1 data-i18n="store.title">Store</h1>
       <span class="badge" data-i18n="store.badge">Atelier selections</span>
+    </div>
+    <div class="panel" style="padding-top:10px;padding-bottom:0">
+      <div id="viewToggleWrap" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="badge">Display</span>
+        <button id="viewListBtn"  class="hcj-btn ghost" type="button">List</button>
+        <button id="viewTilesBtn" class="hcj-btn ghost" type="button">Tiles</button>
+      </div>
     </div>
     <div class="panel" id="storeList" data-i18n="store.loading" aria-live="polite">Loading…</div>
   </section>
@@ -1570,6 +1615,27 @@
 </script>
 <script>
 (function(){
+  // default to tiles on small screens
+  const isPhone = matchMedia('(max-width:720px)').matches;
+  document.body.classList.add(isPhone ? 'view-tiles' : 'view-list');
+
+  const listBtn  = document.getElementById('viewListBtn');
+  const tilesBtn = document.getElementById('viewTilesBtn');
+  function apply(mode){
+    document.body.classList.toggle('view-list',  mode === 'list');
+    document.body.classList.toggle('view-tiles', mode === 'tiles');
+    try{ localStorage.setItem('hcj-view', mode); }catch(_){ }
+  }
+  let saved = 'list';
+  try{ saved = localStorage.getItem('hcj-view') || (isPhone?'tiles':'list'); }catch(_){ }
+  apply(saved);
+
+  listBtn?.addEventListener('click',  ()=>apply('list'));
+  tilesBtn?.addEventListener('click', ()=>apply('tiles'));
+})();
+</script>
+<script>
+(function(){
   const modal = document.getElementById('tryon-modal');
   if(!modal) return;
 
@@ -1670,6 +1736,28 @@
   photoCapture?.addEventListener('change', ()=> setBgFromFile(photoCapture.files?.[0]));
   photoUpload?.addEventListener('change', ()=> setBgFromFile(photoUpload.files?.[0]));
 
+  async function requestUserPhoto(){
+    return new Promise((resolve)=>{
+      function done(){
+        // if user picked something, bg will be set by setBgFromFile()
+        resolve();
+      }
+      // prefer camera if available; otherwise fall back to upload
+      const cam = document.getElementById('photoCapture');
+      const up  = document.getElementById('photoUpload');
+      const once = { once:true };
+      cam?.addEventListener('change', done, once);
+      up?.addEventListener('change', done, once);
+      try{
+        if (cam) cam.click();
+        else if (up) up.click();
+        else resolve();
+      }catch(_){
+        if (up) up.click(); else resolve();
+      }
+    });
+  }
+
   /* -------- Buttons on cards -------- */
   function attachTryOnButton(card, product){
     const btn = card.querySelector('.try-on-btn');
@@ -1688,8 +1776,11 @@
     root.querySelectorAll('.try-on-btn').forEach(btn=>{
       if(btn.dataset.wired === '1') return;
       btn.dataset.wired = '1';
-      btn.addEventListener('click', ()=>{
-        const url = btn.dataset.tryon; if(url) openTryOn(url);
+      btn.addEventListener('click', async ()=>{
+        const url = btn.dataset.tryon;
+        if(!url) return;
+        await requestUserPhoto();
+        openTryOn(url);
       });
     });
   }
