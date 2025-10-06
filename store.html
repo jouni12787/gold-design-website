@@ -113,6 +113,8 @@
   .store-item__thumbs img{width:36px;height:36px;object-fit:cover;border-radius:8px;border:1px solid var(--border-soft);cursor:pointer;opacity:.9;background:var(--bg2)}
   .store-item__thumbs img.is-active{outline:2px solid var(--gold);opacity:1}
   .store-item__thumb .count-badge{position:absolute;top:8px;right:8px;font-size:12px;background:color-mix(in oklab,var(--card) 76%,transparent);border:1px solid var(--border-soft);border-radius:999px;padding:3px 8px;color:var(--muted);backdrop-filter:blur(6px)}
+  .store-item__thumb .count-badge,
+  .store-item__thumbs{display:none!important}
   .store-item__thumb:hover img{transform:none}
   .store-item__placeholder{width:100%;height:100%;background:linear-gradient(135deg,color-mix(in oklab,var(--bg2) 80%, transparent),color-mix(in oklab,var(--bg) 70%, transparent))}
   .store-item__body{display:grid;gap:14px}
@@ -219,6 +221,7 @@
   .view-tiles .store-item__price{ font-size: 1rem; }
   .view-tiles .store-item__description{ display:none; }
   .view-tiles .store-item__meta{ font-size:.8rem; gap:8px }
+  .view-tiles .product-card .mini-cart{top:12px;right:12px;left:auto;bottom:auto;z-index:2}
 
   #viewToggleWrap button[aria-pressed="true"]{
     border-color: var(--gold);
@@ -1226,6 +1229,9 @@
     cartSub.textContent = '$' + subtotal.toLocaleString();
   }
 
+  window.renderCartDrawer = renderCartDrawer;
+  window.HCJ_OPEN_CART = openCart;
+
   document.addEventListener('hcj:prices-updated', () => {
     if(typeof window.HCJ_APPLY_FILTERS === 'function') window.HCJ_APPLY_FILTERS();
   });
@@ -1418,7 +1424,7 @@
     const onMove = (e) => {
       if(!magOn) return;
       const point = e.touches?.[0] ?? e;
-      const rect = qvImg.getBoundingClientRect();
+      const rect = zoomWrap.getBoundingClientRect();
       const x = Math.max(0, Math.min(point.clientX - rect.left, rect.width));
       const y = Math.max(0, Math.min(point.clientY - rect.top, rect.height));
       const bx = -((x * magZoom) - qvLens.offsetWidth / 2);
@@ -1525,9 +1531,20 @@
       }
     };
 
-    const msg = encodeURIComponent(`${name} (${product?.sku || 'no sku'}) - $${money(product?.price)}`);
     if(waBtn){
-      waBtn.href = `https://wa.me/393481651384?text=${msg}`;
+      const imgSrc = (product?.images && product.images[0]) || product?.thumb || product?.photo || '';
+      const direct = (typeof window.driveShareToDirect === 'function' ? window.driveShareToDirect(imgSrc) : imgSrc) || '';
+      const message = [
+        'Hi, I like this piece and would like more information.',
+        `Name: ${name}`,
+        product?.kirat ? `Karat: ${product.kirat}` : null,
+        product?.weight ? `Weight: ${product.weight} g` : null,
+        product?.sku ? `SKU: ${product.sku}` : null,
+        `Price: $${money(product?.price)} USD`,
+        direct ? `Photo: ${direct}` : null,
+        'Thank you.'
+      ].filter(Boolean).join('\n');
+      waBtn.href = `https://wa.me/393481651384?text=${encodeURIComponent(message)}`;
     }
 
     magOn = false;
@@ -1583,10 +1600,11 @@
         // Show lens immediately and center it
         qvLens.style.display = 'block';
         updateLensBackground();
-        const rect = qvImg.getBoundingClientRect();
+        const rect = zoomWrap?.getBoundingClientRect();
         const lensW = qvLens.offsetWidth || 0;
         const lensH = qvLens.offsetHeight || 0;
-        const cx = rect.width / 2; const cy = rect.height / 2;
+        const cx = rect ? rect.width / 2 : lensW / 2;
+        const cy = rect ? rect.height / 2 : lensH / 2;
         const bx = -((cx * magZoom) - lensW / 2);
         const by = -((cy * magZoom) - lensH / 2);
         qvLens.style.transform = `translate(${cx - lensW / 2}px, ${cy - lensH / 2}px)`;
@@ -1616,7 +1634,10 @@
     }
   }, true);
 
-  document.addEventListener('hcj:cart-updated', () => {});
+  document.addEventListener('hcj:cart-updated', () => {
+    if(typeof window.renderCartDrawer === 'function') window.renderCartDrawer();
+    if(typeof window.HCJ_OPEN_CART === 'function') window.HCJ_OPEN_CART();
+  });
 })();
 </script>
 <script>
@@ -1689,7 +1710,6 @@
   }
   function openTryOn(ringUrl){
     resetTransform();
-    clearBg();
     ringImage.crossOrigin = 'anonymous';
     ringImage.src = driveToImg(ringUrl || '');
     modal.hidden = false;
