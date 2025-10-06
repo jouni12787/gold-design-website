@@ -145,31 +145,35 @@
     .topbar .nav a{padding:8px 10px;font-size:11.5px}
   }
 
-  /* ===== Categories, Quick View, Cart – elegant & on-brand ===== */
-  .hcj-cat-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
-  .hcj-cat{position:relative;display:grid;place-items:center;padding:14px;border:1px solid var(--border-soft);
-    background:var(--control-bg);border-radius:16px;cursor:pointer;transition:border .2s,transform .2s}
-  .hcj-cat:hover{border-color:var(--gold);transform:translateY(-1px)}
-  .hcj-cat.is-active{border-color:var(--gold);box-shadow:0 8px 18px rgba(0,0,0,.22)}
-  .hcj-cat__icon{width:44px;height:44px;object-fit:contain}
-  .hcj-cat__label{margin-top:8px;text-align:center;font-weight:700;font-size:.92rem;line-height:1.2}
-  .hcj-cat__sub{font-size:.78rem;color:var(--muted)}
-
-  .hcj-cat-prices{margin-top:10px;display:grid;gap:10px}
-  .hcj-cat-title{font-weight:800}
-  .hcj-cat-stats{display:flex;gap:10px;align-items:center;color:var(--muted)}
-  .hcj-ppg{display:flex;gap:10px;flex-wrap:wrap}
-  .ppg-chip{display:flex;gap:6px;align-items:center;border:1px solid var(--border-soft);border-radius:999px;
-    padding:6px 10px;background:var(--control-bg);font-weight:700}
-  .ppg-chip span{color:var(--gold)}
-  .hcj-range{font-size:.95rem;color:color-mix(in oklab,var(--ink) 84%, transparent)}
-
-  .store-item{position:relative}
-  .hcj-add{position:absolute;left:14px;bottom:14px;width:44px;height:44px;border-radius:999px;border:1px solid var(--border-strong);
-    background:linear-gradient(120deg,var(--button-top),var(--button-bottom));display:grid;place-items:center;
-    box-shadow:0 8px 16px rgba(0,0,0,.25);cursor:pointer}
-  .hcj-add:hover{border-color:var(--gold)}
-  .hcj-add svg{width:20px;height:20px}
+  /* ===== Category chips, live pricing & mini-cart ===== */
+  .cat{display:inline-flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:1px solid var(--border-soft);
+    background:var(--card);cursor:pointer;transition:border .2s,box-shadow .2s,transform .2s;font-weight:700}
+  .cat:hover{transform:translateY(-1px);border-color:var(--gold)}
+  .cat.active{border-color:var(--gold);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+  .cat img{width:40px;height:40px;border-radius:8px;object-fit:cover}
+  #catBar{display:flex;flex-wrap:wrap;gap:12px}
+  #catBar.open{display:flex}
+  .cat-toggle{display:none;margin-bottom:12px;border:1px solid var(--border-soft);background:var(--control-bg);
+    color:var(--ink);border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer}
+  .live-badges{display:flex;gap:10px;padding:10px 0;flex-wrap:wrap}
+  .pill{padding:6px 10px;border-radius:999px;background:var(--control-bg);border:1px solid var(--border-soft);font-weight:700}
+  .cat-meta{margin-top:8px;font-size:.95rem;color:var(--muted)}
+  .product-card{position:relative}
+  .product-card .mini-cart{position:absolute;left:12px;bottom:12px;width:42px;height:42px;border-radius:999px;
+    display:grid;place-items:center;border:0;background:var(--card);box-shadow:0 6px 16px rgba(0,0,0,.18);cursor:pointer;
+    transition:background .2s}
+  .product-card .mini-cart:hover{background:color-mix(in oklab,var(--gold) 18%, var(--card))}
+  .mag-lens{position:absolute;left:0;top:0;pointer-events:none;border-radius:50%;border:2px solid rgba(255,255,255,.85);
+    box-shadow:0 6px 18px rgba(0,0,0,.35);display:none;will-change:transform, background-position}
+  .lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:1200}
+  .lightbox.open{display:flex}
+  .lightbox .frame{max-width:min(92vw,900px);max-height:min(92vh,720px);width:100%;height:auto;aspect-ratio:4/3;background:#000;
+    border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:0}
+  .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+  @media (max-width:740px){
+    #catBar{display:none}
+    .cat-toggle{display:inline-flex;align-items:center;gap:8px}
+  }
 
   .hcj-qv{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center}
   .hcj-qv[aria-hidden="false"]{display:flex}
@@ -280,22 +284,10 @@
       <span class="badge" id="hcjCatsCount">11</span>
     </div>
     <div class="panel">
-      <div class="hcj-cat-grid" id="hcjCatGrid" role="tablist" aria-label="Jewelry Categories"></div>
-
-      <div class="hcj-cat-prices" id="hcjCatPrices" aria-live="polite">
-        <div class="hcj-cat-stats">
-          <span id="hcjCatTitle" class="hcj-cat-title">All items · كل القطع</span>
-          <span class="hcj-dot">•</span>
-          <span id="hcjCatMeta" class="hcj-cat-meta">—</span>
-        </div>
-        <div class="hcj-ppg">
-          <div class="ppg-chip" data-k="18"><strong>18K</strong><span id="ppg18">–</span></div>
-          <div class="ppg-chip" data-k="21"><strong>21K</strong><span id="ppg21">–</span></div>
-          <div class="ppg-chip" data-k="22"><strong>22K</strong><span id="ppg22">–</span></div>
-          <div class="ppg-chip" data-k="24"><strong>24K</strong><span id="ppg24">–</span></div>
-        </div>
-        <div class="hcj-range" id="hcjRange">Select a category to see its live price range.</div>
-      </div>
+      <button id="catToggle" class="cat-toggle" type="button">Categories · الفئات</button>
+      <div id="catBar" class="cat-bar" role="listbox" aria-label="Jewelry categories"></div>
+      <div id="liveBadges" class="live-badges" aria-live="polite"></div>
+      <div id="catMeta" class="cat-meta" aria-live="polite"></div>
     </div>
   </section>
 
@@ -354,10 +346,47 @@
 (function () {
   const SHEET_ID = "1zHRWiXCF_SldNShxN_KEEcdhry86JZu61gC3gN6slTk";
   const SHEET_NAME = "Form Responses 1";
-  const TQ = encodeURIComponent("select A,B,C,D,E,F,G,H");
+  const TQ = encodeURIComponent("select A,B,C,D,E,F,G,H,I");
   const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json&tq=${TQ}`;
 
   const out = document.getElementById("storeList");
+
+  const CATS = {
+    all:      { en:"All",         ar:"الكل",           icon:"all.jpg" },
+    ring:     { en:"Ring",        ar:"خاتم",           icon:"ring.jpg" },
+    necklace: { en:"Necklace",    ar:"قلادة",          icon:"necklace.jpg" },
+    earrings: { en:"Earrings",    ar:"قرط",            icon:"earrings.jpg" },
+    pendant:  { en:"Pendant",     ar:"تعليقة",         icon:"pendant.jpg" },
+    bangle:   { en:"Bangle",      ar:"سوار دائري",     icon:"bangle.jpg" },
+    anklet:   { en:"Anklet",      ar:"خلخال",          icon:"anklet.jpg" },
+    chain:    { en:"Chain",       ar:"سلسلة",          icon:"chain.jpg" },
+    brooch:   { en:"Brooch",      ar:"بروش",           icon:"brooch.jpg" },
+    set:      { en:"Jewelry set", ar:"طقم مجوهرات",    icon:"set.jpg" },
+    kids:     { en:"Kids",        ar:"ولادي",          icon:"kids.jpg" },
+    special:  { en:"Special",     ar:"مميز",           icon:"special.jpg" }
+  };
+
+  window.HCJ = window.HCJ || {};
+  window.HCJ.CATS = CATS;
+
+  function catIdFromName(raw){
+    if(!raw) return "special";
+    const s = String(raw).toLowerCase();
+    if(s.includes("earring") || s.includes("قرط")) return "earrings";
+    if(s.includes("ring") || s.includes("خاتم")) return "ring";
+    if(s.includes("necklace") || s.includes("قلادة")) return "necklace";
+    if(s.includes("pendant") || s.includes("تعليقة")) return "pendant";
+    if(s.includes("bangle") || s.includes("سوار")) return "bangle";
+    if(s.includes("ankle") || s.includes("خلخال")) return "anklet";
+    if(s.includes("chain") || s.includes("سلسلة")) return "chain";
+    if(s.includes("brooch") || s.includes("بروش")) return "brooch";
+    if(s.includes("jewelry set") || s.includes("طقم")) return "set";
+    if(s.includes("ولادي") || s.includes("kids")) return "kids";
+    if(s.includes("special") || s.includes("مميز")) return "special";
+    return "special";
+  }
+
+  window.HCJ.catIdFromName = catIdFromName;
 
   let __t = (key, vars) => {
     const lang = document.documentElement.lang || 'en';
@@ -455,6 +484,9 @@
     return NaN;
   }
 
+  window.HCJ.getSpotOz = getSpotFast;
+  window.HCJ.perGramForKirat = perGramForKirat;
+
   function computeItemPriceUSD(oz, product){
     const w   = toNum(product.weight);
     if (!Number.isFinite(w) || w <= 0) return NaN;
@@ -544,6 +576,7 @@
 
   function render(products) {
     if(!out) return;
+    window.PRODUCTS = products;
     out.removeAttribute('data-i18n');
     if (!products.length) {
       lastProducts = products;
@@ -568,8 +601,13 @@
       const metaBits = [kirat, weight, sku, `<span class="${badgeClass}">${badgeLabel}</span>`]
         .filter(Boolean)
         .join("\n");
+      const catId = p.categoryId || catIdFromName(p.name);
+      const safeCat = escapeHtml(catId);
+      const safeSkuAttr = escapeHtml(p.sku || "");
+      const stockVal = Number.isFinite(p.stock) ? Math.max(0, Math.floor(p.stock)) : '';
+      const stockAttr = stockVal === '' ? '' : String(stockVal);
       return `
-        <article class="store-item card">
+        <article class="store-item card product-card" data-cat="${safeCat}" data-sku="${safeSkuAttr}"${stockAttr!==''?` data-stock="${stockAttr}"`:''}>
           <figure class="store-item__thumb">
             ${main ? `<img class="js-main" src="${escapeHtml(main)}" alt="${safeTitle || 'Bracelet photo'}" loading="lazy">`
                    : `<div class="store-item__placeholder" aria-hidden="true"></div>`}
@@ -590,6 +628,7 @@
             ${description ? `<p class="store-item__description">${description}</p>` : ""}
             <div class="store-item__meta">${metaBits}</div>
           </div>
+          <button class="mini-cart" type="button" aria-label="Add to cart">🛒</button>
         </article>
       `;
     }).join("\n");
@@ -609,6 +648,7 @@
         });
       });
     });
+    document.dispatchEvent(new CustomEvent('hcj:products-rendered', { detail: { products } }));
   }
 
   fetch(URL)
@@ -620,7 +660,7 @@
         // Keep both the raw value (v) and the formatted value (f)
         const cells = (r.c || []).map(c => c ? (c.f || c.v || "") : "");
 
-        // Columns: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo, H fee ("أجور + ربح ex.2.5")
+        // Columns: A Timestamp, B name, C weight, D kirat, E description, F sku, G photo, H fee ("أجور + ربح ex.2.5"), I stock
         const name        = cells[1];
         const weight      = cells[2];
         const kirat       = cells[3];
@@ -628,13 +668,17 @@
         const sku         = cells[5];
         const photo       = cells[6];
         const fee         = cells[7];
+        const stockRaw    = cells[8];
 
-        // You don’t have price or in_stock in the form yet — set sensible defaults
         const price = "";
-        const in_stock = 1;
+        const stockNum = toNum(stockRaw);
+        const stock = Number.isFinite(stockNum) ? Math.max(0, Math.floor(stockNum)) : 1;
+        const in_stock = stock;
+        const categoryId = catIdFromName(name);
 
-        return { name, price, kirat, photo, description, sku, in_stock, weight, fee };
+        return { name, price, kirat, photo, description, sku, in_stock, weight, fee, stock, categoryId };
       });
+      window.PRODUCTS = products;
       startSpotRefresh(products);
     })
     .catch(err => {
@@ -749,293 +793,306 @@
   const out = document.getElementById('storeList');
   if(!out) return;
 
-  /* ---------- 11 Categories (+ keywords, bilingual labels) ---------- */
-  const CATS = [
-    { id:'ring',       en:'Ring',           ar:'خاتم',          icon:'icon/cat-ring.svg',       k:['ring','خاتم'] },
-    { id:'necklace',   en:'Necklace',       ar:'قلادة',         icon:'icon/cat-necklace.svg',   k:['necklace','قلادة'] },
-    { id:'earrings',   en:'Earrings',       ar:'قرط',           icon:'icon/cat-earrings.svg',   k:['earring','earrings','قرط'] },
-    { id:'pendant',    en:'Pendant',        ar:'تعليقة',        icon:'icon/cat-pendant.svg',    k:['pendant','تعليقة'] },
-    { id:'bangle',     en:'Bangle',         ar:'سوار دائري',    icon:'icon/cat-bangle.svg',     k:['bangle','سوار'] },
-    { id:'anklet',     en:'Anklet',         ar:'خلخال',         icon:'icon/cat-anklet.svg',     k:['anklet','ankle','خلخال','anket'] },
-    { id:'chain',      en:'Chain',          ar:'سلسلة',         icon:'icon/cat-chain.svg',      k:['chain','سلسلة'] },
-    { id:'brooch',     en:'Brooch',         ar:'بروش',          icon:'icon/cat-brooch.svg',     k:['brooch','بروش'] },
-    { id:'set',        en:'Jewelry set',    ar:'طقم مجوهرات',   icon:'icon/cat-set.svg',        k:['set','طقم'] },
-    { id:'kids',       en:'Kids',           ar:'ولادي',         icon:'icon/cat-kids.svg',       k:['kids','ولادي','طفل','أطفال'] },
-    { id:'special',    en:'Special',        ar:'مميز',          icon:'icon/cat-special.svg',    k:['special','مميز'] }
-  ];
-  const iconFallback = 'icon/icon-512.png';
+  const HCJ = window.HCJ || {};
+  const CATS = HCJ.CATS || {};
+  const catBar = document.getElementById('catBar');
+  const catToggle = document.getElementById('catToggle');
+  const liveBadges = document.getElementById('liveBadges');
+  const catMeta = document.getElementById('catMeta');
+  const catCount = document.getElementById('hcjCatsCount');
+  const cartDrawer = document.getElementById('hcjCart');
+  const cartBody = document.getElementById('hcjCartBody');
+  const cartSub = document.getElementById('hcjSub');
+  const checkoutBtn = document.getElementById('hcjCheckout');
+  const closeCartBtn = cartDrawer?.querySelector('.hcj-cart__close');
 
-  /* ---------- Build the categories UI ---------- */
-  const catGrid = document.getElementById('hcjCatGrid');
-  const elTitle = document.getElementById('hcjCatTitle');
-  const elMeta  = document.getElementById('hcjCatMeta');
-  const elRange = document.getElementById('hcjRange');
+  const ESC = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, ch => ESC[ch] || ch);
 
-  let ACTIVE_CAT = '';
-  function label(cat){
-    const dir = document.documentElement.dir || 'ltr';
-    return dir === 'ar' ? `${cat.ar} · ${cat.en}` : `${cat.en} · ${cat.ar}`;
+  let activeCat = 'all';
+  const CART = window.HCJ_CART instanceof Map ? window.HCJ_CART : new Map();
+  window.HCJ_CART = CART;
+
+  function buildCatBar(){
+    if(!catBar) return;
+    catBar.innerHTML = '';
+    Object.entries(CATS).forEach(([id, meta]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cat' + (id === activeCat ? ' active' : '');
+      btn.dataset.id = id;
+      btn.innerHTML = `
+        <img loading="lazy" src="/assets/categories/${meta.icon}" alt="${meta.en}">
+        <span>${meta.en} · ${meta.ar}</span>
+      `;
+      btn.addEventListener('click', () => setActiveCategory(id));
+      catBar.appendChild(btn);
+    });
+    if(catCount){
+      const count = Math.max(0, Object.keys(CATS).length - (CATS.all ? 1 : 0));
+      catCount.textContent = String(count);
+    }
   }
-  function buildCats(){
-    if(!catGrid) return;
-    catGrid.innerHTML = '';
-    const all = document.createElement('button');
-    all.className = 'hcj-cat is-active';
-    all.setAttribute('role','tab');
-    all.innerHTML = `<img class="hcj-cat__icon" src="${iconFallback}" alt="">
-                     <div class="hcj-cat__label">All · الكل</div>
-                     <div class="hcj-cat__sub">(${CATS.length})</div>`;
-    all.addEventListener('click', ()=>{ setActive(''); });
-    catGrid.appendChild(all);
 
-    CATS.forEach(c=>{
-      const b = document.createElement('button');
-      b.className = 'hcj-cat';
-      b.setAttribute('role','tab');
-      b.dataset.id = c.id;
-      b.innerHTML = `
-        <img class="hcj-cat__icon" src="${c.icon}" onerror="this.src='${iconFallback}'" alt="">
-        <div class="hcj-cat__label">${label(c)}</div>
-        <div class="hcj-cat__sub">${c.en}</div>`;
-      b.addEventListener('click', ()=> setActive(c.id));
-      catGrid.appendChild(b);
+  function filterByCategory(catId){
+    const want = (catId === 'all') ? null : catId;
+    document.querySelectorAll('.product-card').forEach(card => {
+      const ok = !want || card.dataset.cat === want;
+      card.style.display = ok ? '' : 'none';
+    });
+    updateCatMeta();
+  }
+
+  function setActiveCategory(id){
+    activeCat = CATS[id] ? id : 'all';
+    document.querySelectorAll('#catBar .cat').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.id === activeCat);
+    });
+    filterByCategory(activeCat);
+    showLivePricesFor(activeCat);
+  }
+
+  function updateCatMeta(){
+    if(!catMeta) return;
+    const meta = CATS[activeCat] || CATS.all || { en:'All', ar:'الكل' };
+    const label = `${meta.en} · ${meta.ar}`;
+    const cards = [...document.querySelectorAll('.product-card')].filter(card => card.style.display !== 'none');
+    const weights = cards.map(card => {
+      const weightChip = [...card.querySelectorAll('.store-item__meta span')].find(span => /g\b/i.test(span.textContent || ''));
+      const value = parseFloat((weightChip?.textContent || '').replace(/[^\d.]/g,''));
+      return Number.isFinite(value) ? value : NaN;
+    }).filter(Number.isFinite);
+    const count = cards.length;
+    const totalWeight = weights.reduce((sum, value) => sum + value, 0);
+    const avg = weights.length ? (totalWeight / weights.length).toFixed(2) : null;
+    const piecesText = count === 1 ? '1 piece' : `${count} pieces`;
+    const weightText = avg ? ` • avg ${avg} g` : '';
+    catMeta.textContent = count ? `${label} • ${piecesText}${weightText}` : `${label} • No items`;
+  }
+
+  async function showLivePricesFor(catId){
+    if(!liveBadges) return;
+    liveBadges.textContent = '';
+    const getSpot = typeof HCJ.getSpotOz === 'function' ? HCJ.getSpotOz : null;
+    const perGram = typeof HCJ.perGramForKirat === 'function' ? HCJ.perGramForKirat : null;
+    if(!getSpot || !perGram) return;
+    try{
+      const oz = await getSpot();
+      ['18','21','22','24'].forEach(k => {
+        const price = perGram(oz, k, 10);
+        if(Number.isFinite(price)){
+          const pill = document.createElement('span');
+          pill.className = 'pill';
+          pill.textContent = `${k}K ${Math.round(price)}`;
+          liveBadges.appendChild(pill);
+        }
+      });
+    }catch(_){
+      /* ignore transient network errors */
+    }
+  }
+
+  function openCart(){ cartDrawer?.setAttribute('aria-hidden','false'); }
+  function closeCart(){ cartDrawer?.setAttribute('aria-hidden','true'); }
+  closeCartBtn?.addEventListener('click', closeCart);
+
+  if(checkoutBtn){
+    checkoutBtn.addEventListener('click', () => {
+      if(CART.size === 0) return;
+      window.location.href = '/checkout.html';
     });
   }
 
-  function setActive(id){
-    ACTIVE_CAT = id || '';
-    document.querySelectorAll('.hcj-cat').forEach(el=> el.classList.toggle('is-active', (el.dataset.id||'')===ACTIVE_CAT || (!el.dataset.id && !ACTIVE_CAT)));
-    filterCards();
-    updateGoldBoard();
+  function changeQty(sku, delta){
+    const entry = CART.get(sku);
+    if(!entry) return;
+    const product = entry.product || {};
+    const max = Number.isFinite(product.stock) && product.stock > 0 ? Math.floor(product.stock) : 1;
+    const next = Math.max(0, Math.min(max, entry.qty + delta));
+    if(next === 0){
+      CART.delete(sku);
+    }else{
+      entry.qty = next;
+    }
+    renderCartDrawer();
   }
 
-  /* ---------- Light cart (drawer) ---------- */
-  const CART_KEY = 'hcj-mini-cart';
-  function loadCart(){
-    try{ return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); }catch(_){ return []; }
+  function renderCartDrawer(){
+    if(!cartBody || !cartSub) return;
+    if(CART.size === 0){
+      cartBody.innerHTML = '<p class="cat-meta">Your cart is empty.</p>';
+      cartSub.textContent = '$0';
+      return;
+    }
+    let subtotal = 0;
+    const html = [];
+    CART.forEach((entry, sku) => {
+      const product = entry.product || {};
+      const qty = entry.qty || 0;
+      const unitPrice = Number(product.price) || 0;
+      subtotal += unitPrice * qty;
+      const imgSrc = entry.img || product.photo || 'icon/icon-512.png';
+      html.push(`
+        <div class="hcj-item" data-sku="${escape(sku)}">
+          <img src="${escape(imgSrc)}" alt="">
+          <div>
+            <div class="t">${escape(product.name || 'Item')}</div>
+            <div class="s">${escape(product.sku || sku)}</div>
+            <div class="p">$${unitPrice.toLocaleString()}</div>
+          </div>
+          <div class="hcj-qty">
+            <button type="button" data-action="dec" aria-label="Decrease quantity">−</button>
+            <span>${qty}</span>
+            <button type="button" data-action="inc" aria-label="Increase quantity">+</button>
+          </div>
+        </div>`);
+    });
+    cartBody.innerHTML = html.join('');
+    cartSub.textContent = '$' + subtotal.toLocaleString();
   }
-  function saveCart(list){ try{ localStorage.setItem(CART_KEY, JSON.stringify(list)); }catch(_){ } }
-  function addToCart(item){
-    const list = loadCart();
-    list.unshift(item);
-    saveCart(list);
-    renderCart();
+
+  cartBody?.addEventListener('click', event => {
+    const button = event.target.closest('button[data-action]');
+    if(!button) return;
+    const sku = button.closest('.hcj-item')?.dataset.sku;
+    if(!sku) return;
+    changeQty(sku, button.dataset.action === 'inc' ? 1 : -1);
+  });
+
+  function getProductForCard(card){
+    const sku = card.dataset.sku || '';
+    const list = Array.isArray(window.PRODUCTS) ? window.PRODUCTS : [];
+    let product = list.find(p => (p.sku || '') === sku);
+    if(!product){
+      const title = (card.querySelector('.store-item__title')?.textContent || '').trim().toLowerCase();
+      product = list.find(p => String(p.name || '').trim().toLowerCase() === title);
+    }
+    if(product){
+      if(!Number.isFinite(product.stock)){
+        const ds = Number(card.dataset.stock);
+        if(Number.isFinite(ds)) product.stock = ds;
+      }
+      return product;
+    }
+    const fallbackPrice = Number((card.querySelector('.store-item__price')?.textContent || '').replace(/[^\d.]/g,'')) || 0;
+    return {
+      name: (card.querySelector('.store-item__title')?.textContent || 'Item').trim(),
+      sku: sku || (card.querySelector('.store-item__title')?.textContent || 'item').trim(),
+      price: fallbackPrice,
+      stock: Number(card.dataset.stock) || 1
+    };
+  }
+
+  function addToCart(product, imgUrl){
+    if(!product) return;
+    const skuKey = (product.sku && product.sku.trim()) || (product.name && product.name.trim()) || 'item';
+    const existing = CART.get(skuKey);
+    const currentQty = existing?.qty || 0;
+    const stockMax = Number.isFinite(product.stock) ? Math.max(0, Math.floor(product.stock)) : 1;
+    if(stockMax === 0) return;
+    const nextQty = Math.min(stockMax, currentQty + 1);
+    const entry = existing || { product, qty: 0, img: imgUrl };
+    entry.product = product;
+    entry.qty = nextQty;
+    if(imgUrl) entry.img = imgUrl;
+    CART.set(skuKey, entry);
+    renderCartDrawer();
     openCart();
   }
 
-  const cart = document.getElementById('hcjCart');
-  const cartBody = document.getElementById('hcjCartBody');
-  const cartSub = document.getElementById('hcjSub');
-  const btnCloseCart = cart?.querySelector('.hcj-cart__close');
-  btnCloseCart?.addEventListener('click', closeCart);
-  function openCart(){ cart?.setAttribute('aria-hidden','false'); }
-  function closeCart(){ cart?.setAttribute('aria-hidden','true'); }
-  function renderCart(){
-    const list = loadCart();
-    cartBody.innerHTML = list.map((it,i)=>`
-      <div class="hcj-item">
-        <img src="${it.img||iconFallback}" alt="">
-        <div>
-          <div class="t">${escapeHtml(it.title||'Item')}</div>
-          <div class="s">${it.sku||''}</div>
-        </div>
-        <div class="p">$${(Number(it.price)||0).toLocaleString()}</div>
-      </div>`).join('');
-    const sub = list.reduce((s,it)=> s + (Number(it.price)||0), 0);
-    cartSub.textContent = '$' + sub.toLocaleString();
-  }
-  renderCart();
-
-  /* ---------- Quick view (+ magnifier) ---------- */
-  const qv = document.getElementById('hcjQV');
-  const qvClose = qv?.querySelector('.hcj-qv__close');
-  const qvTitle = document.getElementById('hcjQVTitle');
-  const qvPrice = document.getElementById('hcjQVPrice');
-  const qvSpecs = document.getElementById('hcjQVSpecs');
-  const qvThumbs = document.getElementById('hcjQVThumbs');
-  const btnQVAdd = document.getElementById('hcjAddCartQV');
-  const waLink = document.getElementById('hcjWA');
-
-  const zoom = document.getElementById('hcjZoom');
-  const zoomImg = document.getElementById('hcjZoomImg');
-  const lens = document.getElementById('hcjLens');
-
-  qvClose?.addEventListener('click', ()=> qv?.setAttribute('aria-hidden','true'));
-  qv?.addEventListener('click', e=>{ if(e.target===qv) qv.setAttribute('aria-hidden','true'); });
-
-  function openQV(card){
-    const img = card.querySelector('.js-main');
-    const title = (card.querySelector('.store-item__title')?.textContent||'').trim();
-    const priceText = (card.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,'');
-    const sku = [...card.querySelectorAll('.store-item__meta span')].find(s=>/sku/i.test(s.textContent||''))?.textContent || '';
-    const thumbStrip = card.querySelectorAll('.store-item__thumbs img');
-    qvTitle.textContent = title;
-    qvPrice.textContent = Number(priceText||0).toLocaleString();
-    qvSpecs.innerHTML = card.querySelector('.store-item__meta')?.innerHTML || '';
-    zoomImg.src = img?.src || iconFallback;
-    qvThumbs.innerHTML = '';
-    thumbStrip.forEach(t=>{
-      const ii = document.createElement('img'); ii.src = t.src; ii.alt=''; ii.addEventListener('click', ()=>{ zoomImg.src = ii.src; setupLens(); });
-      qvThumbs.appendChild(ii);
-    });
-
-    btnQVAdd.onclick = ()=> addToCart({ title, sku, price: Number(priceText||0), img: zoomImg.src });
-    waLink.href = buildWhatsApp(title, sku, priceText, zoomImg.src);
-
-    qv.setAttribute('aria-hidden','false');
-    setupLens();
-  }
-
-  function setupLens(){
-    if(!zoom || !zoomImg || !lens) return;
-    lens.style.backgroundImage = `url(${zoomImg.src})`;
-    lens.style.display = 'block';
-    let w = lens.offsetWidth, h = lens.offsetHeight;
-
-    function move(e){
-      const rect = zoom.getBoundingClientRect();
-      const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-      const bx = Math.max(w/2, Math.min(rect.width - w/2, x));
-      const by = Math.max(h/2, Math.min(rect.height - h/2, y));
-      lens.style.left = (bx - w/2) + 'px';
-      lens.style.top  = (by - h/2) + 'px';
-      const rx = (bx / rect.width)  * 100;
-      const ry = (by / rect.height) * 100;
-      lens.style.backgroundPosition = `${rx}% ${ry}%`;
+  function attachMagnifier(img, {zoom=2.6, lens=140}={}){
+    if(!img || img.dataset.magAttached) return;
+    function init(){
+      if(img.dataset.magAttached) return;
+      const lensEl = document.createElement('div');
+      lensEl.className = 'mag-lens';
+      lensEl.style.width = lens + 'px';
+      lensEl.style.height = lens + 'px';
+      const parent = img.parentElement;
+      if(parent && getComputedStyle(parent).position === 'static'){
+        parent.style.position = 'relative';
+      }
+      parent?.appendChild(lensEl);
+      let raf = 0, mx = 0, my = 0;
+      function updateBackground(){
+        lensEl.style.backgroundImage = `url(${img.src})`;
+        lensEl.style.backgroundSize = `${img.naturalWidth * zoom}px ${img.naturalHeight * zoom}px`;
+      }
+      function render(){
+        raf = 0;
+        const rect = img.getBoundingClientRect();
+        const x = Math.max(0, Math.min(mx - rect.left, rect.width));
+        const y = Math.max(0, Math.min(my - rect.top, rect.height));
+        const bx = -((x * zoom) - lens / 2);
+        const by = -((y * zoom) - lens / 2);
+        lensEl.style.transform = `translate(${x - lens / 2}px, ${y - lens / 2}px)`;
+        lensEl.style.backgroundPosition = `${bx}px ${by}px`;
+      }
+      function onMove(evt){
+        const touch = evt.touches?.[0];
+        mx = touch ? touch.clientX : evt.clientX;
+        my = touch ? touch.clientY : evt.clientY;
+        if(!raf) raf = requestAnimationFrame(render);
+      }
+      function show(){ lensEl.style.display = 'block'; }
+      function hide(){ lensEl.style.display = 'none'; }
+      img.addEventListener('mousemove', onMove, {passive:true});
+      img.addEventListener('touchmove', onMove, {passive:true});
+      img.addEventListener('mouseenter', show);
+      img.addEventListener('mouseleave', hide);
+      img.addEventListener('touchend', hide);
+      img.addEventListener('load', updateBackground);
+      updateBackground();
+      img.dataset.magAttached = '1';
     }
-    zoom.onmousemove = move;
-    zoom.onmouseleave = ()=> lens.style.display = 'none';
-    zoom.onmouseenter = ()=> { lens.style.display = 'block'; move({clientX:zoom.getBoundingClientRect().left+10, clientY:zoom.getBoundingClientRect().top+10}); };
-  }
-
-  function buildWhatsApp(title, sku, price, img){
-    const phone = 'YOUR_WHATSAPP_NUMBER';
-    const text = encodeURIComponent(`Hello, I'm interested in:\n${title}\n${sku}\nPrice: $${price}\n${img}`);
-    return `https://wa.me/${phone}?text=${text}`;
-  }
-
-  /* ---------- Category detection (from title) ---------- */
-  function detectCat(title){
-    const s = String(title||'').toLowerCase();
-    for(const c of CATS){
-      if(c.k.some(k => s.includes(k))) return c.id;
-    }
-    return '';
-  }
-
-  /* ---------- Observe Store render & enhance cards ---------- */
-  let observer = new MutationObserver(()=> enhance());
-  observer.observe(out, {childList:true, subtree:true});
-
-  function enhance(){
-    out.querySelectorAll('.store-item').forEach(card=>{
-      if(card.classList.contains('hcj-up')) return;
-      card.classList.add('hcj-up');
-      const title = (card.querySelector('.store-item__title')?.textContent||'').trim();
-      card.dataset.cat = detectCat(title);
-
-      const add = document.createElement('button');
-      add.className = 'hcj-add'; add.title = 'Add to cart';
-      add.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4a2 2 0 0 0 0-4m10 0a2 2 0 1 0 0 4a2 2 0 0 0 0-4M6.16 14h9.72a2 2 0 0 0 1.92-1.46l1.92-6.54A1 1 0 0 0 18.77 4H6.2L5.64 2.36A1 1 0 0 0 4.7 2H3a1 1 0 0 0 0 2h1.06l2.6 7.46l-1.1 3.3A2 2 0 0 0 7 17h12a1 1 0 0 0 0-2H7.42l.74-2"/></svg>`;
-      add.addEventListener('click', ()=>{
-        const p = Number((card.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,''));
-        const sku = [...card.querySelectorAll('.store-item__meta span')].find(s=>/sku/i.test(s.textContent||''))?.textContent || '';
-        const img = card.querySelector('.js-main')?.src || iconFallback;
-        addToCart({ title, sku, price:p, img });
-      });
-      card.appendChild(add);
-
-      card.querySelector('.store-item__thumb')?.addEventListener('click', ()=> openQV(card));
-      card.querySelector('.store-item__title')?.addEventListener('click', ()=> openQV(card));
-    });
-
-    filterCards();
-    updateGoldBoard();
-  }
-
-  function filterCards(){
-    out.querySelectorAll('.store-item').forEach(card=>{
-      const ok = !ACTIVE_CAT || (card.dataset.cat === ACTIVE_CAT);
-      card.style.display = ok ? '' : 'none';
-    });
-  }
-
-  /* ---------- Live gold board (reuses your logic) ---------- */
-  const GOLDAPI_FREE = [
-    "https://api.gold-api.com/price/XAU",
-    "https://api.gold-api.com/price/XAU/USD",
-    "https://www.gold-api.com/price/XAU",
-    "https://www.gold-api.com/price/XAU/USD"
-  ];
-  function pickOuncePrice(d){
-    const c = [d?.price, d?.usd, d?.usd_ounce, d?.price_ounce, d?.ounce, d?.oz, d?.result?.price, d?.XAU?.USD]
-      .map(Number).filter(v=>isFinite(v)&&v>0);
-    if(c.length) return c[0];
-    const g24 = Number(d?.gram_24k || d?.price_gram_24k || d?.g24 || d?.per_gram);
-    return (isFinite(g24)&&g24>0) ? g24*31.1 : NaN;
-  }
-  function timeoutFetch(u,ms){
-    const c = new AbortController(); const id = setTimeout(()=>c.abort(), ms);
-    return fetch(u,{signal:c.signal,cache:"no-store"}).finally(()=>clearTimeout(id));
-  }
-  async function getSpotFast(){
-    const tries = GOLDAPI_FREE.map(u =>
-      timeoutFetch(u,3500).then(r=>r.ok?r.json():Promise.reject(r.status)).then(pickOuncePrice)
-        .then(v => (isFinite(v)&&v>0) ? v : Promise.reject('bad')));
-    return Promise.any(tries);
-  }
-  function perGramForKirat(oz,k,fee){
-    const add = Number.isFinite(fee) ? fee : 10;
-    k = String(k||'').toLowerCase();
-    if(/\b18\b/.test(k)) return (((oz+30)*32*750/995)/1000)+add;
-    if(/\b21\b/.test(k)) return (((oz+30)*32*875/995)/1000)+add;
-    if(/\b22\b/.test(k)) return (((oz+30)*32*916/995)/1000)+add;
-    if(/\b24\b/.test(k)) return (((oz+30)/31.1)/1000)+add;
-    return NaN;
-  }
-
-  async function updateGoldBoard(){
-    if(!elTitle||!elMeta||!elRange) return;
-    const catObj = CATS.find(c=>c.id===ACTIVE_CAT);
-    elTitle.textContent = ACTIVE_CAT ? (label(catObj)) : 'All items · كل القطع';
-
-    const cards = [...out.querySelectorAll('.store-item')].filter(c => c.style.display !== 'none');
-    const weights = cards.map(c=>{
-      const x = [...c.querySelectorAll('.store-item__meta span')].find(s => /g\b/i.test(s.textContent||''));
-      const n = parseFloat((x?.textContent||'').replace(/[^\d.]/g,''));
-      return isFinite(n)?n:NaN;
-    }).filter(Number.isFinite);
-    const n = weights.length;
-    const total = weights.reduce((s,v)=>s+v,0);
-    const avg = n ? (total/n) : 0;
-    elMeta.textContent = n ? `${n} pieces • avg ${avg.toFixed(2)} g` : '—';
-
-    try{
-      const oz = await getSpotFast();
-      document.getElementById('ppg18').textContent = Math.round(perGramForKirat(oz,18,10)).toLocaleString();
-      document.getElementById('ppg21').textContent = Math.round(perGramForKirat(oz,21,10)).toLocaleString();
-      document.getElementById('ppg22').textContent = Math.round(perGramForKirat(oz,22,10)).toLocaleString();
-      document.getElementById('ppg24').textContent = Math.round(perGramForKirat(oz,24,10)).toLocaleString();
-
-      const prices = cards.map(c => Number((c.querySelector('.store-item__price')?.textContent||'').replace(/[^\d.]/g,'')))
-                          .filter(v => isFinite(v)&&v>0)
-                          .sort((a,b)=>a-b);
-      const range = prices.length ? `$${prices[0].toLocaleString()} – $${prices[prices.length-1].toLocaleString()}` : '—';
-      elRange.textContent = prices.length ? `Live price range in this category: ${range}` :
-                                            `Select a category to see its live price range.`;
-    }catch(_){
+    if(img.complete && img.naturalWidth){
+      init();
+    }else{
+      img.addEventListener('load', init, {once:true});
     }
   }
-  setInterval(updateGoldBoard, 10000);
 
-  const ESC = {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"};
-  function escapeHtml(v){ return String(v??'').replace(/[&<>"']/g, ch => ESC[ch]||ch ); }
+  function decorateCards(){
+    out.querySelectorAll('.product-card').forEach(card => {
+      if(card.dataset.enhanced) return;
+      card.dataset.enhanced = '1';
+      const img = card.querySelector('.store-item__thumb .js-main');
+      if(img) attachMagnifier(img, {zoom:2.6, lens:140});
+    });
+    filterByCategory(activeCat);
+  }
 
-  buildCats();
-  const catCount = document.getElementById('hcjCatsCount');
-  if(catCount) catCount.textContent = String(CATS.length);
-  setActive('');
-  enhance();
+  const observer = new MutationObserver(() => {
+    decorateCards();
+    updateCatMeta();
+  });
+  observer.observe(out, {childList:true});
+
+  document.addEventListener('click', event => {
+    const btn = event.target.closest('.mini-cart');
+    if(!btn) return;
+    const card = btn.closest('.product-card');
+    if(!card) return;
+    const product = getProductForCard(card);
+    const img = card.querySelector('.store-item__thumb .js-main')?.src || '';
+    addToCart(product, img);
+  });
+
+  catToggle?.addEventListener('click', () => {
+    catBar?.classList.toggle('open');
+  });
+
+  document.addEventListener('hcj:products-rendered', () => {
+    decorateCards();
+    renderCartDrawer();
+    setActiveCategory(activeCat);
+  });
+
+  buildCatBar();
+  setActiveCategory(activeCat);
+  decorateCards();
+  renderCartDrawer();
+  showLivePricesFor(activeCat);
 })();
 </script>
 </body>
