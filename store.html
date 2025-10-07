@@ -609,7 +609,7 @@
     if (/\b18\b/.test(k)) return (((oz + 30) * 32 * 750 / 995)/1000) + add;
     if (/\b21\b/.test(k)) return (((oz + 30) * 32 * 875 / 995)/1000) + add;
     if (/\b22\b/.test(k)) return (((oz + 30) * 32 * 916 / 995)/1000) + add;
-    if (/\b24\b/.test(k)) return (((oz + 30) / 31.1)/1000) + add;
+    if (/\b24\b/.test(k)) return ((oz + 30) / 31.1) + add;
     return NaN;
   }
 
