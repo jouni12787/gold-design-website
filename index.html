@@ -231,6 +231,7 @@
   .badge{font-size:12px;color:var(--muted)}
   .panel{padding:16px 18px}
   label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .inputNote{margin-top:6px;font-size:12px;color:var(--muted)}
   select,input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--control-border);background:var(--control-bg);color:var(--ink);outline:none;transition:border .2s,box-shadow .2s,background .2s,color .3s ease}
   select:focus,input:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--control-focus-shadow);background:var(--control-focus-bg)}
   .grid2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
@@ -547,6 +548,22 @@
           <select id="pendant"></select>
         </div>
       </div>
+      <div class="grid2" id="pendantCustomization" hidden style="margin-top:8px">
+        <div>
+          <label for="pendantEngraving" data-i18n="builder.pendant.engraving">Engraving</label>
+          <input id="pendantEngraving" type="text" maxlength="14" data-i18n-attr="placeholder:builder.pendant.engraving.placeholder" placeholder="Enter name or initials">
+        </div>
+        <div>
+          <label for="pendantMotif" data-i18n="builder.pendant.motif">Motif</label>
+          <select id="pendantMotif">
+            <option value="" data-i18n="builder.pendant.motif.none">None</option>
+            <option value="heart" data-i18n="builder.pendant.motif.heart">Heart</option>
+            <option value="star" data-i18n="builder.pendant.motif.star">Star</option>
+            <option value="diamond" data-i18n="builder.pendant.motif.diamond">Diamond</option>
+          </select>
+        </div>
+      </div>
+      <p id="pendantCustomizationNote" class="inputNote" hidden data-i18n="builder.pendant.engraving.note">Black Field pendants accept engraved text and motifs.</p>
       <div class="grid2" style="margin-top:8px">
         <div>
           <label for="pinBias">Pendant pin spread (±%)</label>
@@ -810,6 +827,7 @@ const STORAGE_KEYS = {
 };
 const BASE_DENSITY = 15.6; // 18K heritage gold baseline (g/cm^3)
 const BASE_WRIST_CM = 18;
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 function setCanvasSize(w, h){
   STAGE_W = w; STAGE_H = h;
@@ -1025,7 +1043,10 @@ const PENDANTS = [
   "flower 2.svg",
   "flower 3.svg",
   "flower 4.svg",
-  "turtle 1.svg"
+  "turtle 1.svg",
+  "black field with two white circular 1.svg",
+  "black field with two white circular 2.svg",
+  "black field with two white circular 3.svg"
 ];
 const LINKS    = [
   "halo link.svg",
@@ -1036,11 +1057,14 @@ const LINKS    = [
   "Barrel Link.svg",
   "Floral Link.svg",
   "Oblong shape with two small side circles.svg",
-  "black field with two white circular 1.svg",
-  "black field with two white circular 2.svg",
-  "black field with two white circular 3.svg",
   "oblong shape.svg"
 ];
+
+const CUSTOMIZABLE_PENDANTS = new Set([
+  "black field with two white circular 1.svg",
+  "black field with two white circular 2.svg",
+  "black field with two white circular 3.svg"
+]);
 
 /* Locks (terminal, left end only) */
 const LOCKS = ["dolphin fish lock.svg"];
@@ -1130,30 +1154,6 @@ const LINK_PARTS = {
     rotate: 0
   },
 
-  "black field with two white circular 1.svg": {
-    base:  "black field with two white circular 1.svg",
-    under: "bottom half of black field with two white circular 1.svg",
-    over:  "top  half of black field with two white circular 1.svg",
-    targetH: 34,
-    rotate: 0
-  },
-
-  "black field with two white circular 2.svg": {
-    base:  "black field with two white circular 2.svg",
-    under: "bottom half of black field with two white circular 2.svg",
-    over:  "top half of black field with two white circular 2.svg",
-    targetH: 34,
-    rotate: 0
-  },
-
-  "black field with two white circular 3.svg": {
-    base:  "black field with two white circular 3.svg",
-    under: "bottom half of black field with two white circular 3.svg",
-    over:  "top half of black field with two white circular 3.svg",
-    targetH: 34,
-    rotate: 0
-  },
-
   "oblong shape.svg": {
     base:  "oblong shape.svg",
     under: "bottom half of oblong shape.svg",
@@ -1190,6 +1190,9 @@ const WEIGHTS = {
   "flower 3.svg": 0.30,
   "flower 4.svg": 0.30,
   "turtle 1.svg": 0.30,
+  "black field with two white circular 1.svg": 0.32,
+  "black field with two white circular 2.svg": 0.32,
+  "black field with two white circular 3.svg": 0.32,
   "halo link.svg": 0.10,
   "gold circle link.svg": 0.10,
   "dual orb link.svg": 0.12,
@@ -1198,9 +1201,6 @@ const WEIGHTS = {
   "Barrel Link.svg": 0.10,
   "Floral Link.svg": 0.10,
   "Oblong shape with two small side circles.svg": 0.10,
-  "black field with two white circular 1.svg": 0.10,
-  "black field with two white circular 2.svg": 0.10,
-  "black field with two white circular 3.svg": 0.10,
   "oblong shape.svg": 0.10,
   "dolphin fish lock.svg": 0.12,
   "__default_pendant": 0.30,
@@ -1216,6 +1216,10 @@ const selThemeInner = document.getElementById("themeSelect");
 const selThemeTop = document.getElementById("themeSelectTop");
 const selTheme = selThemeInner || selThemeTop;
 const selPendant = document.getElementById("pendant");
+const pendantCustomization = document.getElementById("pendantCustomization");
+const pendantCustomizationNote = document.getElementById("pendantCustomizationNote");
+const inpPendantEngraving = document.getElementById("pendantEngraving");
+const selPendantMotif = document.getElementById("pendantMotif");
 const inpPinBias = document.getElementById("pinBias");
 const outPinBias = document.getElementById("pinBiasOut");
 const selLock = document.getElementById("lockSelect");
@@ -1488,6 +1492,10 @@ function collectSessionState(){
   return {
     theme: selTheme?.value || currentTheme,
     pendant: selPendant?.value || PENDANTS[0],
+    engraving: {
+      text: inpPendantEngraving?.value || '',
+      motif: selPendantMotif?.value || ''
+    },
     lock: selLock?.value || '',
     rows: readRows(),
     angle: parseFloat(inpStep?.value ?? 15) || 15,
@@ -1524,6 +1532,12 @@ function hydrateSession(){
   }
 
   if(selPendant && data.pendant && PENDANTS.includes(data.pendant)) selPendant.value = data.pendant;
+  if(inpPendantEngraving && data.engraving && typeof data.engraving.text === 'string'){
+    inpPendantEngraving.value = data.engraving.text;
+  }
+  if(selPendantMotif && data.engraving && typeof data.engraving.motif === 'string'){
+    selPendantMotif.value = data.engraving.motif;
+  }
   if(selLock && typeof data.lock === 'string') selLock.value = data.lock;
   if(inpPinBias && typeof data.pinBias === 'number'){
     inpPinBias.value = String(data.pinBias);
@@ -1547,6 +1561,7 @@ function hydrateSession(){
   const stlAuto = document.getElementById('stlAutoRotate');
   if(stlAuto && typeof data.autoRotate === 'boolean') stlAuto.checked = data.autoRotate;
 
+  updatePendantCustomizationVisibility();
   isRestoringSession = false;
   return true;
 }
@@ -1978,6 +1993,7 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
 (function init(){
   PENDANTS.forEach(n=> selPendant.appendChild(makeOption(n,n)));
   if(selPendant && !selPendant.value) selPendant.value = PENDANTS[0];
+  updatePendantCustomizationVisibility();
 
   if(selLock){
     selLock.appendChild(makeOption(t('builder.lock.none'), "", 'builder.lock.none'));
@@ -2025,7 +2041,11 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   if(inpWrist) inpWrist.addEventListener("input", ()=>render());
 
   if(btnAddRow) btnAddRow.addEventListener("click", ()=>{ addRow(); render(); });
-  if(selPendant) selPendant.addEventListener("change", render);
+  if(selPendant){
+    selPendant.addEventListener("change", ()=>{ updatePendantCustomizationVisibility(); render(); });
+  }
+  if(inpPendantEngraving) inpPendantEngraving.addEventListener("input", ()=> render());
+  if(selPendantMotif) selPendantMotif.addEventListener("change", ()=> render());
   if(btnSVG) btnSVG.addEventListener("click", downloadSVG);
   if(btnPNG) btnPNG.addEventListener("click", downloadPNG);
 
@@ -2316,6 +2336,112 @@ function adjustPinsProportionally(pack, factor, mode = "horizontal") {
   };
 }
 
+function updatePendantCustomizationVisibility(){
+  const name = selPendant?.value || "";
+  const show = CUSTOMIZABLE_PENDANTS.has(name);
+  if(pendantCustomization) pendantCustomization.hidden = !show;
+  if(pendantCustomizationNote) pendantCustomizationNote.hidden = !show;
+  if(inpPendantEngraving) inpPendantEngraving.disabled = !show;
+  if(selPendantMotif) selPendantMotif.disabled = !show;
+}
+
+function buildEngravingMotif(type, size){
+  if(!type) return null;
+  switch(type){
+    case 'heart': {
+      const heart = document.createElementNS(SVG_NS, 'path');
+      const s = size;
+      heart.setAttribute('d', `M 0 ${-s * 0.28} C ${-s * 0.62} ${-s * 0.78} ${-s} ${-s * 0.06} 0 ${s * 0.62} C ${s} ${-s * 0.06} ${s * 0.62} ${-s * 0.78} 0 ${-s * 0.28} Z`);
+      return heart;
+    }
+    case 'star': {
+      const star = document.createElementNS(SVG_NS, 'polygon');
+      const outer = size / 2;
+      const inner = outer * 0.45;
+      const pts = [];
+      for(let i=0;i<10;i++){
+        const angle = -Math.PI/2 + i * Math.PI/5;
+        const radius = (i % 2 === 0) ? outer : inner;
+        pts.push(`${(Math.cos(angle) * radius).toFixed(3)},${(Math.sin(angle) * radius).toFixed(3)}`);
+      }
+      star.setAttribute('points', pts.join(' '));
+      return star;
+    }
+    case 'diamond': {
+      const diamond = document.createElementNS(SVG_NS, 'polygon');
+      const half = size / 2;
+      diamond.setAttribute('points', `0 ${-half} ${half} 0 0 ${half} ${-half} 0`);
+      return diamond;
+    }
+    default:
+      return null;
+  }
+}
+
+function applyPendantEngraving(pack, pendantName, text, motif){
+  if(!pack?.node) return;
+  const existing = pack.node.querySelectorAll('[data-role="pendant-engraving"]');
+  existing.forEach(node=> node.remove());
+  if(!CUSTOMIZABLE_PENDANTS.has(pendantName)) return;
+
+  const engravingText = (text || '').trim();
+  const motifType = (motif || '').trim();
+  const hasText = engravingText.length > 0;
+  const hasMotif = motifType && motifType !== 'none';
+  if(!hasText && !hasMotif) return;
+
+  const layer = document.createElementNS(SVG_NS, 'g');
+  layer.setAttribute('data-role', 'pendant-engraving');
+  layer.setAttribute('pointer-events', 'none');
+
+  const cx = pack.width / 2;
+  const cy = pack.height / 2;
+  const accentFill = '#f9f4de';
+  const accentStroke = 'rgba(0, 0, 0, 0.4)';
+
+  if(hasText){
+    const upper = engravingText.toUpperCase();
+    const len = Math.max(upper.length, 1);
+    const maxWidth = pack.width * 0.7;
+    const sizeByLen = maxWidth / len * 1.35;
+    const size = Math.max(Math.min(pack.height * 0.2, sizeByLen), pack.height * 0.075);
+    const yOffset = hasMotif ? -pack.height * 0.1 : 0;
+    const textEl = document.createElementNS(SVG_NS, 'text');
+    textEl.setAttribute('x', cx);
+    textEl.setAttribute('y', cy + yOffset);
+    textEl.setAttribute('text-anchor', 'middle');
+    textEl.setAttribute('dominant-baseline', 'middle');
+    textEl.setAttribute('font-size', size);
+    textEl.setAttribute('font-family', '"Playfair Display", "Times New Roman", serif');
+    textEl.setAttribute('font-weight', '600');
+    textEl.setAttribute('letter-spacing', '0.12em');
+    textEl.setAttribute('fill', accentFill);
+    textEl.setAttribute('stroke', accentStroke);
+    textEl.setAttribute('stroke-width', Math.max(size * 0.05, 0.55));
+    textEl.setAttribute('paint-order', 'stroke fill');
+    textEl.textContent = upper;
+    layer.appendChild(textEl);
+  }
+
+  if(hasMotif){
+    const motifSize = Math.min(pack.width, pack.height) * 0.35;
+    const motifEl = buildEngravingMotif(motifType, motifSize);
+    if(motifEl){
+      const yOffset = hasText ? motifSize * 0.45 : 0;
+      motifEl.setAttribute('transform', `translate(${cx}, ${cy + yOffset})`);
+      motifEl.setAttribute('fill', accentFill);
+      motifEl.setAttribute('stroke', accentStroke);
+      motifEl.setAttribute('stroke-width', Math.max(motifSize * 0.05, 0.8));
+      motifEl.setAttribute('paint-order', 'stroke fill');
+      motifEl.setAttribute('stroke-linejoin', 'round');
+      motifEl.setAttribute('stroke-linecap', 'round');
+      layer.appendChild(motifEl);
+    }
+  }
+
+  pack.node.appendChild(layer);
+}
+
 // === rotation helpers for 2D layout ===
 const toRad = d => d * Math.PI / 180;
 function rotateAround(x, y, cx, cy, rad){
@@ -2340,7 +2466,12 @@ async function render(){
   if(stageBg) stageBg.setAttribute("fill", bg2);
   const rows = readRows();
   currentRows = rows.map(r => ({...r}));
+  updatePendantCustomizationVisibility();
   const pendantName = selPendant.value;
+  const engravingText = (inpPendantEngraving?.value || '').trim();
+  const engravingMotif = selPendantMotif?.value || '';
+  const isCustomPendant = CUSTOMIZABLE_PENDANTS.has(pendantName);
+  const engravingActive = isCustomPendant && (engravingText.length > 0 || engravingMotif);
   const pendantH = 160;           // fixed pendant height
   const lockName = (selLock?.value || "").trim();
   const lockH = 70;               // fixed lock height
@@ -2469,7 +2600,10 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
     defs.appendChild(mask);
     pendantMaskUrl = `url(#${PENDANT_MASK_ID})`;
   }
-  tintMetal(pendantPack.node, currentMetal); gp.appendChild(pendantPack.node); bracelet.appendChild(gp);
+  tintMetal(pendantPack.node, currentMetal);
+  applyPendantEngraving(pendantPack, pendantName, engravingText, engravingMotif);
+  gp.appendChild(pendantPack.node);
+  bracelet.appendChild(gp);
   bracelet.appendChild(stackOverMasked);
   if(pendantMaskUrl) stackOverMasked.setAttribute("mask", pendantMaskUrl);
   bracelet.appendChild(stackOverTop);
@@ -2479,6 +2613,7 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
     pack: pendant3D,
     tx: gpX,
     ty: gpY,
+    engraving: engravingActive ? { text: engravingText, motif: engravingMotif } : null,
     pins: {
       L: pendantPack.pins?.L ? {x: gpX + pendantPack.pins.L.x, y: gpY + pendantPack.pins.L.y} : null,
       R: pendantPack.pins?.R ? {x: gpX + pendantPack.pins.R.x, y: gpY + pendantPack.pins.R.y} : null
