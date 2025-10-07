@@ -1030,7 +1030,9 @@ const PENDANTS = [
 const LINKS    = [
   "halo link.svg",
   "gold circle link.svg",
-  "dual orb link.svg"
+  "dual orb link.svg",
+  "Arrow Link.svg",
+  "Eclipse Link.svg"
 ];
 
 /* Locks (terminal, left end only) */
@@ -1079,6 +1081,22 @@ const LINK_PARTS = {
     over:  "top half of the dual orb link.svg",
     targetH: 36,
     rotate: 0
+  },
+
+  "Arrow Link.svg": {
+    base:  "Arrow Link.svg",
+    under: "bottom half of Arrow Link.svg",
+    over:  "top half of Arrow Link.svg",
+    targetH: 34,
+    rotate: 0
+  },
+
+  "Eclipse Link.svg": {
+    base:  "Eclipse Link.svg",
+    under: "bottom half of Eclipse Link.svg",
+    over:  "top half of Eclipse Link.svg",
+    targetH: 34,
+    rotate: 0
   }
 };
 
@@ -1112,6 +1130,8 @@ const WEIGHTS = {
   "halo link.svg": 0.10,
   "gold circle link.svg": 0.10,
   "dual orb link.svg": 0.12,
+  "Arrow Link.svg": 0.10,
+  "Eclipse Link.svg": 0.10,
   "dolphin fish lock.svg": 0.12,
   "__default_pendant": 0.30,
   "__default_link": 0.10
