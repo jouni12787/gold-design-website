@@ -235,6 +235,11 @@
   select,input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--control-border);background:var(--control-bg);color:var(--ink);outline:none;transition:border .2s,box-shadow .2s,background .2s,color .3s ease}
   select:focus,input:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--control-focus-shadow);background:var(--control-focus-bg)}
   .grid2{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+  #pendantCustomization{justify-content:center;justify-items:center}
+  #pendantCustomization > div{display:flex;flex-direction:column;align-items:center;gap:6px}
+  #pendantCustomization label{text-align:center;width:100%}
+  #pendantCustomization input,#pendantCustomization select{text-align:center;max-width:220px}
+  #pendantCustomizationNote{text-align:center}
   .rows{display:flex;flex-direction:column;gap:10px;margin-top:10px}
   .row{display:grid;grid-template-columns:1.2fr .7fr auto auto;gap:10px;align-items:end}
   .stack{display:flex;flex-direction:column;gap:.5rem}
@@ -560,6 +565,9 @@
             <option value="heart" data-i18n="builder.pendant.motif.heart">Heart</option>
             <option value="star" data-i18n="builder.pendant.motif.star">Star</option>
             <option value="diamond" data-i18n="builder.pendant.motif.diamond">Diamond</option>
+            <option value="crescent" data-i18n="builder.pendant.motif.crescent">Crescent moon</option>
+            <option value="clover" data-i18n="builder.pendant.motif.clover">Clover</option>
+            <option value="butterfly" data-i18n="builder.pendant.motif.butterfly">Butterfly</option>
           </select>
         </div>
       </div>
@@ -2339,10 +2347,23 @@ function adjustPinsProportionally(pack, factor, mode = "horizontal") {
 function updatePendantCustomizationVisibility(){
   const name = selPendant?.value || "";
   const show = CUSTOMIZABLE_PENDANTS.has(name);
-  if(pendantCustomization) pendantCustomization.hidden = !show;
-  if(pendantCustomizationNote) pendantCustomizationNote.hidden = !show;
-  if(inpPendantEngraving) inpPendantEngraving.disabled = !show;
-  if(selPendantMotif) selPendantMotif.disabled = !show;
+  if(pendantCustomization){
+    pendantCustomization.hidden = !show;
+    pendantCustomization.style.display = show ? "grid" : "none";
+  }
+  if(pendantCustomizationNote){
+    pendantCustomizationNote.hidden = !show;
+    pendantCustomizationNote.style.display = show ? "block" : "none";
+  }
+  if(inpPendantEngraving){
+    inpPendantEngraving.disabled = !show;
+  }
+  if(selPendantMotif){
+    selPendantMotif.disabled = !show;
+    if(!show){
+      selPendantMotif.value = "";
+    }
+  }
 }
 
 function buildEngravingMotif(type, size){
@@ -2372,6 +2393,58 @@ function buildEngravingMotif(type, size){
       const half = size / 2;
       diamond.setAttribute('points', `0 ${-half} ${half} 0 0 ${half} ${-half} 0`);
       return diamond;
+    }
+    case 'crescent': {
+      const outer = size / 2;
+      const inner = outer * 0.65;
+      const offset = outer * 0.4;
+      const crescent = document.createElementNS(SVG_NS, 'path');
+      crescent.setAttribute('d', `M ${offset} ${-outer} A ${outer} ${outer} 0 1 0 ${offset} ${outer} A ${inner} ${inner} 0 1 1 ${offset} ${-outer} Z`);
+      crescent.setAttribute('fill-rule', 'evenodd');
+      return crescent;
+    }
+    case 'clover': {
+      const group = document.createElementNS(SVG_NS, 'g');
+      const leafR = size * 0.22;
+      const offset = leafR * 1.4;
+      const leaves = [
+        { cx: 0, cy: -offset },
+        { cx: -offset, cy: 0 },
+        { cx: offset, cy: 0 },
+        { cx: 0, cy: offset }
+      ];
+      leaves.forEach(({ cx, cy }) => {
+        const circle = document.createElementNS(SVG_NS, 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', leafR);
+        group.appendChild(circle);
+      });
+      const stem = document.createElementNS(SVG_NS, 'path');
+      const stemTop = offset * 0.7;
+      const stemBottom = stemTop + size * 0.55;
+      const halfStem = leafR * 0.4;
+      stem.setAttribute('d', `M ${-halfStem} ${stemTop} Q ${-halfStem} ${stemBottom} 0 ${stemBottom} Q ${halfStem} ${stemBottom} ${halfStem} ${stemTop} Z`);
+      group.appendChild(stem);
+      return group;
+    }
+    case 'butterfly': {
+      const group = document.createElementNS(SVG_NS, 'g');
+      const wings = document.createElementNS(SVG_NS, 'path');
+      const w = size * 0.6;
+      const h = size * 0.5;
+      wings.setAttribute('d', `M 0 ${-h * 0.1} C ${-w * 0.9} ${-h * 0.9} ${-w} ${h * 0.1} ${-w * 0.4} ${h * 0.25} C ${-w * 0.8} ${h * 0.85} ${-w * 0.25} ${h} 0 ${h * 0.75} C ${w * 0.25} ${h} ${w * 0.8} ${h * 0.85} ${w * 0.4} ${h * 0.25} C ${w} ${h * 0.1} ${w * 0.9} ${-h * 0.9} 0 ${-h * 0.1} Z`);
+      group.appendChild(wings);
+      const body = document.createElementNS(SVG_NS, 'rect');
+      const bodyW = size * 0.1;
+      const bodyH = size * 0.7;
+      body.setAttribute('x', -bodyW / 2);
+      body.setAttribute('y', -bodyH / 2);
+      body.setAttribute('width', bodyW);
+      body.setAttribute('height', bodyH);
+      body.setAttribute('rx', bodyW / 2);
+      group.appendChild(body);
+      return group;
     }
     default:
       return null;
@@ -2472,7 +2545,7 @@ async function render(){
   const engravingMotif = selPendantMotif?.value || '';
   const isCustomPendant = CUSTOMIZABLE_PENDANTS.has(pendantName);
   const engravingActive = isCustomPendant && (engravingText.length > 0 || engravingMotif);
-  const pendantH = 160;           // fixed pendant height
+  const pendantH = 320;           // fixed pendant height (200% scale)
   const lockName = (selLock?.value || "").trim();
   const lockH = 70;               // fixed lock height
   const currentMetal = getMetalPreset().id;
@@ -2573,8 +2646,19 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
   const pendPinMidY = (pendantPack.pins?.L?.y != null && pendantPack.pins?.R?.y != null)
                       ? (pendantPack.pins.L.y + pendantPack.pins.R.y)/2
                       : pendantPack.height/2;
-  const pendantLeftPinWorldX = startX + leftSpan;
-  const gpX = pendantLeftPinWorldX - (pendantPack.pins?.L?.x ?? 0);
+  let pendantLeftPinWorldX = startX + leftSpan;
+  let gpX = pendantLeftPinWorldX - (pendantPack.pins?.L?.x ?? 0);
+  const pendWidth = pendantPack.width || 0;
+  const pendantCenter = gpX + pendWidth / 2;
+  if(Number.isFinite(pendantCenter)){
+    const centerOffset = (W / 2) - pendantCenter;
+    const minStart = PAD;
+    const maxStart = Math.max(PAD, W - totalSpan - PAD);
+    const targetStart = startX + centerOffset;
+    startX = Math.min(Math.max(targetStart, minStart), maxStart);
+    pendantLeftPinWorldX = startX + leftSpan;
+    gpX = pendantLeftPinWorldX - (pendantPack.pins?.L?.x ?? 0);
+  }
   const gpY = midY - pendPinMidY;
 
   const gp = document.createElementNS("http://www.w3.org/2000/svg","g");
