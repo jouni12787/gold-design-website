@@ -570,6 +570,16 @@
             <option value="butterfly" data-i18n="builder.pendant.motif.butterfly">Butterfly</option>
           </select>
         </div>
+        <div>
+          <label for="pendantMotifPos" data-i18n="builder.pendant.motifPosition">Motif position</label>
+          <select id="pendantMotifPos">
+            <option value="below" data-i18n="builder.pendant.motifPosition.below">Below text</option>
+            <option value="above" data-i18n="builder.pendant.motifPosition.above">Above text</option>
+            <option value="left" data-i18n="builder.pendant.motifPosition.left">Left of text</option>
+            <option value="right" data-i18n="builder.pendant.motifPosition.right">Right of text</option>
+            <option value="center" data-i18n="builder.pendant.motifPosition.center">Center only</option>
+          </select>
+        </div>
       </div>
       <p id="pendantCustomizationNote" class="inputNote" hidden data-i18n="builder.pendant.engraving.note">Black Field pendants accept engraved text and motifs.</p>
       <div class="grid2" style="margin-top:8px">
@@ -1228,6 +1238,7 @@ const pendantCustomization = document.getElementById("pendantCustomization");
 const pendantCustomizationNote = document.getElementById("pendantCustomizationNote");
 const inpPendantEngraving = document.getElementById("pendantEngraving");
 const selPendantMotif = document.getElementById("pendantMotif");
+const selPendantMotifPos = document.getElementById("pendantMotifPos");
 const inpPinBias = document.getElementById("pinBias");
 const outPinBias = document.getElementById("pinBiasOut");
 const selLock = document.getElementById("lockSelect");
@@ -1502,7 +1513,8 @@ function collectSessionState(){
     pendant: selPendant?.value || PENDANTS[0],
     engraving: {
       text: inpPendantEngraving?.value || '',
-      motif: selPendantMotif?.value || ''
+      motif: selPendantMotif?.value || '',
+      motifPos: selPendantMotifPos?.value || 'below'
     },
     lock: selLock?.value || '',
     rows: readRows(),
@@ -1545,6 +1557,10 @@ function hydrateSession(){
   }
   if(selPendantMotif && data.engraving && typeof data.engraving.motif === 'string'){
     selPendantMotif.value = data.engraving.motif;
+  }
+  if(selPendantMotifPos && data.engraving && typeof data.engraving.motifPos === 'string'){
+    const allowed = ['below','above','left','right','center'];
+    selPendantMotifPos.value = allowed.includes(data.engraving.motifPos) ? data.engraving.motifPos : 'below';
   }
   if(selLock && typeof data.lock === 'string') selLock.value = data.lock;
   if(inpPinBias && typeof data.pinBias === 'number'){
@@ -2054,6 +2070,7 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   }
   if(inpPendantEngraving) inpPendantEngraving.addEventListener("input", ()=> render());
   if(selPendantMotif) selPendantMotif.addEventListener("change", ()=> render());
+  if(selPendantMotifPos) selPendantMotifPos.addEventListener("change", ()=> render());
   if(btnSVG) btnSVG.addEventListener("click", downloadSVG);
   if(btnPNG) btnPNG.addEventListener("click", downloadPNG);
 
@@ -2062,6 +2079,8 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
       rowsBox.innerHTML = "";
       addRow({type:LINKS[0], qty:6});
       if(selPendant) selPendant.value = PENDANTS[0];
+      if(selPendantMotif) selPendantMotif.value = "";
+      if(selPendantMotifPos) selPendantMotifPos.value = "below";
       if(selLock) selLock.value = "";
       if(inpStep){ inpStep.value = "15"; if(outStep) outStep.textContent = "15°"; }
       if(inpPinBias){ inpPinBias.value = "0"; if(outPinBias) outPinBias.textContent = "0%"; }
@@ -2364,6 +2383,12 @@ function updatePendantCustomizationVisibility(){
       selPendantMotif.value = "";
     }
   }
+  if(selPendantMotifPos){
+    selPendantMotifPos.disabled = !show;
+    if(!show){
+      selPendantMotifPos.value = 'below';
+    }
+  }
 }
 
 function buildEngravingMotif(type, size){
@@ -2463,22 +2488,38 @@ function applyPendantEngraving(pack, pendantName, text, motif){
   const hasMotif = motifType && motifType !== 'none';
   if(!hasText && !hasMotif) return;
 
+  const motifPos = (selPendantMotifPos?.value || 'below');
   const layer = document.createElementNS(SVG_NS, 'g');
   layer.setAttribute('data-role', 'pendant-engraving');
   layer.setAttribute('pointer-events', 'none');
+  layer.setAttribute('clip-path', `url(#${PENDANT_MASK_ID})`);
 
   const cx = pack.width / 2;
   const cy = pack.height / 2;
   const accentFill = '#f9f4de';
   const accentStroke = 'rgba(0, 0, 0, 0.4)';
+  const mx = pack.width * 0.10;
+  const my = pack.height * 0.12;
+  const maxWidth = pack.width - mx * 2;
+  let motifSize = 0;
+
+  if(hasMotif){
+    const side = motifPos === 'left' || motifPos === 'right';
+    motifSize = side
+      ? Math.min(pack.height * 0.24, pack.width * 0.22)
+      : Math.min(pack.height * 0.35, pack.width * 0.35);
+  }
 
   if(hasText){
     const upper = engravingText.toUpperCase();
     const len = Math.max(upper.length, 1);
-    const maxWidth = pack.width * 0.7;
-    const sizeByLen = maxWidth / len * 1.35;
-    const size = Math.max(Math.min(pack.height * 0.2, sizeByLen), pack.height * 0.075);
-    const yOffset = hasMotif ? -pack.height * 0.1 : 0;
+    const sizeByLen = maxWidth / Math.max(len, 1) * 1.25;
+    const size = Math.max(Math.min(pack.height * 0.28, sizeByLen), pack.height * 0.08);
+    const yOffset = hasMotif && motifPos === 'above'
+      ? motifSize * 0.55
+      : hasMotif && motifPos === 'below'
+        ? -motifSize * 0.55
+        : 0;
     const textEl = document.createElementNS(SVG_NS, 'text');
     textEl.setAttribute('x', cx);
     textEl.setAttribute('y', cy + yOffset);
@@ -2497,11 +2538,41 @@ function applyPendantEngraving(pack, pendantName, text, motif){
   }
 
   if(hasMotif){
-    const motifSize = Math.min(pack.width, pack.height) * 0.35;
+    const side = motifPos === 'left' || motifPos === 'right';
     const motifEl = buildEngravingMotif(motifType, motifSize);
     if(motifEl){
-      const yOffset = hasText ? motifSize * 0.45 : 0;
-      motifEl.setAttribute('transform', `translate(${cx}, ${cy + yOffset})`);
+      const gap = side ? Math.max(motifSize * 0.25, pack.width * 0.02) : motifSize * 0.45;
+      let mxPos = cx;
+      let myPos = cy;
+
+      if(hasText){
+        switch(motifPos){
+          case 'above':
+            myPos = cy - gap;
+            break;
+          case 'below':
+            myPos = cy + gap;
+            break;
+          case 'left':
+            mxPos = cx - (Math.min(maxWidth, pack.width * 0.65) / 2) - gap;
+            break;
+          case 'right':
+            mxPos = cx + (Math.min(maxWidth, pack.width * 0.65) / 2) + gap;
+            break;
+          case 'center':
+          default:
+            break;
+        }
+      }
+
+      const minX = mx + motifSize / 2;
+      const maxX = pack.width - mx - motifSize / 2;
+      const minY = my + motifSize / 2;
+      const maxY = pack.height - my - motifSize / 2;
+      mxPos = Math.max(minX, Math.min(maxX, mxPos));
+      myPos = Math.max(minY, Math.min(maxY, myPos));
+
+      motifEl.setAttribute('transform', `translate(${mxPos}, ${myPos})`);
       motifEl.setAttribute('fill', accentFill);
       motifEl.setAttribute('stroke', accentStroke);
       motifEl.setAttribute('stroke-width', Math.max(motifSize * 0.05, 0.8));
@@ -2543,10 +2614,12 @@ async function render(){
   const pendantName = selPendant.value;
   const engravingText = (inpPendantEngraving?.value || '').trim();
   const engravingMotif = selPendantMotif?.value || '';
+  const engravingMotifPos = selPendantMotifPos?.value || 'below';
   const isCustomPendant = CUSTOMIZABLE_PENDANTS.has(pendantName);
   const engravingActive = isCustomPendant && (engravingText.length > 0 || engravingMotif);
-  const pendantH = 320;           // fixed pendant height (200% scale)
   const lockName = (selLock?.value || "").trim();
+  const onlyPendant = rows.reduce((sum, r) => sum + (r.qty || 0), 0) === 0 && !lockName;
+  const pendantH = onlyPendant ? Math.floor(STAGE_H * 0.8) : 320; // scale pendant to fill view when solo
   const lockH = 70;               // fixed lock height
   const currentMetal = getMetalPreset().id;
 
@@ -2697,7 +2770,7 @@ if (!lockPack.pins?.L || !lockPack.pins?.R) {
     pack: pendant3D,
     tx: gpX,
     ty: gpY,
-    engraving: engravingActive ? { text: engravingText, motif: engravingMotif } : null,
+    engraving: engravingActive ? { text: engravingText, motif: engravingMotif, motifPos: engravingMotifPos } : null,
     pins: {
       L: pendantPack.pins?.L ? {x: gpX + pendantPack.pins.L.x, y: gpY + pendantPack.pins.L.y} : null,
       R: pendantPack.pins?.R ? {x: gpX + pendantPack.pins.R.x, y: gpY + pendantPack.pins.R.y} : null
@@ -2868,7 +2941,7 @@ for (let i = 0; i < rightSeq.length; i++) {
   saveSession(true);
   currentRows = rows.map(r => ({...r}));
   if(zoomMode === 'fit'){
-    requestAnimationFrame(() => fitViewport());
+    requestAnimationFrame(() => fitViewport(onlyPendant ? 8 : 24));
   }
 }
 
