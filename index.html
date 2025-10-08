@@ -2547,11 +2547,13 @@ async function render(){
   const engravingActive = isCustomPendant && (engravingText.length > 0 || engravingMotif);
   // --- Real scale conversion ---
 const CM_TO_PX = 17;          // pixels per centimeter (adjust if needed)
-const DEFAULT_LINK_H = 1 * CM_TO_PX;  // each link ≈ 1 cm tall
+const DEFAULT_LINK_H = 0.5 * CM_TO_PX;  // each link ≈ 1 cm tall
 const pendantH = 2 * CM_TO_PX;        // pendant ≈ 2 cm tall (~4 cm wide by aspect)
 
 // --- Make all links use real 1 cm scale ---
 Object.values(LINK_PARTS).forEach(def => { def.targetH = DEFAULT_LINK_H; });
+if (LINK_META) Object.values(LINK_META).forEach(def => { def.targetH = DEFAULT_LINK_H; });
+
 
   const lockName = (selLock?.value || "").trim();
   const lockH = 70;               // fixed lock height
