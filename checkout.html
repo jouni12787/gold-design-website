@@ -79,7 +79,7 @@ document.getElementById('orderForm').addEventListener('submit', async (e)=>{
     if(!r.ok) throw new Error('Network error');
     localStorage.removeItem('hcj-cart');
     alert('Thank you! Order submitted.');
-    location.href = 'store.html';
+    location.href = '/store/';
   }catch(err){
     alert('Could not submit the order yet. Please try again.');
   }
