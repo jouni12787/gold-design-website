@@ -1,16 +1,16 @@
 window.__TRANSLATIONS = {
   en: {
     /* Brand / Nav / A2HS */
-    "brand.title": "Shakaroun Jewelry",
-    "brand.byline": "Shakaroun Jewelry",
-    "brand.logoAlt": "Shakaroun Jewelry logo",
-    "brand.aria": "Shakaroun Jewelry",
+    "brand.title": "shakaron jewelry",
+    "brand.byline": "shakaron jewelry",
+    "brand.logoAlt": "shakaron jewelry logo",
+    "brand.aria": "shakaron jewelry",
     "nav.builder": "Builder",
     "nav.store": "Store",
     "nav.about": "About",
     "a2hs.banner": "Add it to your Home Screen.",
     "a2hs.install": "Install",
-    "a2hs.title": "Add “Shakaroun Jewelry” to Home Screen",
+    "a2hs.title": "Add “shakaron jewelry” to Home Screen",
     "a2hs.step1": "Tap Share in Safari.",
     "a2hs.step2": "Choose Add to Home Screen, then Add.",
 
@@ -174,9 +174,9 @@ window.__TRANSLATIONS = {
   /* ===== Arabic ===== */
   ar: {
     "brand.title": "مجوهرات شكرون",
-    "brand.byline": "Shakaroun Jewelry",
+    "brand.byline": "shakaron jewelry",
     "brand.logoAlt": "شعار مجوهرات شكرون",
-    "brand.aria": "Shakaroun Jewelry",
+    "brand.aria": "shakaron jewelry",
     "nav.builder": "البنّاء",
     "nav.store": "المتجر",
     "nav.about": "معلومات",
@@ -337,16 +337,16 @@ window.__TRANSLATIONS = {
 
   /* ===== French ===== */
   fr: {
-    "brand.title": "Shakaroun Jewelry",
-    "brand.byline": "Shakaroun Jewelry",
-    "brand.logoAlt": "Logo Shakaroun Jewelry",
-    "brand.aria": "Shakaroun Jewelry",
+    "brand.title": "shakaron jewelry",
+    "brand.byline": "shakaron jewelry",
+    "brand.logoAlt": "Logo shakaron jewelry",
+    "brand.aria": "shakaron jewelry",
     "nav.builder": "Créateur",
     "nav.store": "Boutique",
     "nav.about": "À propos",
     "a2hs.banner": "Ajoutez-la à votre écran d’accueil.",
     "a2hs.install": "Installer",
-    "a2hs.title": "Ajouter « Shakaroun Jewelry » à l’écran d’accueil",
+    "a2hs.title": "Ajouter « shakaron jewelry » à l’écran d’accueil",
     "a2hs.step1": "Touchez Partager dans Safari.",
     "a2hs.step2": "Choisissez Ajouter à l’écran d’accueil, puis Ajouter.",
 
@@ -501,16 +501,16 @@ window.__TRANSLATIONS = {
 
   /* ===== Italian ===== */
   it: {
-    "brand.title": "Shakaroun Jewelry",
-    "brand.byline": "Shakaroun Jewelry",
-    "brand.logoAlt": "Logo Shakaroun Jewelry",
-    "brand.aria": "Shakaroun Jewelry",
+    "brand.title": "shakaron jewelry",
+    "brand.byline": "shakaron jewelry",
+    "brand.logoAlt": "Logo shakaron jewelry",
+    "brand.aria": "shakaron jewelry",
     "nav.builder": "Costruttore",
     "nav.store": "Negozio",
     "nav.about": "Chi siamo",
     "a2hs.banner": "Aggiungila alla schermata Home.",
     "a2hs.install": "Installa",
-    "a2hs.title": "Aggiungi «Shakaroun Jewelry» alla schermata Home",
+    "a2hs.title": "Aggiungi «shakaron jewelry» alla schermata Home",
     "a2hs.step1": "Tocca Condividi in Safari.",
     "a2hs.step2": "Scegli Aggiungi a Home, poi Aggiungi.",
 
