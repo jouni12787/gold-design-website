@@ -143,6 +143,41 @@
     --pin-stroke:#f8ecff;
   }
 
+  /* Royal Navy */
+  html[data-theme="navy"]{
+    --bg:#0c1a2b;
+    --bg2:#0a1523;
+    --card:#121e32;
+    --card-overlay:rgba(18,30,50,.88);
+    --ink:#eef3fb;
+    --muted:#b9c7dc;
+    --gold:#E9C46A;
+    --gold2:#D4AF37;
+    --accent-ink:#0b1220;
+    --border-soft:rgba(233,196,106,.18);
+    --border-strong:rgba(233,196,106,.34);
+    --control-border:rgba(233,196,106,.22);
+    --control-bg:rgba(17,27,45,.75);
+    --control-focus-bg:rgba(21,33,54,.85);
+    --control-focus-shadow:rgba(233,196,106,.18);
+    --head-bg:rgba(11,18,32,.52);
+    --summary-bg:rgba(17,27,45,.86);
+    --preview-glow:rgba(233,196,106,.14);
+    --tab-bg:rgba(17,27,45,.78);
+    --tab-active-bg:rgba(21,33,54,.88);
+    --hud-bg:rgba(16,26,44,.78);
+    --hud-border:rgba(233,196,106,.24);
+    --hud-text:#eef3fb;
+    --button-top:rgba(233,196,106,.18);
+    --button-bottom:rgba(212,175,55,.16);
+    --button-hover-top:rgba(233,196,106,.28);
+    --button-hover-bottom:rgba(212,175,55,.22);
+    --accent-radial-1:rgba(233,196,106,.16);
+    --accent-radial-2:rgba(17,33,54,.28);
+    --pin-fill:#E9C46A;
+    --pin-stroke:#eef3fb;
+  }
+
   /* === A2HS (Install) UI === */
   #a2hsBanner{
     position:fixed;top:0;left:0;right:0;z-index:9999;
@@ -271,12 +306,6 @@
   svg#preview{width:100%;height:100%;max-height:560px}
   #preview [data-role="background"]{fill:var(--bg2);transition:fill .3s ease}
   .materialNarrative{margin-top:10px;font-size:.9rem;color:var(--muted);line-height:1.5}
-  .themeDesigner{margin-top:12px;padding:14px;border-radius:14px;border:1px dashed var(--border-soft);background:color-mix(in oklab,var(--control-bg) 85%, transparent);display:none;gap:12px}
-  .themeDesigner.open{display:grid}
-  .themeDesigner__grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
-  .themeDesigner label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
-  .themeDesigner input[type="color"]{width:100%;height:40px;border:1px solid var(--border-soft);border-radius:12px;background:transparent;padding:0}
-  .themeDesigner button{justify-self:start}
   #wishlistCTA{position:absolute;top:16px;right:16px;padding:10px 18px;border-radius:999px;border:1px solid var(--border-soft);background:color-mix(in oklab,var(--control-bg) 78%, transparent);color:var(--ink);font-weight:700;cursor:pointer;transition:transform .2s,border .2s}
   #wishlistCTA:hover{border-color:var(--gold);transform:translateY(-1px)}
   .stlHud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;align-items:center;background:var(--hud-bg);border:1px solid var(--hud-border);padding:8px 10px;border-radius:10px;color:var(--hud-text);backdrop-filter:blur(8px);transition:background .3s ease,border-color .3s ease,color .3s ease;flex-wrap:wrap}
@@ -492,7 +521,7 @@
         <option value="dark" data-i18n="theme.dark">Dark</option>
         <option value="light" data-i18n="theme.light">Light</option>
         <option value="plum" data-i18n="theme.plum">Plum</option>
-        <option value="custom" data-i18n="theme.custom">Custom</option>
+        <option value="navy" data-i18n="theme.navy">Royal Navy</option>
       </select>
       <select id="langSelectTop" aria-label="Select language">
         <option value="en">English</option>
@@ -527,27 +556,6 @@
       </div>
     </div>
     <div class="panel">
-      <div class="themeDesigner" id="themeDesigner" aria-hidden="true">
-        <div class="themeDesigner__grid">
-          <div>
-            <label for="customAccent" data-i18n="builder.theme.accent">Accent color</label>
-            <input type="color" id="customAccent" value="#d4af37">
-          </div>
-          <div>
-            <label for="customBackground" data-i18n="builder.theme.background">Background</label>
-            <input type="color" id="customBackground" value="#17120a">
-          </div>
-          <div>
-            <label for="customBackground2" data-i18n="builder.theme.backgroundGlow">Background glow</label>
-            <input type="color" id="customBackground2" value="#2a1b0f">
-          </div>
-          <div>
-            <label for="customInk" data-i18n="builder.theme.typography">Typography</label>
-            <input type="color" id="customInk" value="#fff7e6">
-          </div>
-        </div>
-        <button type="button" id="applyCustomTheme" data-i18n="builder.theme.apply">Apply palette</button>
-      </div>
       <div class="grid2">
         <div>
           <label for="pendant" data-i18n="builder.pendant">Pendant</label>
@@ -823,7 +831,7 @@ function onLanguageChange(){
 
 window.addEventListener('hcj:lang', onLanguageChange);
 
-const THEMES = ["light", "dark", "plum", "custom"];
+const THEMES = ["light", "dark", "plum", "navy"];
 const THEME_KEY = window.__HCJ_THEME_KEY || "hcj-theme";
 const DEFAULT_THEME = document.documentElement.dataset.theme || "light";
 let STAGE_W = 1920;
@@ -831,7 +839,6 @@ let STAGE_H = 520;
 const STORAGE_KEYS = {
   session: 'hcj-builder-session',
   wishlist: 'hcj-builder-wishlist',
-  customTheme: 'hcj-theme-custom',
   tour: 'hcj-builder-tour'
 };
 const BASE_DENSITY = 15.6; // 18K heritage gold baseline (g/cm^3)
@@ -910,103 +917,7 @@ const METAL_PRESETS = [
   { id: 'silver',  labelKey: 'builder.metal.silver.label', density: 10.5, pricePerGram: 10, narrativeKey: 'builder.metal.silver.narrative' }
 ];
 
-const CUSTOM_THEME_DEFAULTS = {
-  accent: '#d4af37',
-  bg: '#17120a',
-  bg2: '#2a1b0f',
-  ink: '#fff7e6'
-};
-
 const priceFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-
-function ensureCustomThemeStyle(){
-  let styleEl = document.getElementById('hcj-custom-theme-style');
-  if(!styleEl){
-    styleEl = document.createElement('style');
-    styleEl.id = 'hcj-custom-theme-style';
-    document.head.appendChild(styleEl);
-  }
-  return styleEl;
-}
-
-function normalizeThemeConfig(cfg){
-  const base = { ...CUSTOM_THEME_DEFAULTS };
-  if(cfg && typeof cfg === 'object'){
-    if(typeof cfg.accent === 'string') base.accent = cfg.accent;
-    if(typeof cfg.bg === 'string') base.bg = cfg.bg;
-    if(typeof cfg.bg2 === 'string') base.bg2 = cfg.bg2;
-    if(typeof cfg.ink === 'string') base.ink = cfg.ink;
-  }
-  return base;
-}
-
-function applyCustomThemeVars(cfg){
-  const settings = normalizeThemeConfig(cfg);
-  const styleEl = ensureCustomThemeStyle();
-  const { accent, bg, bg2, ink } = settings;
-  styleEl.textContent = `html[data-theme="custom"]{
-    --bg:${bg};
-    --bg2:${bg2};
-    --card:color-mix(in oklab, ${bg} 85%, ${bg2});
-    --card-overlay:color-mix(in oklab, ${bg2} 70%, transparent);
-    --ink:${ink};
-    --muted:color-mix(in oklab, ${ink} 60%, transparent);
-    --gold:${accent};
-    --gold2:color-mix(in oklab, ${accent} 60%, #000 40%);
-    --border-soft:color-mix(in oklab, ${accent} 30%, transparent);
-    --border-strong:color-mix(in oklab, ${accent} 48%, transparent);
-    --control-border:color-mix(in oklab, ${accent} 36%, transparent);
-    --control-bg:color-mix(in oklab, ${bg} 88%, transparent);
-    --control-focus-bg:color-mix(in oklab, ${bg} 70%, ${bg2});
-    --control-focus-shadow:color-mix(in oklab, ${accent} 28%, transparent);
-    --head-bg:color-mix(in oklab, ${bg} 82%, transparent);
-    --summary-bg:color-mix(in oklab, ${bg} 80%, ${bg2});
-    --preview-glow:color-mix(in oklab, ${accent} 25%, transparent);
-    --tab-bg:color-mix(in oklab, ${bg} 82%, transparent);
-    --tab-active-bg:color-mix(in oklab, ${bg2} 70%, transparent);
-    --hud-bg:color-mix(in oklab, ${bg} 72%, transparent);
-    --hud-border:color-mix(in oklab, ${accent} 26%, transparent);
-    --hud-text:${ink};
-    --button-top:color-mix(in oklab, ${accent} 20%, transparent);
-    --button-bottom:color-mix(in oklab, ${accent} 16%, transparent);
-    --button-hover-top:color-mix(in oklab, ${accent} 30%, transparent);
-    --button-hover-bottom:color-mix(in oklab, ${accent} 24%, transparent);
-    --accent-radial-1:color-mix(in oklab, ${accent} 22%, transparent);
-    --accent-radial-2:color-mix(in oklab, ${accent} 18%, transparent);
-    --pin-fill:${accent};
-    --pin-stroke:${ink};
-  }`;
-  return settings;
-}
-
-function loadCustomTheme(){
-  try{
-    const raw = localStorage?.getItem(STORAGE_KEYS.customTheme);
-    if(raw){
-      return normalizeThemeConfig(JSON.parse(raw));
-    }
-  }catch(_){/* ignore */}
-  return { ...CUSTOM_THEME_DEFAULTS };
-}
-
-function saveCustomTheme(cfg){
-  try{
-    localStorage?.setItem(STORAGE_KEYS.customTheme, JSON.stringify(normalizeThemeConfig(cfg)));
-  }catch(_){/* ignore */}
-}
-
-function updateThemeDesignerVisibility(){
-  if(!themeDesigner) return;
-  const open = selTheme?.value === 'custom';
-  themeDesigner.classList.toggle('open', open);
-  themeDesigner.setAttribute('aria-hidden', open ? 'false' : 'true');
-  const cfg = normalizeThemeConfig(customThemeSettings);
-  if(inpCustomAccent) inpCustomAccent.value = cfg.accent;
-  if(inpCustomBackground) inpCustomBackground.value = cfg.bg;
-  if(inpCustomBackground2) inpCustomBackground2.value = cfg.bg2;
-  if(inpCustomInk) inpCustomInk.value = cfg.ink;
-}
-  
 function applyPinsByRatio(pack, ratios){
   if(!pack || !ratios) return;
   const w = pack.width || 1, h = pack.height || 1;
@@ -1020,8 +931,7 @@ function applyPinsByRatio(pack, ratios){
 }
 
 function applyTheme(theme){
-  const normalized = theme === "navy" ? "dark" : theme;
-  const next = THEMES.includes(normalized) ? normalized : DEFAULT_THEME;
+  const next = THEMES.includes(theme) ? theme : DEFAULT_THEME;
   document.documentElement.dataset.theme = next;
   if(typeof window.__update3DTheme === "function"){
     window.__update3DTheme(next);
@@ -1032,11 +942,10 @@ function applyTheme(theme){
   return next;
 }
 
-let customThemeSettings = applyCustomThemeVars(loadCustomTheme());
 let currentTheme = DEFAULT_THEME;
 try{
   const stored = (typeof localStorage !== "undefined") ? localStorage.getItem(THEME_KEY) : null;
-  if(stored) currentTheme = stored;
+  if(stored && THEMES.includes(stored)) currentTheme = stored;
 }catch(_){ currentTheme = DEFAULT_THEME; }
 currentTheme = applyTheme(currentTheme);
 
@@ -1263,12 +1172,6 @@ const langRemember = document.getElementById("langRemember");
 const langTitleEl = document.getElementById("langTitle");
 const langRememberLabel = document.getElementById("langRememberLabel");
 const langSelectTop = document.getElementById("langSelectTop");
-const themeDesigner = document.getElementById("themeDesigner");
-const inpCustomAccent = document.getElementById("customAccent");
-const inpCustomBackground = document.getElementById("customBackground");
-const inpCustomBackground2 = document.getElementById("customBackground2");
-const inpCustomInk = document.getElementById("customInk");
-const btnApplyCustomTheme = document.getElementById("applyCustomTheme");
 const wishlistCTA = document.getElementById("wishlistCTA");
 const selLighting = document.getElementById("lightingPreset");
 const cameraButtons = Array.from(document.querySelectorAll('.cameraControls button'));
@@ -1601,7 +1504,7 @@ const I18N = {
       remember: "Remember my choice on this device"
     },
     steps: [
-      { key: "ambience", title: "Curate your ambience", body: "Swap between maison themes or open the custom palette to match a client’s brand codes." },
+      { key: "ambience", title: "Curate your ambience", body: "Swap between maison themes, including the Royal Navy palette to match a client’s maritime codes." },
       { key: "pendant", title: "Select a pendant", body: "Pick the pendant silhouette that anchors your bracelet narrative." },
       { key: "links", title: "Balance your links", body: "Stack link families and quantities; the builder mirrors them on both sides automatically." },
       { key: "drape", title: "Shape the drape", body: "Adjust the per-link bend to simulate how the chain falls around the wrist." },
@@ -1622,7 +1525,7 @@ const I18N = {
       remember: "Mémoriser mon choix sur cet appareil"
     },
     steps: [
-      { key: "ambience", title: "Soignez l’ambiance", body: "Changez de thème maison ou ouvrez la palette personnalisée pour vos codes de marque." },
+      { key: "ambience", title: "Soignez l’ambiance", body: "Changez de thème maison, y compris la palette Royal Navy pour vos codes de marque marins." },
       { key: "pendant", title: "Choisissez un pendentif", body: "Sélectionnez la silhouette qui ancre la narration du bracelet." },
       { key: "links", title: "Équilibrez les maillons", body: "Empilez familles et quantités; le configurateur les reflète automatiquement." },
       { key: "drape", title: "Ajustez le tombé", body: "Réglez la courbure par maillon pour simuler la chute autour du poignet." },
@@ -1643,7 +1546,7 @@ const I18N = {
       remember: "Ricorda la mia scelta su questo dispositivo"
     },
     steps: [
-      { key: "ambience", title: "Cura l’atmosfera", body: "Cambia tema o usa la palette personalizzata per i codici del brand." },
+      { key: "ambience", title: "Cura l’atmosfera", body: "Cambia tema maison, inclusa la palette Royal Navy per i codici del brand." },
       { key: "pendant", title: "Seleziona un pendente", body: "Scegli la silhouette che ancora la narrazione del bracciale." },
       { key: "links", title: "Bilancia le maglie", body: "Impila famiglie e quantità; il builder le rispecchia automaticamente." },
       { key: "drape", title: "Modella la caduta", body: "Regola la curvatura per simulare come cade sul polso." },
@@ -2034,13 +1937,11 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
     selTheme.value = initial;
     if(selThemeInner && selThemeInner !== selTheme) selThemeInner.value = initial;
     if(selThemeTop && selThemeTop !== selTheme) selThemeTop.value = initial;
-    updateThemeDesignerVisibility();
     selTheme.addEventListener("change", e=>{
       const chosen = applyTheme(e.target.value);
       currentTheme = chosen;
       if(selThemeInner && selThemeInner !== e.target) selThemeInner.value = chosen;
       if(selThemeTop && selThemeTop !== e.target) selThemeTop.value = chosen;
-      updateThemeDesignerVisibility();
       saveSession(true);
       render();
     });
@@ -2083,43 +1984,6 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   if(btnSaveSession) btnSaveSession.addEventListener("click", ()=> saveSession(false));
   if(btnStartTour) btnStartTour.addEventListener("click", ()=> startTour(true));
 
-  if(btnApplyCustomTheme){
-    btnApplyCustomTheme.addEventListener("click", ()=>{
-      customThemeSettings = normalizeThemeConfig({
-        accent: inpCustomAccent?.value,
-        bg: inpCustomBackground?.value,
-        bg2: inpCustomBackground2?.value,
-        ink: inpCustomInk?.value
-      });
-      applyCustomThemeVars(customThemeSettings);
-      saveCustomTheme(customThemeSettings);
-      currentTheme = applyTheme('custom');
-      if(selTheme) selTheme.value = 'custom';
-      updateThemeDesignerVisibility();
-      render();
-      showToast(t('builder.toast.customApplied'));
-    });
-  }
-
-  if(themeDesigner){
-    [inpCustomAccent, inpCustomBackground, inpCustomBackground2, inpCustomInk].forEach(input=>{
-      if(!input) return;
-      input.addEventListener('input', ()=>{
-        if(selTheme?.value === 'custom'){
-          customThemeSettings = normalizeThemeConfig({
-            accent: inpCustomAccent?.value,
-            bg: inpCustomBackground?.value,
-            bg2: inpCustomBackground2?.value,
-            ink: inpCustomInk?.value
-          });
-          applyCustomThemeVars(customThemeSettings);
-          saveCustomTheme(customThemeSettings);
-          render();
-        }
-      });
-    });
-  }
-
   if(selLighting){
     selLighting.addEventListener('change', ()=>{
       if(typeof window.__setLightingPreset === 'function') window.__setLightingPreset(selLighting.value);
@@ -2142,7 +2006,6 @@ async function loadScaleRotate(dir, filename, targetH, rotateDeg){
   }
 
   refreshPerGramPrice();
-  updateThemeDesignerVisibility();
   const hasLanguage = bootLanguage();
   applyDynamicTranslations();
   applyUIText();
@@ -3502,7 +3365,7 @@ function handleLayoutUpdate(layout){
 <script>
 (function(){
   const KEY = window.__HCJ_THEME_KEY || 'hcj-theme';
-  const THEMES = ['light','dark','plum','custom'];
+  const THEMES = ['light','dark','plum','navy'];
   const top = document.getElementById('themeSelectTop');
   const inner = document.getElementById('themeSelect');
   function applyTopTheme(t){

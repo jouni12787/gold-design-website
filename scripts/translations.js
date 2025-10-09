@@ -36,7 +36,7 @@ window.__TRANSLATIONS = {
     "about.heritage.t2.h": "Family crest pendants.",
     "about.heritage.t2.p": "Pendants echo the cedar crest carried by generations, ready for engraving initials, verses or bespoke monograms.",
     "about.heritage.t3.h": "Curated palettes.",
-    "about.heritage.t3.p": "Each theme references a chapter of our maison — Desert Dawn, Midnight Majlis and Plum Soirée — with a custom option for your house codes.",
+    "about.heritage.t3.p": "Each theme references a chapter of our maison — Desert Dawn, Midnight Majlis, Plum Soirée and the maritime Royal Navy palette for tailored house codes.",
     "about.craft.h": "Craftsmanship",
     "about.craft.t1.h": "Maison-approved weights.",
     "about.craft.t1.p": "Real densities for gold alloys and sterling silver drive the gram estimate so production teams can quote confidently.",
@@ -91,11 +91,6 @@ window.__TRANSLATIONS = {
     "builder.wishlist": "♡ Add to wishlist",
     "builder.preview.auto": "Auto rotate",
     "builder.preview.download": "Download STL",
-    "builder.theme.accent": "Accent color",
-    "builder.theme.background": "Background",
-    "builder.theme.backgroundGlow": "Background glow",
-    "builder.theme.typography": "Typography",
-    "builder.theme.apply": "Apply palette",
     "builder.metal.gold18.label": "18K Gold",
     "builder.metal.gold18.narrative": "Daily-durable atelier balance.",
     "builder.metal.gold21.label": "21K Gold",
@@ -118,7 +113,7 @@ window.__TRANSLATIONS = {
 
     /* Tour (index) */
     "tour.s1.h": "Curate your ambience",
-    "tour.s1.p": "Swap between maison themes or open the custom palette to match a client’s brand codes.",
+    "tour.s1.p": "Swap between maison themes, including the Royal Navy palette to match a client’s maritime codes.",
     "tour.s2.h": "Select a pendant",
     "tour.s2.p": "Pick the pendant silhouette that anchors your bracelet narrative.",
     "tour.s3.h": "Balance your links",
@@ -146,7 +141,6 @@ window.__TRANSLATIONS = {
     "builder.toast.wishlistAdded": "Added to wishlist. Access it again on this device.",
     "builder.toast.wishlistUnavailable": "Wishlist is unavailable in private browsing.",
     "builder.toast.reset": "Design reset.",
-    "builder.toast.customApplied": "Custom palette applied.",
 
     /* Builder STL status */
     "builder.stl.loading": "Loading… {{source}}",
@@ -168,7 +162,7 @@ window.__TRANSLATIONS = {
     "theme.dark": "Dark",
     "theme.light": "Light",
     "theme.plum": "Plum",
-    "theme.custom": "Custom"
+    "theme.navy": "Royal Navy"
   },
 
   /* ===== Arabic ===== */
@@ -206,7 +200,7 @@ window.__TRANSLATIONS = {
     "about.heritage.t2.h": "قلادات بشعار العائلة.",
     "about.heritage.t2.p": "تستحضر القلادات شعار الأرز المتوارث، وجاهزة لحفر الأحرف أو العبارات أو الشعارات الخاصة.",
     "about.heritage.t3.h": "لوحات لونية منسّقة.",
-    "about.heritage.t3.p": "تستحضر كل ثيمة فصلاً من الدار — فجر الصحراء، مجلس منتصف الليل، وسهرة البرقوق — مع خيار مخصص لألوان علامتكم.",
+    "about.heritage.t3.p": "تستحضر كل ثيمة فصلاً من الدار — فجر الصحراء، مجلس منتصف الليل، وسهرة البرقوق — مع لوحة Royal Navy البحرية لرموز علامتكم.",
     "about.craft.h": "الحِرفية",
     "about.craft.t1.h": "أوزان معتمدة من الدار.",
     "about.craft.t1.p": "الكثافات الحقيقية لسبائك الذهب والفضة 925 تحسب الغرامات بدقة لتسعير موثوق.",
@@ -259,11 +253,6 @@ window.__TRANSLATIONS = {
     "builder.wishlist": "♡ أضف إلى المفضلة",
     "builder.preview.auto": "دوران تلقائي",
     "builder.preview.download": "تنزيل STL",
-    "builder.theme.accent": "لون التمييز",
-    "builder.theme.background": "الخلفية",
-    "builder.theme.backgroundGlow": "توَهّج الخلفية",
-    "builder.theme.typography": "الخط",
-    "builder.theme.apply": "تطبيق اللوحة",
     "builder.metal.gold18.label": "ذهب 18 قيراط",
     "builder.metal.gold18.narrative": "توازن محترف للاستخدام اليومي.",
     "builder.metal.gold21.label": "ذهب 21 قيراط",
@@ -285,7 +274,7 @@ window.__TRANSLATIONS = {
     "builder.stl.option.link.circle": "حلقة ذهبية — 1مم",
 
     "tour.s1.h": "نسّق الأجواء",
-    "tour.s1.p": "بدّل بين ثيمات الدار أو افتح لوحة الألوان المخصصة.",
+    "tour.s1.p": "بدّل بين ثيمات الدار، بما فيها لوحة Royal Navy البحرية لتلائم رموز العلامة.",
     "tour.s2.h": "اختر القلادة",
     "tour.s2.p": "انتقِ الشكل الذي يرسو عليه تصميم سوارك.",
     "tour.s3.h": "وازن الحلقات",
@@ -312,7 +301,6 @@ window.__TRANSLATIONS = {
     "builder.toast.wishlistAdded": "أُضيفت إلى قائمة المفضلة. يمكنك الوصول إليها من هذا الجهاز.",
     "builder.toast.wishlistUnavailable": "قائمة المفضلة غير متاحة في التصفح الخاص.",
     "builder.toast.reset": "تمت إعادة ضبط التصميم.",
-    "builder.toast.customApplied": "تم تطبيق لوحة مخصصة.",
 
     "builder.stl.loading": "جارٍ التحميل… {{source}}",
     "builder.stl.loaded": "تم التحميل ✓  الحجم: {{x}} × {{y}} × {{z}}",
@@ -332,7 +320,7 @@ window.__TRANSLATIONS = {
     "theme.dark": "داكن",
     "theme.light": "فاتح",
     "theme.plum": "برقوقي",
-    "theme.custom": "مخصص"
+    "theme.navy": "رويال نيفي"
   },
 
   /* ===== French ===== */
@@ -370,7 +358,7 @@ window.__TRANSLATIONS = {
     "about.heritage.t2.h": "Pendentifs aux armoiries familiales.",
     "about.heritage.t2.p": "Les pendentifs évoquent le cèdre héréditaire, prêts pour des gravures personnalisées.",
     "about.heritage.t3.h": "Palettes curatoriales.",
-    "about.heritage.t3.p": "Chaque thème fait écho à un chapitre de la maison — Aube du désert, Majlis de minuit et Soirée prune — avec une option sur-mesure.",
+    "about.heritage.t3.p": "Chaque thème fait écho à un chapitre de la maison — Aube du désert, Majlis de minuit, Soirée prune et la palette Royal Navy aux accents marins.",
     "about.craft.h": "Savoir-faire",
     "about.craft.t1.h": "Poids approuvés par la maison.",
     "about.craft.t1.p": "Les densités réelles des alliages d’or et de l’argent 925 guident des devis fiables.",
@@ -423,11 +411,6 @@ window.__TRANSLATIONS = {
     "builder.wishlist": "♡ Ajouter à la liste",
     "builder.preview.auto": "Rotation auto",
     "builder.preview.download": "Télécharger STL",
-    "builder.theme.accent": "Couleur d’accent",
-    "builder.theme.background": "Arrière-plan",
-    "builder.theme.backgroundGlow": "Halo d’arrière-plan",
-    "builder.theme.typography": "Typographie",
-    "builder.theme.apply": "Appliquer la palette",
     "builder.metal.gold18.label": "Or 18 carats",
     "builder.metal.gold18.narrative": "Équilibre d’atelier pour un usage quotidien.",
     "builder.metal.gold21.label": "Or 21 carats",
@@ -449,7 +432,7 @@ window.__TRANSLATIONS = {
     "builder.stl.option.link.circle": "maillon cercle doré — 1 mm",
 
     "tour.s1.h": "Curatez l’ambiance",
-    "tour.s1.p": "Alternez les thèmes maison ou passez à la palette personnalisée.",
+    "tour.s1.p": "Alternez les thèmes maison, y compris la palette Royal Navy pour vos codes marins.",
     "tour.s2.h": "Choisissez un pendentif",
     "tour.s2.p": "Sélectionnez la silhouette qui ancre votre bracelet.",
     "tour.s3.h": "Équilibrez les maillons",
@@ -476,7 +459,6 @@ window.__TRANSLATIONS = {
     "builder.toast.wishlistAdded": "Ajouté à la liste de souhaits. Retrouvez-la sur cet appareil.",
     "builder.toast.wishlistUnavailable": "Liste de souhaits indisponible en navigation privée.",
     "builder.toast.reset": "Design réinitialisé.",
-    "builder.toast.customApplied": "Palette personnalisée appliquée.",
 
     "builder.stl.loading": "Chargement… {{source}}",
     "builder.stl.loaded": "Chargé ✓  dimensions : {{x}} × {{y}} × {{z}}",
@@ -496,7 +478,7 @@ window.__TRANSLATIONS = {
     "theme.dark": "Sombre",
     "theme.light": "Clair",
     "theme.plum": "Prune",
-    "theme.custom": "Personnalisé"
+    "theme.navy": "Royal Navy"
   },
 
   /* ===== Italian ===== */
@@ -534,7 +516,7 @@ window.__TRANSLATIONS = {
     "about.heritage.t2.h": "Pendenti con stemma di famiglia.",
     "about.heritage.t2.p": "I pendenti richiamano il cedro tramandato, pronti per incisioni personalizzate.",
     "about.heritage.t3.h": "Palette curate.",
-    "about.heritage.t3.p": "Ogni tema richiama un capitolo della maison — Alba del deserto, Majlis di mezzanotte e Sera prugna — con un’opzione su misura.",
+    "about.heritage.t3.p": "Ogni tema richiama un capitolo della maison — Alba del deserto, Majlis di mezzanotte, Sera prugna e la palette Royal Navy dalle note marine.",
     "about.craft.h": "Maestria",
     "about.craft.t1.h": "Pesi approvati dalla maison.",
     "about.craft.t1.p": "Le densità reali delle leghe d’oro e dell’argento 925 guidano stime di grammi affidabili.",
@@ -587,11 +569,6 @@ window.__TRANSLATIONS = {
     "builder.wishlist": "♡ Aggiungi alla lista",
     "builder.preview.auto": "Rotazione automatica",
     "builder.preview.download": "Scarica STL",
-    "builder.theme.accent": "Colore accento",
-    "builder.theme.background": "Sfondo",
-    "builder.theme.backgroundGlow": "Bagliore di sfondo",
-    "builder.theme.typography": "Tipografia",
-    "builder.theme.apply": "Applica palette",
     "builder.metal.gold18.label": "Oro 18K",
     "builder.metal.gold18.narrative": "Equilibrio d’atelier per l’uso quotidiano.",
     "builder.metal.gold21.label": "Oro 21K",
@@ -613,7 +590,7 @@ window.__TRANSLATIONS = {
     "builder.stl.option.link.circle": "maglia cerchio dorato — 1 mm",
 
     "tour.s1.h": "Cura l’atmosfera",
-    "tour.s1.p": "Passa tra i temi maison o usa la palette personalizzata.",
+    "tour.s1.p": "Passa tra i temi maison, inclusa la palette Royal Navy per i codici del brand.",
     "tour.s2.h": "Scegli il pendente",
     "tour.s2.p": "Seleziona la silhouette che ancora il tuo bracciale.",
     "tour.s3.h": "Equilibra le maglie",
@@ -640,7 +617,6 @@ window.__TRANSLATIONS = {
     "builder.toast.wishlistAdded": "Aggiunto alla wishlist. Raggiungila di nuovo da questo dispositivo.",
     "builder.toast.wishlistUnavailable": "Wishlist non disponibile in navigazione privata.",
     "builder.toast.reset": "Design ripristinato.",
-    "builder.toast.customApplied": "Palette personalizzata applicata.",
 
     "builder.stl.loading": "Caricamento… {{source}}",
     "builder.stl.loaded": "Caricato ✓  dimensioni: {{x}} × {{y}} × {{z}}",
@@ -660,6 +636,6 @@ window.__TRANSLATIONS = {
     "theme.dark": "Scuro",
     "theme.light": "Chiaro",
     "theme.plum": "Prugna",
-    "theme.custom": "Personalizzato"
+    "theme.navy": "Royal Navy"
   }
 };

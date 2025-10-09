@@ -115,6 +115,29 @@
     --tab-active-bg:rgba(55,28,68,.88);
   }
 
+  /* Royal Navy */
+  html[data-theme="navy"]{
+    --bg:#0c1a2b;
+    --bg2:#0a1523;
+    --card:#121e32;
+    --card-overlay:rgba(18,30,50,.88);
+    --ink:#eef3fb;
+    --muted:#b9c7dc;
+    --gold:#E9C46A;
+    --gold2:#D4AF37;
+    --border-soft:rgba(233,196,106,.18);
+    --border-strong:rgba(233,196,106,.34);
+    --control-border:rgba(233,196,106,.22);
+    --control-bg:rgba(17,27,45,.75);
+    --control-focus-bg:rgba(21,33,54,.85);
+    --control-focus-shadow:rgba(233,196,106,.18);
+    --head-bg:rgba(11,18,32,.52);
+    --summary-bg:rgba(17,27,45,.86);
+    --preview-glow:rgba(233,196,106,.14);
+    --tab-bg:rgba(17,27,45,.78);
+    --tab-active-bg:rgba(21,33,54,.88);
+  }
+
   /* A2HS (Install) UI */
   #a2hsBanner{position:fixed;top:0;left:0;right:0;z-index:9999;transform:translateY(-110%);transition:transform .45s ease;background:color-mix(in oklab,var(--bg) 88%,transparent);color:var(--ink);border-bottom:1px solid var(--border-soft);box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:var(--bar-font);}
   #a2hsBanner.show{transform:translateY(0);position:sticky;top:0;}
@@ -232,7 +255,7 @@
         <option value="dark" data-i18n="theme.dark">Dark</option>
         <option value="light" data-i18n="theme.light">Light</option>
         <option value="plum" data-i18n="theme.plum">Plum</option>
-        <option value="custom" data-i18n="theme.custom">Custom</option>
+        <option value="navy" data-i18n="theme.navy">Royal Navy</option>
       </select>
       <select id="langSelectTop" aria-label="Select language">
         <option value="en">English</option>
@@ -264,7 +287,7 @@
       </article>
       <article class="story-tile">
         <strong data-i18n="about.heritage.t3.h">Curated palettes.</strong>
-        <p data-i18n="about.heritage.t3.p">Each theme references a chapter of our maison — Desert Dawn, Midnight Majlis and Plum Soirée — with a custom option for your house codes.</p>
+        <p data-i18n="about.heritage.t3.p">Each theme references a chapter of our maison — Desert Dawn, Midnight Majlis, Plum Soirée and the maritime Royal Navy palette for tailored house codes.</p>
       </article>
     </div>
   </section>
@@ -300,7 +323,7 @@
 <script>
 (function(){
   const KEY = window.__HCJ_THEME_KEY || 'hcj-theme';
-  const THEMES = ['light','dark','plum','custom'];
+  const THEMES = ['light','dark','plum','navy'];
   const top = document.getElementById('themeSelectTop');
   const inner = document.getElementById('themeSelect');
   function applySharedTheme(t){
