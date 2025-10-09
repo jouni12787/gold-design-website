@@ -399,6 +399,7 @@
         <option value="fr">Français</option>
         <option value="it">Italiano</option>
       </select>
+      <div id="cart-root"></div>
     </nav>
   </div>
 </header>
@@ -1065,6 +1066,23 @@
   let activeKarat = null;            // null = all
   let LIVE_TICKET = 0;               // prevents duplicate renders
 
+  const CART_KEY = 'hcj-cart';
+
+  function getCartItems(){
+    if(window.cartAPI && typeof window.cartAPI.load === 'function'){
+      try{ return window.cartAPI.load() || []; }catch{ return []; }
+    }
+    try{ return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); }catch{ return []; }
+  }
+
+  function saveCartItems(items){
+    if(window.cartAPI && typeof window.cartAPI.save === 'function'){
+      window.cartAPI.save(items);
+    }else{
+      try{ localStorage.setItem(CART_KEY, JSON.stringify(items)); }catch(_){ }
+    }
+  }
+
   function setActiveKarat(k){
     activeKarat = (k==null ? null : Number(k));
     // visual state on the buttons
@@ -1085,14 +1103,14 @@
 
   function pad(n){ return String(n).padStart(2,'0'); }
 
-  const CART = window.HCJ_CART instanceof Map ? window.HCJ_CART : new Map();
-  // Use a stable per-piece key independent of SKU
   function keyForProduct(p){
     const id = Number.isFinite(p?.id) ? p.id : Math.floor(Math.random()*1e9);
     return 'id#' + id;
   }
-  window.HCJ_SKU_KEY = keyForProduct; // expose for QV
-  window.HCJ_CART = CART;
+
+  function keyForItem(item){
+    return `${item?.sku || ''}::${(item?.title || item?.name || '').trim()}`;
+  }
 
   function buildCatBar(){
     if(!catBar) return;
@@ -1309,65 +1327,56 @@
 
   if(checkoutBtn){
     checkoutBtn.addEventListener('click', () => {
-      if(CART.size === 0) return;
-      const payload = [];
-      CART.forEach((entry, sku) => {
-        payload.push({
-          sku,
-          name: entry?.product?.name || 'Item',
-          price: Number(entry?.product?.price || 0),
-          qty: Number(entry?.qty || 1),
-          kirat: entry?.product?.kirat || '',
-          weight: entry?.product?.weight || '',
-          img: entry?.img || ''
-        });
-      });
-      try {
-        localStorage.setItem('hcj-cart', JSON.stringify(payload));
-      } catch (e) {}
-      window.location.href = 'checkout.html';
+      const items = getCartItems();
+      if(!items.length) return;
+      saveCartItems(items);
+      window.location.href = '/checkout/';
     });
   }
 
-  function changeQty(sku, delta){
-    const entry = CART.get(sku);
-    if(!entry) return;
-    const next = Math.max(0, Math.min(1, entry.qty + delta)); // cap at 1
+  function changeQty(key, delta){
+    if(!key) return;
+    const items = getCartItems();
+    const idx = items.findIndex(it => keyForItem(it) === key);
+    if(idx === -1) return;
+    const next = Math.max(0, Number(items[idx].qty || 1) + delta);
     if(next === 0){
-      CART.delete(sku);
+      items.splice(idx, 1);
     }else{
-      entry.qty = next;
+      items[idx].qty = next;
     }
+    saveCartItems(items);
     renderCartDrawer();
   }
 
   function renderCartDrawer(){
     if(!cartBody || !cartSub) return;
-    if(CART.size === 0){
+    const items = getCartItems();
+    if(!items.length){
       cartBody.innerHTML = '<p class="cat-meta">Your cart is empty.</p>';
       cartSub.textContent = '$0';
       return;
     }
     let subtotal = 0;
     const html = [];
-    CART.forEach((entry, sku) => {
-      const product = entry.product || {};
-      const qty = entry.qty || 0;
-      const unitPrice = Number(product.price) || 0;
+    items.forEach(item => {
+      const qty = Number(item?.qty || 1);
+      const unitPrice = Number(item?.price || 0);
       subtotal += unitPrice * qty;
-      const imgSrc = entry.img || (Array.isArray(product.images) ? product.images[0] : null) || product.photo || '/icon/icon-512.png';
+      const imgSrc = item?.img || '/icon/icon-512.png';
+      const key = keyForItem(item);
       html.push(`
-        <div class="hcj-item" data-sku="${escape(sku)}">
+        <div class="hcj-item" data-key="${escape(key)}">
           <img src="${escape(imgSrc)}" alt="">
           <div>
-            <div class="t">${escape(product.name || 'Item')}</div>
-            <div class="s">${escape(product.sku || sku)}</div>
+            <div class="t">${escape(item?.title || item?.name || 'Item')}</div>
+            <div class="s">${escape(item?.sku || '-')}</div>
             <div class="p">$${unitPrice.toLocaleString()}</div>
           </div>
           <div class="hcj-qty">
             <button type="button" data-action="dec" aria-label="Decrease quantity">−</button>
             <span>${qty}</span>
-            <button type="button" data-action="inc" aria-label="Increase quantity" ${qty >= 1 ? 'disabled' : ''}>+</button>
+            <button type="button" data-action="inc" aria-label="Increase quantity">+</button>
           </div>
         </div>`);
     });
@@ -1385,9 +1394,9 @@
   cartBody?.addEventListener('click', event => {
     const button = event.target.closest('button[data-action]');
     if(!button) return;
-    const sku = button.closest('.hcj-item')?.dataset.sku;
-    if(!sku) return;
-    changeQty(sku, button.dataset.action === 'inc' ? 1 : -1);
+    const key = button.closest('.hcj-item')?.dataset.key;
+    if(!key) return;
+    changeQty(key, button.dataset.action === 'inc' ? 1 : -1);
   });
 
   function getProductForCard(card){
@@ -1418,17 +1427,28 @@
     };
   }
 
-  function addToCart(product, imgUrl){
+  function addProductToCart(product, imgUrl){
     if(!product) return;
-    const key = keyForProduct(product);
-    // Always cap to 1 per unique piece
-    const entry = CART.get(key) || { product, qty: 0, img: imgUrl };
-    entry.product = product;
-    entry.qty = 1;
-    if(imgUrl) entry.img = imgUrl;
-    CART.set(key, entry);
+    const title = (product.name || product.title || '').trim() || 'Item';
+    const sku = String(product.sku || keyForProduct(product));
+    const price = Number(product.price) || 0;
+    const img = imgUrl || (Array.isArray(product.images) ? product.images.find(Boolean) : product.photo) || '/icon/icon-512.png';
+    const item = { title, sku, price, qty: 1, img };
+    const itemKey = keyForItem(item);
+    if(typeof window.addToCart === 'function'){
+      window.addToCart(item);
+    }else{
+      const items = getCartItems();
+      const idx = items.findIndex(x => keyForItem(x) === itemKey);
+      if(idx > -1){
+        items[idx].qty = Number(items[idx].qty || 1) + 1;
+      }else{
+        items.push(item);
+      }
+      saveCartItems(items);
+    }
     renderCartDrawer();
-    openCart();
+    document.dispatchEvent(new CustomEvent('hcj:cart-updated'));
   }
 
   function attachMagnifier(img, {zoom=2.6, lens=140}={}){
@@ -1507,7 +1527,7 @@
     if(!card) return;
     const product = getProductForCard(card);
     const img = card.querySelector('.store-item__thumb .js-main')?.src || '';
-    addToCart(product, img);
+    addProductToCart(product, img);
   });
 
   catToggle?.addEventListener('click', () => {
@@ -1780,13 +1800,7 @@
 
     addBtn.onclick = () => {
       const imgUrl = first || '';
-      if(window.HCJ_CART && typeof window.HCJ_CART.set === 'function'){
-        const keyFn = window.HCJ_SKU_KEY || ((p)=>'id#'+(Number.isFinite(p?.id)?p.id:Math.floor(Math.random()*1e9)));
-        const sku = keyFn(product);
-        // Always cap to 1 per unique item
-        window.HCJ_CART.set(sku, { product, qty: 1, img: imgUrl });
-        document.dispatchEvent(new CustomEvent('hcj:cart-updated'));
-      }
+      addProductToCart(product, imgUrl);
     };
 
     if(waBtn){
@@ -1901,7 +1915,7 @@
 
   document.addEventListener('hcj:cart-updated', () => {
     if(typeof window.renderCartDrawer === 'function') window.renderCartDrawer();
-    if(typeof window.HCJ_OPEN_CART === 'function') window.HCJ_OPEN_CART();
+    if(typeof window.openMiniCart === 'function') window.openMiniCart();
   });
 })();
 </script>
@@ -2091,5 +2105,6 @@
   }else{ syncButtons(window.PRODUCTS); wireButtons(); }
 })();
 </script>
+<script src="/scripts/cart.js"></script>
 </body>
 </html>
