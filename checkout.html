@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Checkout — shakaron jewelry</title>
-<link rel="icon" href="icon/icon-1024.png" type="image/png">
+<link rel="icon" href="/icon/icon-1024.png" type="image/png">
 <style>
   :root{--radius:14px;--border:rgba(212,175,55,.25)}
   body{margin:0;background:linear-gradient(160deg,#17120a,#0f0b06);color:#fff7e6;font:15.5px/1.55 system-ui,-apple-system,Segoe UI,Roboto}
@@ -73,9 +73,14 @@ document.getElementById('orderForm').addEventListener('submit', async (e)=>{
     })),
     subtotal
   };
-  const ENDPOINT = 'YOUR_APPS_SCRIPT_WEB_APP_URL'; // TODO: replace with your Apps Script web app URL
+  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzfxST_EyN5qnUTvyPvIDAd4TzB5-XnzwnvOZ7Zcr5ZIa6Yi_PbpAmWTBQhmchWRVMp/exec';
   try{
-    const r = await fetch(ENDPOINT, {method:'POST', body: JSON.stringify(payload)});
+    const r = await fetch(ENDPOINT + '?key=YOUR_SECRET', {
+      method: 'POST',
+      // sending as text/plain avoids the browser's CORS preflight
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
     if(!r.ok) throw new Error('Network error');
     localStorage.removeItem('hcj-cart');
     alert('Thank you! Order submitted.');
